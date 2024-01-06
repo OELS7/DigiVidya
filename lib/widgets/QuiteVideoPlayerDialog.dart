@@ -43,7 +43,7 @@ class _quiteVideoPlayerDialogState extends State<quiteVideoPlayerDialog> {
               right: MediaQuery.of(context).size.width * 0.15,
               child: Container(
                 child: Text(
-                  "Are you sure you want to close the video",
+                  "Are you sure you want to close the video ?",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.black,

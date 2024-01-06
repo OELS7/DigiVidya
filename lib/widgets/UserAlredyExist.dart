@@ -26,7 +26,7 @@ class _userAlreadyExistState extends State<userAlreadyExist> {
             right: MediaQuery.of(context).size.width * 0.1,
             child: Center(
                 child: Text(
-              "Alredy Registered",
+              "Already Registered",
               style: TextStyle(
                   fontFamily: "Fontmain",
                   fontSize: 20,
@@ -49,7 +49,7 @@ class _userAlreadyExistState extends State<userAlreadyExist> {
                 ),
                 child: Center(
                   child: Text(
-                    "You are already registered. Please you use your another contact number.",
+                    "You have not deleted your previous account.Please use your another contact number.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 18,

@@ -47,7 +47,7 @@ class _exitAssessmentState extends State<exitAssessment> {
               left: MediaQuery.of(context).size.width * 0.15,
               right: MediaQuery.of(context).size.width * 0.15,
               child: Text(
-                "Are you sure you want to leave Assessment.",
+                "Are you sure you want to leave Assignment ?",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     wordSpacing: 0.5,

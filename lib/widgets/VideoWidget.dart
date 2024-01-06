@@ -114,27 +114,33 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         ? ""
         : _startDownload(FileUrl: contentUrls[itemPointer + 1]);
 
-    return Scaffold(
-      appBar: AppBar(
-        flexibleSpace: Container(
-          // height: MediaQuery.of(context).size.height * 0.,
-          width: MediaQuery.of(context).size.width * 1,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          flexibleSpace: Container(
+            // height: MediaQuery.of(context).size.height * 0.,
+            width: MediaQuery.of(context).size.width * 1,
+          ),
+          leading: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                BackButton(
+                  onPressed: () {
+                    _onBackPressed();
+                  },
+                ),
+                Expanded(child: Text("Back"))
+              ]),
+          leadingWidth: MediaQuery.of(context).size.width * 1,
         ),
-        leading: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              BackButton(
-                onPressed: () {
-                  _onBackPressed();
-                },
-              ),
-              Expanded(child: Text("Back"))
-            ]),
-        leadingWidth: MediaQuery.of(context).size.width * 1,
-      ),
-      body: SafeArea(
-        child: Chewie(controller: _chewieController),
+        body: SafeArea(
+          child: Chewie(controller: _chewieController),
+        ),
       ),
     );
   }
