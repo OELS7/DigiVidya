@@ -25,9 +25,7 @@ class _banneradState extends State<bannerad> {
   int section = 0,
       topic = 0,
       topicCount = 0,
-      subTopic = 0,
-      _maxretryCount = 1,
-      _retryCount = 0;
+      subTopic = 0;
   late InterstitialAd _interstitialAd;
   var pagecontext;
 
