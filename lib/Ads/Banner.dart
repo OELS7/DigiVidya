@@ -197,7 +197,7 @@ class _banneradState extends State<bannerad> {
               ),
             )),
         Positioned(
-            top: MediaQuery.of(context).size.height * 0.67,
+            top: MediaQuery.of(context).size.height * 0.665,
             left: MediaQuery.of(context).size.width * 0.3,
             right: MediaQuery.of(context).size.width * 0.3,
             bottom: MediaQuery.of(context).size.height * 0.02,
