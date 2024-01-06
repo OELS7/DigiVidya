@@ -72,7 +72,9 @@ class _banneradState extends State<bannerad> {
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: _onAdloaded,
           onAdFailedToLoad: (Error) {
-            _initAd();
+                     setState(() {
+            _isFullScreenAddLoad = true;
+          });
           },
         ));
     return;
@@ -104,14 +106,9 @@ class _banneradState extends State<bannerad> {
       },
       //On failed show error
       onAdFailedToShowFullScreenContent: (ad, error) {
-        if (_retryCount < _maxretryCount) {
-          _initAd();
-          _retryCount += 1;
-        } else {
-          setState(() {
+                  setState(() {
             _isFullScreenAddLoad = true;
           });
-        }
       },
     );
   }
