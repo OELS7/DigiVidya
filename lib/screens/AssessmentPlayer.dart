@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:digividya/widgets/LikeDialog.dart';
 import 'package:digividya/widgets/exitAssessment.dart';
 import 'package:flutter_archive/flutter_archive.dart';
+import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 import 'package:digividya/widgets/InternetErrorDialog.dart';
 import 'package:digividya/widgets/assessmentDialog.dart';
@@ -29,8 +30,17 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   String assessFilePath = "";
   List<dynamic> contentUrls = [];
   List<String> FileName = [];
+  List<String> deviceFileName = [];
+  List<String> deviceFilePath =[];
 
   var pageContext;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+   _getDiviceFileName();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +200,7 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
       File videoFile = File(
           "$dir/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Video/${FileName[itemPointer + 1]}");
 
-      if (!videoFile.existsSync()) {
+      if (!videoFile.existsSync() || FileName[itemPointer] != deviceFileName[itemPointer]) {
         ReceivePort mainThreadReceiver = ReceivePort();
 
         // Inititalizing the thread
@@ -233,6 +243,9 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
           "$dir/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/${FileName[itemPointer + 1]}");
 
       if (!AssessmentZipFile.existsSync()) {
+
+       ((deviceFilePath.isNotEmpty) && (deviceFilePath.length >1)) ?  File(deviceFilePath[itemPointer]).deleteSync(recursive: true) :(){} ;
+
         ReceivePort mainThreadReceiver = ReceivePort();
         // Inititalizing the thread
         await Isolate.spawn(_downloadContent, {
@@ -529,6 +542,21 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
     // contentUrls.clear();
     // FileName.clear();
   }
+  
+   _getDiviceFileName() async{
+
+    String directory = (await getApplicationSupportDirectory()).path;
+    
+    if(Directory("$directory/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/").existsSync()){
+          Directory("$directory/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/").listSync().forEach((element) {
+      if(element is File){
+        deviceFileName.add(path.basename(element.path).toString().split(".").first);
+        deviceFilePath.add(element.path.toString());
+      }
+    });
+    }
+
+   }
 }
 
 /// Downloading content method

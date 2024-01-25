@@ -6,6 +6,7 @@ import 'package:digividya/widgets/InternalServerError.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
 import 'package:digividya/widgets/commingSoonAlertBox.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -54,7 +55,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
   Map<String, dynamic> topicCardsAudio = {};
   Map<String, dynamic> topicView = {};
   Map<String, dynamic> topicLikes = {};
-  // _topicPageState(this.sectionNumber);
+
 
   @override
   void initState() {
@@ -62,7 +63,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkConnectivity();
-
+    
     _fixedExtentScrollController.addListener(
       () => onScroll(),
     );
@@ -465,7 +466,10 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                   description:
                       "Error on the internet Kindly verify that you are able to access the internet.",
                   retryButton: () {
-                    getAllTopicDetails();
+                    Future.delayed(Duration(milliseconds: 50),(){
+                      getAllTopicDetails();
+                    });
+                    Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "reload");
             },
@@ -481,7 +485,10 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                   description:
                       "An internal server problem has occurred. Please try submitting your application again.",
                   retryButton: () {
-                    getAllTopicDetails();
+                    Future.delayed(Duration(milliseconds: 50 ),() {
+                      getAllTopicDetails();
+                    },);
+                    Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "try again");
             },
@@ -492,85 +499,86 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     return;
   }
 
-  generateCardsAudio() async {
-    String dirPath = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dirPath/appInfo.json");
-    var jsonData = jsonDecode(jsonFile.readAsStringSync());
+  // generateCardsAudio() async {
+  //   String dirPath = (await getApplicationSupportDirectory()).path;
+  //   File jsonFile = File("$dirPath/appInfo.json");
+  //   var jsonData = jsonDecode(jsonFile.readAsStringSync());
 
-    for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
-      listFileNameFromServer.add(topicDetails[audioTracks]['DT_AUD_PATH']
-          .split("/")
-          .last
-          .split(".mp3")
-          .first);
-    }
-    print("from server : $listFileNameFromServer");
-    for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
-      File cardAudio = File(
-          "$dirPath/Digividya/Section_${section_Id}/AudioFile/topicAudio_${topic_id}/topic_${audioTracks + 1}.mp3");
+  //   for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
+  //     listFileNameFromServer.add(topicDetails[audioTracks]['DT_AUD_PATH']
+  //         .split("/")
+  //         .last
+  //         .split(".mp3")
+  //         .first);
+  //   }
+  //   print("from server : $listFileNameFromServer");
+  //   for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
+  //     File cardAudio = File(
+  //         "$dirPath/Digividya/Section_${section_Id}/AudioFile/topicAudio_${topic_id}/topic_${audioTracks + 1}.mp3");
 
-      //Checking audio file is present or not
-      //if audio file is not present then create audio file
-      //then assign the list of file name comming from server to the device
-      //for storing the file name in the json file for futher use.
-      if (!cardAudio.existsSync()) {
-        cardAudio.createSync(recursive: true);
+  //     //Checking audio file is present or not
+  //     //if audio file is not present then create audio file
+  //     //then assign the list of file name comming from server to the device
+  //     //for storing the file name in the json file for futher use.
+  //     if (!cardAudio.existsSync()) {
+  //       cardAudio.createSync(recursive: true);
 
-        //assigning the list of file name comming from server to the temp variable
-        updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
+  //       //assigning the list of file name comming from server to the temp variable
+  //       updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
 
-        //reading and decode the audio content and write to the audio file
-        await cardAudio.writeAsBytes(List<int>.from(Base64Decoder()
-            .convert(topicCardsAudio['${topicIds[audioTracks]}'])));
+  //       //reading and decode the audio content and write to the audio file
+  //       await cardAudio.writeAsBytes(List<int>.from(Base64Decoder()
+  //           .convert(topicCardsAudio['${topicIds[audioTracks]}'])));
 
-        // Storing the path of each audio file for creating playList and Play
-        topicsCardsAudio.add(cardAudio.path);
-      } else {
-        // This block execute when the user open app 2nd time
-        //it read the files name from the json file
-        //
-        deviceAudioFileName = jsonData['topicAudioFileName'];
+  //       // Storing the path of each audio file for creating playList and Play
+  //       topicsCardsAudio.add(cardAudio.path);
+  //     } else {
+  //       // This block execute when the user open app 2nd time
+  //       //it read the files name from the json file
+  //       //
+  //       deviceAudioFileName = jsonData['topicAudioFileName'];
 
-        // Checking any update come from the server
-        //if there is any update come from server then
-        //overwrite the existing audio file with new content
-        // change the existing list of file name with new file name
-        //for futher use.
-        if (deviceAudioFileName.isEmpty) {
-          updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
+  //       // Checking any update come from the server
+  //       //if there is any update come from server then
+  //       //overwrite the existing audio file with new content
+  //       // change the existing list of file name with new file name
+  //       //for futher use.
+  //       if (deviceAudioFileName.isEmpty) {
+  //         updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
 
-          //
-          await cardAudio.writeAsBytes(List<int>.from(Base64Decoder()
-              .convert(topicCardsAudio['${topicIds[audioTracks]}'])));
-          topicsCardsAudio.add(cardAudio.path);
-        } else {
-          if (listFileNameFromServer[audioTracks] !=
-              deviceAudioFileName[audioTracks]) {
-            //deviceAudioFileName[audioTracks] =
-            // listFileNameFromServer[audioTracks];
-            print("\n Befor change :$deviceAudioFileName");
-            updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
+  //         //
+  //         await cardAudio.writeAsBytes(List<int>.from(Base64Decoder()
+  //             .convert(topicCardsAudio['${topicIds[audioTracks]}'])));
+  //         topicsCardsAudio.add(cardAudio.path);
+  //       } else {
+  //         if (listFileNameFromServer[audioTracks] !=
+  //             deviceAudioFileName[audioTracks]) {
+  //           //deviceAudioFileName[audioTracks] =
+  //           // listFileNameFromServer[audioTracks];
+  //           print("\n Befor change :$deviceAudioFileName");
+  //           updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
 
-            //
-            await cardAudio.writeAsBytes(List<int>.from(Base64Decoder()
-                .convert(topicCardsAudio['${topicIds[audioTracks]}'])));
-            topicsCardsAudio.add(cardAudio.path);
-          } else {
-            //
-            updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
-            topicsCardsAudio.add(cardAudio.path);
-          }
-        }
-      }
-    }
-    deviceAudioFileName = updatedAudioFileName;
-    print("\n After Change : $deviceAudioFileName");
-    jsonData['topicAudioFileName'] = deviceAudioFileName;
+  //           //
+  //           await cardAudio.writeAsBytes(List<int>.from(Base64Decoder()
+  //               .convert(topicCardsAudio['${topicIds[audioTracks]}'])));
+  //           topicsCardsAudio.add(cardAudio.path);
+  //         } else {
+  //           //
+  //           updatedAudioFileName.add(listFileNameFromServer[audioTracks]);
+  //           topicsCardsAudio.add(cardAudio.path);
+  //         }
+  //       }
+  //     }
+  //   }
+  //   getUpdatedAudioFile();
+  //   deviceAudioFileName = updatedAudioFileName;
+  //   print("\n After Change : $deviceAudioFileName");
+  //   jsonData['topicAudioFileName'] = deviceAudioFileName;
 
-    jsonFile.writeAsStringSync(jsonEncode(jsonData));
+  //   jsonFile.writeAsStringSync(jsonEncode(jsonData));
 
-    return;
-  }
+  //   return;
+  // }
 
   Future<bool> onBackPress() async {
     return Future.delayed(
@@ -602,7 +610,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
       );
     } else {
       getAllTopicDetails().then((_) {
-        generateCardsAudio().then((_) {
+        getUpdatedAudioFile().then((_) {
           playlist = ConcatenatingAudioSource(
               useLazyPreparation: true,
               children: List.generate(topicCount,
@@ -613,5 +621,78 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         });
       });
     }
+  }
+
+  getUpdatedAudioFile()async{
+
+  String directory = (await getApplicationSupportDirectory()).path;
+
+  List<Directory> listofFileDirectory = [];
+  List<String> fileName = [];
+
+  for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
+      listFileNameFromServer.add(topicDetails[audioTracks]['DT_AUD_PATH']
+          .split("/")
+          .last
+          .split(".mp3")
+          .first);
+    }
+ 
+  for(int tAudioTrack =0 ;tAudioTrack < topicCount ;tAudioTrack++){
+    File topicAudioFile = File("$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack+1}/${listFileNameFromServer}.mp3");
+
+    if(!topicAudioFile.existsSync()){
+      topicAudioFile.createSync(recursive: true);
+
+              //reading and decode the audio content and write to the audio file
+        await topicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
+            .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),flush: true);
+
+        // Storing the path of each audio file for creating playList and Play
+        topicsCardsAudio.add(topicAudioFile.path);
+
+    }else{
+
+      Directory("$directory/DigiVidya/Section_$section_Id/AudioFile/").listSync(followLinks: true).forEach((element) {
+        // print("%%%%%%%%%%%%%%%% $element %%%%%%%%%%%%%%%%%");
+        if(element is Directory){
+          listofFileDirectory.add(element);
+        }
+      },);
+
+      for(Directory audioDirectory in listofFileDirectory){
+
+          try {
+            Directory("${audioDirectory.path}/").listSync().forEach((element) { 
+              fileName.add(path.basename(element.path).toString().split('.').first);
+            });
+            
+          } catch (e) {
+            
+          }
+
+      }
+
+      if(listFileNameFromServer[tAudioTrack] != fileName[tAudioTrack]){
+
+        topicAudioFile.renameSync("$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack+1}/${listFileNameFromServer[tAudioTrack]}.mp3");
+
+                      //reading and decode the audio content and write to the audio file
+        await topicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
+            .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),flush: true);
+
+                        // Storing the path of each audio file for creating playList and Play
+        topicsCardsAudio.add(topicAudioFile.path);
+
+      }else{
+                // Storing the path of each audio file for creating playList and Play
+        topicsCardsAudio.add(topicAudioFile.path);
+      }
+
+      print("%%%%%%%%%%%%%%%%%%%%%%%%%% $fileName %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+    }
+  }
+
   }
 }

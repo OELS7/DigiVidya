@@ -1,7 +1,7 @@
 name: digividya
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.6
+version: 0.1.7
 
 environment:
   sdk: ">=3.1.0 <4.0.0"
@@ -94,6 +94,7 @@ flutter:
     - assets/images/HindiInvitation.webp
     - assets/images/Splash-Screen-2.webp
     - assets/app_log/DigiVidyaLogo.webp
+    - assets/images/Registration & Pay Now UI_ 23 Jan Updated-04-04.png
 
   fonts:
     - family: Fontmain

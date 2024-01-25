@@ -11,6 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -48,6 +49,7 @@ class _supTopicPageState extends State<supTopicPage>
   List<String> subTopicTitle = [];
   List<String> subTopicViewsCount = [];
   List<String> subTopicLikesCount = [];
+  List<String> UpdatedFileName = [];
 
   int sectionId = 0,
       topicId = 0,
@@ -69,6 +71,7 @@ class _supTopicPageState extends State<supTopicPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkConnectivity();
+    _getUpdatedContentFileName();
     _fixedExtentScrollController.addListener(() => onScroll());
   }
 
@@ -185,6 +188,7 @@ class _supTopicPageState extends State<supTopicPage>
                   image: DecorationImage(
                       image: MemoryImage(imageByteData[i]), fit: BoxFit.fill)),
             ),
+            // Positioned(top: MediaQuery.of(context).size.height* 0.2,left:  MediaQuery.of(context).size.width* 0.235,child: Visibility(visible: i==0? true :false,child: Image.asset("assets/images/completed-tick-icon 22-01.png",width: MediaQuery.of(context).size.width* 0.5,))),
             Positioned(
                 top: MediaQuery.of(context).size.height * 0.43,
                 left: 0.0,
@@ -411,11 +415,8 @@ class _supTopicPageState extends State<supTopicPage>
                   "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< $FileName >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
               subTopicId = int.parse(subTopicIds[0]);
-              // subTopicTitle = subTopicDetails[0]['DST_NAME'];
 
               subTopicCardImg = subTopicCardsImage['${subTopicIds[0]}'];
-              // Likes = subTopicsLikes['${subTopicIds[0]}'];
-              // Views = subTopicView['${subTopicIds[0]}'];
 
               subTopicCardsImage.forEach((key, value) {
                 imageByteData.add(Base64Decoder().convert(value));
@@ -447,7 +448,10 @@ class _supTopicPageState extends State<supTopicPage>
                   description:
                       "Error on the internet Kindly verify that you are able to access the internet.",
                   retryButton: () {
-                    getSubTopicDetails();
+                    Future.delayed(Duration(milliseconds: 50),() {
+                      getSubTopicDetails();
+                    },);
+                    Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "reload");
             },
@@ -466,7 +470,10 @@ class _supTopicPageState extends State<supTopicPage>
                   description:
                       "Error on the internet Kindly verify that you are able to access the internet.",
                   retryButton: () {
-                    getSubTopicDetails();
+                    Future.delayed(Duration(milliseconds: 50),() {
+                      getSubTopicDetails();
+                    },);
+                    Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "reload");
             },
@@ -482,7 +489,10 @@ class _supTopicPageState extends State<supTopicPage>
                   description:
                       "An internal server problem has occurred. Please try submitting your application again.",
                   retryButton: () {
-                    getSubTopicDetails();
+                    Future.delayed(Duration(milliseconds: 50),() {
+                      getSubTopicDetails();
+                    },);
+                    Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "try again");
             },
@@ -503,17 +513,9 @@ class _supTopicPageState extends State<supTopicPage>
           subTopicId =
               int.parse(subTopicIds[_fixedExtentScrollController.selectedItem]);
 
-          // subTopicTitle =
-          //     subTopicDetails[_fixedExtentScrollController.selectedItem]
-          //         ['DST_NAME'];
-
           subTopicCardImg = subTopicCardsImage[
               '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
 
-          // Likes = subTopicsLikes[
-          //     '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
-          // Views = subTopicView[
-          //     '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
 
           contentUrls =
               urls[subTopicIds[_fixedExtentScrollController.selectedItem]];
@@ -533,9 +535,6 @@ class _supTopicPageState extends State<supTopicPage>
           subTopicId =
               int.parse(subTopicIds[_fixedExtentScrollController.selectedItem]);
 
-          // subTopicTitle =
-          //     subTopicDetails[_fixedExtentScrollController.selectedItem]
-          //         ['DST_NAME'];
 
           subTopicCardImg = subTopicCardsImage[
               '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
@@ -548,11 +547,6 @@ class _supTopicPageState extends State<supTopicPage>
             FileName.add(element.toString().split("/").last.trim());
           });
 
-          // Likes = subTopicsLikes[
-          //     '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
-
-          // Views = subTopicView[
-          //     '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
 
           player.playPreviousTrack(
               previousTrackIndex: (_fixedExtentScrollController.selectedItem));
@@ -561,95 +555,95 @@ class _supTopicPageState extends State<supTopicPage>
     }
   }
 
-  generateAudioFile() async {
-    String dirPath = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dirPath/appInfo.json");
-    var jsonData = jsonDecode(jsonFile.readAsStringSync());
+  // generateAudioFile() async {
+  //   String dirPath = (await getApplicationSupportDirectory()).path;
+  //   File jsonFile = File("$dirPath/appInfo.json");
+  //   var jsonData = jsonDecode(jsonFile.readAsStringSync());
 
-    for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
-      audioFileName.add(subTopicDetails[audioTracks]['DST_AUD_PATH']
-          .split("/")
-          .last
-          .split(".mp3")
-          .first);
-    }
-    print("from Server : $audioFileName");
-    print(" ");
-    for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
-      File audioFile = File(
-          "$dirPath/Digividya/Section_$sectionId/AudioFile/topicAudio_${topicId}/subTopic_${audioTracks + 1}.mp3");
+  //   for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
+  //     audioFileName.add(subTopicDetails[audioTracks]['DST_AUD_PATH']
+  //         .split("/")
+  //         .last
+  //         .split(".mp3")
+  //         .first);
+  //   }
+  //   print("from Server : $audioFileName");
+  //   print(" ");
+  //   for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
+  //     File audioFile = File(
+  //         "$dirPath/Digividya/Section_$sectionId/AudioFile/topicAudio_${topicId}/subTopic_${audioTracks + 1}.mp3");
 
-      if (!audioFile.existsSync()) {
-        print("For First time");
-        audioFile.createSync(recursive: true);
+  //     if (!audioFile.existsSync()) {
+  //       print("For First time");
+  //       audioFile.createSync(recursive: true);
 
-        // Creating list of audio file name to store this list into the json file
-        demolist.add(audioFileName[audioTracks]);
+  //       // Creating list of audio file name to store this list into the json file
+  //       demolist.add(audioFileName[audioTracks]);
 
-        await audioFile.writeAsBytes(List<int>.from(Base64Decoder()
-            .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])));
-        subTopicAudioFilePath.add(audioFile.path);
-      } else {
-        //var jsonData = jsonDecode(jsonFile.readAsStringSync());
-        // fetching old list of File name from json file
-        deviceAudioFileName = jsonData['subTopicAudio'];
+  //       await audioFile.writeAsBytes(List<int>.from(Base64Decoder()
+  //           .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])));
+  //       subTopicAudioFilePath.add(audioFile.path);
+  //     } else {
+  //       //var jsonData = jsonDecode(jsonFile.readAsStringSync());
+  //       // fetching old list of File name from json file
+  //       deviceAudioFileName = jsonData['subTopicAudio'];
 
-        print("SubTopic AudioList : $deviceAudioFileName");
+  //       print("SubTopic AudioList : $deviceAudioFileName");
 
-        // Checking File name precent in device in the json file and
-        //compaire with server File name index by index
-        if (deviceAudioFileName.isEmpty) {
-          audioFile.createSync(recursive: true);
+  //       // Checking File name precent in device in the json file and
+  //       //compaire with server File name index by index
+  //       if (deviceAudioFileName.isEmpty) {
+  //         audioFile.createSync(recursive: true);
 
-          // Creating list of audio file name to store this list into the json file
-          demolist.add(audioFileName[audioTracks]);
+  //         // Creating list of audio file name to store this list into the json file
+  //         demolist.add(audioFileName[audioTracks]);
 
-          await audioFile.writeAsBytes(List<int>.from(Base64Decoder()
-              .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])));
-          subTopicAudioFilePath.add(audioFile.path);
-        } else {
-          if (deviceAudioFileName[audioTracks] != audioFileName[audioTracks]) {
-            print("file name not match");
+  //         await audioFile.writeAsBytes(List<int>.from(Base64Decoder()
+  //             .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])));
+  //         subTopicAudioFilePath.add(audioFile.path);
+  //       } else {
+  //         if (deviceAudioFileName[audioTracks] != audioFileName[audioTracks]) {
+  //           print("file name not match");
 
-            print("\n ");
-            print("Befor changing file name : ${deviceAudioFileName}");
-            // Changing the old audio file name of device json file
-            // with new audio file name
-            setState(() {
-              deviceAudioFileName[audioTracks] = audioFileName[audioTracks];
-              demolist.add(audioFileName[audioTracks]);
-            });
+  //           print("\n ");
+  //           print("Befor changing file name : ${deviceAudioFileName}");
+  //           // Changing the old audio file name of device json file
+  //           // with new audio file name
+  //           setState(() {
+  //             deviceAudioFileName[audioTracks] = audioFileName[audioTracks];
+  //             demolist.add(audioFileName[audioTracks]);
+  //           });
 
-            print('\n ');
-            print("After Changing file Name :${deviceAudioFileName}");
+  //           print('\n ');
+  //           print("After Changing file Name :${deviceAudioFileName}");
 
-            // writing the new content to the existing file
+  //           // writing the new content to the existing file
 
-            audioFile.writeAsBytesSync(List<int>.from(Base64Decoder()
-                .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])));
+  //           audioFile.writeAsBytesSync(List<int>.from(Base64Decoder()
+  //               .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])));
 
-            subTopicAudioFilePath.add(audioFile.path);
-          } else {
-            demolist.add(audioFileName[audioTracks]);
-            subTopicAudioFilePath.add(audioFile.path);
-            print("file name match");
-          }
-        }
-      }
-    }
-    deviceAudioFileName = demolist;
-    jsonData['subTopicAudio'] = deviceAudioFileName;
-    print("This is device audio File Name : ${deviceAudioFileName}");
-    print('\n');
-    print("Sub Topic Audio file Name List ${jsonData['subTopicAudio']}");
-    print("\n");
-    print("This is JSON DATA :$jsonData");
+  //           subTopicAudioFilePath.add(audioFile.path);
+  //         } else {
+  //           demolist.add(audioFileName[audioTracks]);
+  //           subTopicAudioFilePath.add(audioFile.path);
+  //           print("file name match");
+  //         }
+  //       }
+  //     }
+  //   }
+  //   deviceAudioFileName = demolist;
+  //   jsonData['subTopicAudio'] = deviceAudioFileName;
+  //   print("This is device audio File Name : ${deviceAudioFileName}");
+  //   print('\n');
+  //   print("Sub Topic Audio file Name List ${jsonData['subTopicAudio']}");
+  //   print("\n");
+  //   print("This is JSON DATA :$jsonData");
 
-    jsonFile.writeAsStringSync(jsonEncode(jsonData));
-    print('\n');
-    print(jsonFile.readAsStringSync());
-    return;
-  }
+  //   jsonFile.writeAsStringSync(jsonEncode(jsonData));
+  //   print('\n');
+  //   print(jsonFile.readAsStringSync());
+  //   return;
+  // }
 
   void _setSubTopicViewCount({required String directoryPath}) async {
     // File object of json file
@@ -723,7 +717,7 @@ class _supTopicPageState extends State<supTopicPage>
       );
     } else {
       getSubTopicDetails().then((_) {
-        generateAudioFile().then((_) {
+        _getUpdatedContentFileName().then((_) {
           playList = ConcatenatingAudioSource(
               useLazyPreparation: true,
               children: List.generate(subTopicCount,
@@ -851,7 +845,11 @@ class _supTopicPageState extends State<supTopicPage>
             ZipFile.extractToDirectory(
                     zipFile: AssessmentZipFile,
                     destinationDir: Directory(
-                        "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"))
+                        "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"),onExtracting: (zipEntry, progress) {
+                          print(zipEntry.name);
+                          print(progress.round()*100);
+                          return ZipFileOperation.includeItem;
+                        },)
                 .then((_) {
               File assessmentHtmlFile = File(
                   "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
@@ -974,5 +972,68 @@ class _supTopicPageState extends State<supTopicPage>
     if (state == AppLifecycleState.detached) {
       player.stopAudio();
     }
+  }
+  
+  _getUpdatedContentFileName() async{
+   String directory = (await getApplicationSupportDirectory()).path; 
+   List<Directory> listofFileDirectory = [];
+   List<String> fileName = [];
+
+       for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
+      audioFileName.add(subTopicDetails[audioTracks]['DST_AUD_PATH']
+          .split("/")
+          .last
+          .split(".mp3")
+          .first);
+    }
+
+    for(var audioTracks = 0; audioTracks < subTopicCount; audioTracks++){
+      File sTopicAudioFile = File("$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks+1}/${audioFileName[audioTracks]}.mp3");
+
+      if(!sTopicAudioFile.existsSync()){
+
+        sTopicAudioFile.createSync(recursive: true);
+
+        await sTopicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
+            .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])),flush: true);
+        subTopicAudioFilePath.add(sTopicAudioFile.path);        
+
+      }else{
+
+          Directory("$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/").listSync(followLinks: true).forEach((element) { 
+            if(element is Directory){
+              listofFileDirectory.add(element);
+
+            }
+          });
+         
+        // print("%%%%%%%%%%%%%%%%%%%%% $listofFileDirectory %%%%%%%%%%%%%%%");
+          for(Directory directory in listofFileDirectory){
+            try {
+              Directory("${directory.path}/").listSync().forEach((element) { 
+                // print("%%%%%%%%%%%%%%%%%%%%% $element %%%%%%%%%%%%%%%");
+               fileName.add(path.basename(element.path).toString().split(".").first);
+
+              });
+            } catch (e) {
+              
+            }
+          }
+
+
+          if(audioFileName[audioTracks]!= fileName[audioTracks]){
+            sTopicAudioFile.renameSync("$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks+1}/${audioFileName[audioTracks]}.mp3");
+
+                    await sTopicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
+            .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])),flush: true);
+        subTopicAudioFilePath.add(sTopicAudioFile.path);    
+
+          }else{
+        subTopicAudioFilePath.add(sTopicAudioFile.path);   
+          }
+
+      }
+    }
+
   }
 }

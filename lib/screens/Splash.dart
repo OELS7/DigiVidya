@@ -76,10 +76,18 @@ class _SplashState extends State<Splash> {
           context: context,
           builder: (context) {
             var internetErrorContext = context;
-            return InternetErrorDialog(
-              internetErrorDialogContext: internetErrorContext,
-              message: "  ",
-            );
+            return internalServerError(
+                        internalServerErrorContext: internetErrorContext,
+                        ErrorTitle: "Internal Server Error",
+                        description:
+                            "Thier is any issue in server side please retry.",
+                        ButtonText: "ok",
+                        retryButton: () {
+                          Future.delayed(Duration(milliseconds: 80),(){
+                            getDeviceId(userId);
+                          });
+                          Navigator.of(internetErrorContext).pop();
+                        });
           },
         );
         return "";

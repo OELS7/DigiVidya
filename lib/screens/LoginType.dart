@@ -34,102 +34,85 @@ class _loginTypeState extends State<loginType> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: Container(
-        height: MediaQuery.of(context).size.height * 1,
-        width: MediaQuery.of(context).size.width * 1,
-        child: Column(
-          children: [
-            // Application Logo
-            Container(
-              height: MediaQuery.of(context).size.height * 0.35,
-              width: MediaQuery.of(context).size.width * 1,
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.04),
-              decoration: BoxDecoration(
-                  //color: Colors.blue,
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                      image: AssetImage("assets/app_log/DigiVidyaLogo.webp"))),
+          child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage(
+                      'assets/images/Registration & Pay Now UI_ 23 Jan Updated-04-04.png'),
+                  fit: BoxFit.fill),
             ),
-            //
-            Container(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => Register(),
-                        ));
-                      },
-                      child: Container(
-                        height: MediaQuery.of(context).size.height * 0.09,
-                        width: MediaQuery.of(context).size.width * 0.59,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            gradient: LinearGradient(
-                                colors: [
-                                  Color.fromRGBO(33, 35, 163, 1),
-                                  Color.fromRGBO(31, 35, 255, 1),
-                                  Color.fromRGBO(42, 45, 255, 1),
-                                  Colors.blue.shade700
-                                ],
-                                begin: Alignment.centerRight,
-                                end: Alignment.centerLeft)),
-                        child: Center(
-                            child: Text(
-                          "Register",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontFamily: "Fontmain"),
-                        )),
-                      ),
+          ),
+          Positioned(
+              top: MediaQuery.of(context).size.height * 0.65,
+              left: MediaQuery.of(context).size.width * 0.14,
+              right: MediaQuery.of(context).size.width * 0.14,
+              child: Center(
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.25,
+                  width: MediaQuery.of(context).size.width * 1,
+                  
+                  child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => Register(),
+                      ));
+                    },
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.09,
+                      width: MediaQuery.of(context).size.width * 0.59,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          color: Colors.white,),
+                      child: Center(
+                          child: Text(
+                        "Register",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontFamily: "Fontmain"),
+                      )),
                     ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.05,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context)
+                          .pushReplacement(MaterialPageRoute(
+                              builder: (context) => freetime(),
+                              settings: RouteSettings(arguments: {
+                                "userName": "Guest",
+                                "mobileNo": "1111111111",
+                                "city": "Thane",
+                                "device_id": device_id,
+                                "language": 'Marathi'
+                              })));
+                    },
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.09,
+                      width: MediaQuery.of(context).size.width * 0.59,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          color: Colors.white),
+                      child: Center(
+                          child: Text(
+                        "Guest Mode",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontFamily: "Fontmain"),
+                      )),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => freetime(),
-                            settings: RouteSettings(arguments: {
-                              "userName": "Guest",
-                              "mobileNo": "1111111111",
-                              "city": "Thane",
-                              "device_id": device_id,
-                              "language": "marathi"
-                            })));
-                      },
-                      child: Container(
-                        height: MediaQuery.of(context).size.height * 0.09,
-                        width: MediaQuery.of(context).size.width * 0.59,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            gradient: LinearGradient(
-                                colors: [
-                                  Color.fromRGBO(33, 35, 163, 1),
-                                  Color.fromRGBO(31, 35, 255, 1),
-                                  Color.fromRGBO(42, 45, 255, 1),
-                                  Colors.blue.shade700
-                                ],
-                                begin: Alignment.centerRight,
-                                end: Alignment.centerLeft)),
-                        child: Center(
-                            child: Text(
-                          "Guest Mode",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontFamily: "Fontmain"),
-                        )),
-                      ),
-                    ),
-                  ]),
-            ),
-            Container()
-          ],
-        ),
+                  ),
+                                      ],
+                                    ),
+                ),
+              )),
+             // Positioned(child: Container( decoration: BoxDecoration(image: DecorationImage(image: AssetImage("assets/app_log/DigiVidyaLogo.webp"))),)),
+        ],
       )),
     );
   }

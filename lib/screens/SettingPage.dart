@@ -32,7 +32,7 @@ class _settingPageState extends State<settingPage> {
                     iconSize: 35,
                     borderRadius: BorderRadius.circular(15),
                     dropdownColor: const Color.fromRGBO(242, 242, 242, 1),
-                    items: <String>['Marathi', 'Hindi', 'English']
+                    items: <String>['Marathi', 'Hindi']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:digividya/widgets/LikeDialog.dart';
 import 'package:flutter_archive/flutter_archive.dart';
+import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 import 'package:chewie/chewie.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
@@ -71,6 +72,8 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   int itemPointer = 0;
   List<dynamic> contentUrls;
   List<String> FileName;
+  List<String> deviceFileName = [];
+  List<String> deviceFilePath =[];
   var pageContext;
 
   _videoWidgetState(
@@ -89,6 +92,8 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _getDeviceFileName();
+    //widget.VideoFile
     videoPlayerController = VideoPlayerController.file(File(widget.VideoFile));
 
     _chewieController = ChewieController(
@@ -103,7 +108,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
             : const Duration(minutes: 00),
         aspectRatio: 763 / 1640);
 
-    videoPlayerController.addListener(_videoListener);
+   videoPlayerController.addListener(_videoListener);
   }
 
   @override
@@ -329,7 +334,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     }
   }
 
-  void _startDownload({required String FileUrl}) async {
+  _startDownload({required String FileUrl}) async {
     if (FileUrl.toString().split("/").last.split(".").last == "mp4") {
       // for .mp4 Extension
       String Url = "https://digividya.in/DigiVidyaAPI/laravel/public/$FileUrl";
@@ -378,7 +383,10 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
       File AssessmentZipFile = File(
           "$dir/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}");
 
-      if (!AssessmentZipFile.existsSync()) {
+
+      if (!AssessmentZipFile.existsSync() ) {
+        ((deviceFilePath.isNotEmpty) && (deviceFilePath.length >1)) ? File(deviceFilePath[itemPointer]).deleteSync(recursive: true) : (){};
+        
         ReceivePort mainThreadReceiver = ReceivePort();
 
         await Isolate.spawn(_downloadContent, {
@@ -409,9 +417,11 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
           }
         });
       } else {
-        ///
+        //
       }
+      
     }
+    return;
   }
 
   @override
@@ -584,7 +594,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     }
   }
 
-  void _videoListener() {
+  void _videoListener() async{
     Duration _totalDuration = videoPlayerController.value.duration;
     Duration _currentPositionOfProgressIndicator =
         videoPlayerController.value.position;
@@ -594,11 +604,17 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         if (File(widget.VideoFile).existsSync()) {
           File(widget.VideoFile).deleteSync(recursive: true);
           _chewieController.exitFullScreen();
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
 
-          _playContent(
+                                _playContent(
               contentUrls: contentUrls,
               fileName: FileName,
               itemPointer: (itemPointer));
+
+          
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         } else {
           _chewieController.exitFullScreen();
 
@@ -623,6 +639,24 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     } else {
       print("Currently Video Is Playing => => => =>");
     }
+  }
+  
+  _getDeviceFileName() async {
+    String directory = (await getApplicationSupportDirectory()).path;
+    
+    if(Directory("$directory/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/").existsSync()){
+          Directory("$directory/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/").listSync().forEach((element) {
+      if(element is File){
+        deviceFileName.add(path.basename(element.path).toString().split(".").first);
+        deviceFilePath.add(element.path.toString());
+      }
+    });
+    }
+
+
+
+    // print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  $deviceFileName  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
   }
 }
 
@@ -662,7 +696,7 @@ void _downloadContent(Map<String, dynamic> message) {
         }
         await file
             .create(recursive: true)
-            .then((value) => file.writeAsBytes(bytes, mode: FileMode.append));
+            .then((value) => file.writeAsBytes(bytes,mode: FileMode.append));
       }, onError: (_) {
         sendPort.send("download fail");
       });
