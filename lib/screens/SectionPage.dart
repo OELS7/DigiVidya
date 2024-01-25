@@ -10,7 +10,7 @@ import 'package:digividya/widgets/commingSoonAlertBox.dart';
 import 'package:digividya/widgets/exitAppDialog.dart';
 import 'package:digividya/widgets/resumeAndPlayDialog.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart' as path; 
+import 'package:path/path.dart' as path;
 import 'package:digividya/BgService/bgAudioPlayer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -63,9 +63,9 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addObserver(this);
     _ShowHoldSession();
-    
+
     _checkConnectivity();
-    
+
     _fixedExtentScrollController.addListener(() {
       onScroll();
     });
@@ -176,7 +176,6 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                             image: MemoryImage(imageByteData[i]),
                             fit: BoxFit.fill)),
                   ),
-                  
                   Positioned(
                       top: MediaQuery.of(context).size.height * 0.43,
                       left: 0.0,
@@ -393,6 +392,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               sectionId = sectionDetail[0]['DS_ID'];
               topicCount = sectionDetail[0]['topic_count'];
             });
+
             cardImage.forEach((key, value) {
               imageByteData.add(Base64Decoder().convert(value));
             });
@@ -417,7 +417,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
             jsonFile.writeAsStringSync(
               jsonEncode(jsonData),
             );
-            
+
             print(jsonFile.readAsStringSync());
           } else {}
         } else {
@@ -447,9 +447,12 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                   description:
                       "Error on the internet Kindly verify that you are able to access the internet.",
                   retryButton: () {
-                    Future.delayed(Duration(milliseconds: 50),() {
-                      getSectionDetails();
-                    },);
+                    Future.delayed(
+                      Duration(milliseconds: 50),
+                      () {
+                        getSectionDetails();
+                      },
+                    );
                   },
                   ButtonText: "reload");
             },
@@ -647,9 +650,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
       );
     } else {
       getSectionDetails().then((_) {
-
         getAudioFileUpdate().then((_) {
-          
           //creating playlist for playing cards audio
           playList = ConcatenatingAudioSource(
               useLazyPreparation: true,
@@ -665,14 +666,14 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
       });
     }
   }
-  
-  getAudioFileUpdate()async{
+
+  getAudioFileUpdate() async {
     String directory = (await getApplicationSupportDirectory()).path;
     List<Directory> listooFileDirectory = [];
 
     List<String> fileName = [];
 
-        for (var audioTracks = 0; audioTracks < sectionCount; audioTracks++) {
+    for (var audioTracks = 0; audioTracks < sectionCount; audioTracks++) {
       listFileNameFromServer.add(sectionDetail[audioTracks]['DS_AUD_PATH']
           .split("/")
           .last
@@ -680,63 +681,60 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
           .first);
     }
 
-    // Creating audi file for different section 
-    for(var audioTracks = 0; audioTracks < sectionCount; audioTracks++){
+    // Creating audi file for different section
+    for (var audioTracks = 0; audioTracks < sectionCount; audioTracks++) {
+      File audioFile = File(
+          "$directory/DigiVidya/Section_${audioTracks + 1}/AudioFile/${listFileNameFromServer[audioTracks]}.mp3");
 
-        File audioFile = File("$directory/DigiVidya/Section_${audioTracks+1}/AudioFile/${listFileNameFromServer[audioTracks]}.mp3");
+      if (!audioFile.existsSync()) {
+        audioFile.createSync(recursive: true);
+        //reading and decode the audio content and write to the audio file
+        audioFile.writeAsBytes(
+            List<int>.from(Base64Decoder()
+                .convert(cardsAudio['${sectionIds[audioTracks]}'])),
+            flush: true);
+        // Storing the path of each audio file for creating playList and Play
+        cardsAudioFilePath.add(audioFile.path);
+      } else {
+        Directory("$directory/DigiVidya/")
+            .listSync(followLinks: true)
+            .forEach((element) {
+          if (element is Directory) {
+            listooFileDirectory.add(element);
+          }
+        });
 
-        if(!audioFile.existsSync()){
+        // Iterating list of director for get Audio file Name for check any update come from server.
+        for (Directory directory in listooFileDirectory) {
+          try {
+            Directory("${directory.path}/AudioFile/")
+                .listSync()
+                .forEach((element) {
+              fileName
+                  .add(path.basename(element.path).toString().split(".").first);
+            });
+          } catch (e) {
+            print(
+                "Error got while processing list of file from list of Directory");
+          }
+        }
 
-             audioFile.createSync(recursive: true);
-                    //reading and decode the audio content and write to the audio file
-          audioFile.writeAsBytes(List<int>.from(Base64Decoder()
-              .convert(cardsAudio['${sectionIds[audioTracks]}'])),flush: true);
+        // Checking for Update in audio file
+        if (listFileNameFromServer[audioTracks] != fileName[audioTracks]) {
+          audioFile.rename(
+              "$directory/DigiVidya/Section_${audioTracks + 1}/AudioFile/${listFileNameFromServer[audioTracks]}.mp3");
+
+          audioFile.writeAsBytes(
+              List<int>.from(Base64Decoder()
+                  .convert(cardsAudio['${sectionIds[audioTracks]}'])),
+              flush: true);
+
+          cardsAudioFilePath.add(audioFile.path);
+        } else {
           // Storing the path of each audio file for creating playList and Play
           cardsAudioFilePath.add(audioFile.path);
-
-
-        }else{
-
-              Directory("$directory/DigiVidya/").listSync(followLinks: true).forEach((element) { 
-      if(element is Directory){
-        listooFileDirectory.add(element);
-      }     
-    });
-
-    // Iterating list of director for get Audio file Name for check any update come from server. 
-    for(Directory directory in listooFileDirectory){
-      try {
-          Directory("${directory.path}/AudioFile/").listSync().forEach((element) {
-            fileName.add(path.basename(element.path).toString().split(".").first);
-          });
-      } catch (e) {
-        print("Error got while processing list of file from list of Directory");
-      }
-    }
-
-
-      // Checking for Update in audio file
-      if(listFileNameFromServer[audioTracks]!=fileName[audioTracks]){
-
-        audioFile.rename("$directory/DigiVidya/Section_${audioTracks+1}/AudioFile/${listFileNameFromServer[audioTracks]}.mp3");
-
-                  audioFile.writeAsBytes(List<int>.from(Base64Decoder()
-              .convert(cardsAudio['${sectionIds[audioTracks]}'])),flush: true);
-
-               cardsAudioFilePath.add(audioFile.path);
-
-      }else{
-
-                  // Storing the path of each audio file for creating playList and Play
-          cardsAudioFilePath.add(audioFile.path);
-
-      }
-
-
-
         }
+      }
     }
-
   }
-
 }

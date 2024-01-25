@@ -48,8 +48,8 @@ dev_dependencies:
   build_runner: ^2.4.6
 
 flutter_icons:
-  android:
-  non_adaptive_icon: true
+  android: "launcher_icon"
+  # non_adaptive_icon: true
   image_path: "assets/app_log/DigiVidyaLogo.webp"
   sizes:
 
