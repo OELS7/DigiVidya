@@ -24,6 +24,7 @@ class _downloadScreenState extends State<downloadScreen> {
   Connectivity _connectivity = Connectivity();
   var dialogBoxContext;
   var pagecontext;
+  var connectivitySubscription;
   String language = "",
       userName = "",
       mobileNumber = "",
@@ -94,87 +95,97 @@ class _downloadScreenState extends State<downloadScreen> {
     ReceivePort _mainrecieverport = ReceivePort();
 
     // if(!File(videoFilePath).existsSync()){
-    Isolate _isolate = await Isolate.spawn(_downloadthread, {
-      "url": url,
-      "downloadlocation": videoFilePath,
-      "senderport": _mainrecieverport.sendPort
-    });
+    try {
+      Isolate _isolate = await Isolate.spawn(_downloadthread, {
+        "url": url,
+        "downloadlocation": videoFilePath,
+        "senderport": _mainrecieverport.sendPort
+      });
 
-    _mainrecieverport.listen((message) async {
-      print("mainthread start : $message");
-      if (message is double) {
-        print("Download Percentage : $message");
-        _percentage.value = message;
-        _progress.value = (message * 100).round().toString();
+      _mainrecieverport.listen((message) async {
+        print("mainthread start : $message");
+        if (message is double) {
+          print("Download Percentage : $message");
+          _percentage.value = message;
+          _progress.value = (message * 100).round().toString();
 
-        if ((message * 100).round() == 100) {
-          print("this is video page if loop");
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => vediopage(filePath: videoFilePath),
-                  settings: RouteSettings(arguments: {
-                    'userName': userName,
-                    'mobileNamuber': mobilenumber,
-                    'city': city,
-                    'deviceId': device_id,
-                    'language': language
-                  })));
-        }
-      } else {
-        final _checkConnectivity = await _connectivity.checkConnectivity();
-        if (_checkConnectivity == ConnectivityResult.none) {
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (context) {
-              var internetErrorDialog = context;
-              return internalServerError(
-                  internalServerErrorContext: internetErrorDialog,
-                  ErrorTitle: "Internet Error",
-                  description:
-                      "Error on the internet Kindly verify that you are able to access the internet.",
-                  ButtonText: "ok",
-                  retryButton: () {
-                    Navigator.of(internetErrorDialog).pop();
-                  });
-            },
-          );
+          if ((message * 100).round() == 100) {
+            print("this is video page if loop");
+            Future.delayed(
+              Duration(milliseconds: 50),
+              () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            vediopage(filePath: videoFilePath),
+                        settings: RouteSettings(arguments: {
+                          'userName': userName,
+                          'mobileNamuber': mobilenumber,
+                          'city': city,
+                          'deviceId': device_id,
+                          'language': language
+                        })));
+              },
+            );
+          }
         } else {
-          //Retry Dialog
-          showDialog(
-            context: context,
-            builder: (context) {
-              var internalServerErrorDialog = context;
-              return internalServerError(
-                internalServerErrorContext: internalServerErrorDialog,
-                ErrorTitle: "Internal Server Error",
-                description:
-                    "An internal server problem has occurred. Please try submitting your application again.",
-                ButtonText: "Re-Try",
-                retryButton: () {
-                  _isolate.kill();
+          final _checkConnectivity = await _connectivity.checkConnectivity();
+          if (_checkConnectivity == ConnectivityResult.none) {
+            showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (context) {
+                var internetErrorDialog = context;
+                return internalServerError(
+                    internalServerErrorContext: internetErrorDialog,
+                    ErrorTitle: "Internet Error",
+                    description:
+                        "Error on the internet Kindly verify that you are able to access the internet.",
+                    ButtonText: "ok",
+                    retryButton: () {
+                      Navigator.of(internetErrorDialog).pop();
+                    });
+              },
+            );
+          } else {
+            //Retry Dialog
+            showDialog(
+              context: context,
+              builder: (context) {
+                var internalServerErrorDialog = context;
+                return internalServerError(
+                  internalServerErrorContext: internalServerErrorDialog,
+                  ErrorTitle: "Internal Server Error",
+                  description:
+                      "An internal server problem has occurred. Please try submitting your application again.",
+                  ButtonText: "Re-Try",
+                  retryButton: () {
+                    _isolate.kill();
 
-                  Future.delayed(
-                    Duration(milliseconds: 400),
-                    () {
-                      _downloadvideo(
-                          language: language,
-                          userName: userName,
-                          mobilenumber: mobileNumber,
-                          city: City,
-                          device_id: device_Id);
-                    },
-                  );
+                    Future.delayed(
+                      Duration(milliseconds: 400),
+                      () {
+                        _downloadvideo(
+                            language: language,
+                            userName: userName,
+                            mobilenumber: mobileNumber,
+                            city: City,
+                            device_id: device_Id);
+                      },
+                    );
 
-                  Navigator.of(internalServerErrorDialog).pop();
-                },
-              );
-            },
-          );
+                    Navigator.of(internalServerErrorDialog).pop();
+                  },
+                );
+              },
+            );
+          }
         }
-      }
-    });
+      });
+    } on IsolateSpawnException catch (e) {
+      print("%%%%%%%%%%%%%%%%% ${e.message.toString()} %%%%%%%%%%%%%%");
+    }
   }
 
   Future<bool> askExitQuestion() async {
@@ -222,43 +233,59 @@ void _downloadthread(Map<String, dynamic> message) async {
   int downloaded = 0;
   List<List<int>> chunks = [];
 
-  final url = Uri.parse(fileUrl);
-  print("--------$url");
-  var request = new http.Request('GET', url);
-  var response = http.Client().send(request).timeout(Duration(seconds: 10));
+  try {
+    final url = Uri.parse(fileUrl);
+    print("--------$url");
+    var request = new http.Request('GET', url);
+    var response = http.Client()
+        .send(request)
+        .timeout(
+          Duration(seconds: 10),
+        )
+        .catchError((error) {
+      print("%%%%%%%%%%%%%%%%%% $error %%%%%%%%%%%%%%%%%");
+    });
 
-  response.asStream().listen((http.StreamedResponse r) {
-    r.stream.listen(
-      (List<int> chunk) {
-        chunks.add(chunk);
-        downloaded += chunk.length;
-        _mainthreadsenderport.send((downloaded / r.contentLength!));
-      },
-      onDone: () async {
-        _mainthreadsenderport.send((downloaded / r.contentLength!));
-        // Save the file
-        File file = new File(downloadlocation);
-        final Uint8List bytes = Uint8List(r.contentLength!);
-        int offset = 0;
-        for (List<int> chunk in chunks) {
-          bytes.setRange(offset, offset + chunk.length, chunk);
-          offset += chunk.length;
-        }
-        if (await file.exists()) {
-          // await file.create(recursive: true);
-          await file.delete(recursive: true);
-          await file.create(recursive: true);
-          await file.writeAsBytes(bytes, mode: FileMode.write, flush: true);
-        } else {
-          await file.create(recursive: true);
-          await file.writeAsBytes(bytes, mode: FileMode.write, flush: true);
-        }
-      },
-      onError: (error) {
-        _mainthreadsenderport.send("$error");
-      },
-    );
-  }, onError: (error) {
+    await response.asStream().listen((http.StreamedResponse r) {
+      r.stream.listen(
+        (List<int> chunk) {
+          chunks.add(chunk);
+          downloaded += chunk.length;
+          _mainthreadsenderport.send((downloaded / r.contentLength!));
+        },
+        onDone: () async {
+          // Save the file
+          File file = new File(downloadlocation);
+          final Uint8List bytes = Uint8List(r.contentLength!);
+          int offset = 0;
+          for (List<int> chunk in chunks) {
+            bytes.setRange(offset, offset + chunk.length, chunk);
+            offset += chunk.length;
+          }
+
+          try {
+            if (await file.exists()) {
+              // await file.create(recursive: true);
+              await file.delete(recursive: true);
+              await file.create(recursive: true);
+              await file.writeAsBytes(bytes, mode: FileMode.write, flush: true);
+            } else {
+              await file.create(recursive: true);
+              await file.writeAsBytes(bytes, mode: FileMode.write, flush: true);
+            }
+            _mainthreadsenderport.send((downloaded / r.contentLength!));
+          } catch (e) {
+            _mainthreadsenderport.send("${e.toString()}");
+          }
+        },
+        onError: (error) {
+          _mainthreadsenderport.send("$error");
+        },
+      );
+    }, onError: (error) {
+      _mainthreadsenderport.send("$error");
+    });
+  } catch (error) {
     _mainthreadsenderport.send("$error");
-  });
+  }
 }

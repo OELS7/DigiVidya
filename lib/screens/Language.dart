@@ -1,5 +1,5 @@
 import 'package:digividya/screens/DownloadScreen.dart';
-import 'package:digividya/widgets/CommingSoonAlertBox.dart';
+//import 'package:digividya/widgets/CommingSoonAlertBox.dart';
 import 'package:flutter/material.dart';
 
 class languagePage extends StatefulWidget {
@@ -116,27 +116,27 @@ class _languagePageState extends State<languagePage> {
                       child: GestureDetector(
                           //Navigate to download app intro of hindi
                           onTap: () {
-                            // Navigator.of(context)
-                            //     .pushReplacement(MaterialPageRoute(
-                            //         builder: ((context) => downloadScreen()),
-                            //         settings: RouteSettings(arguments: {
-                            //           'language': 'hindi',
-                            //           'userName': userName,
-                            //           'mobilenumber': mobilenumber,
-                            //           'city': city,
-                            //           'deviceid': deviceId
-                            //         })));
+                            Navigator.of(context)
+                                .pushReplacement(MaterialPageRoute(
+                                    builder: ((context) => downloadScreen()),
+                                    settings: RouteSettings(arguments: {
+                                      'language': 'hindi',
+                                      'userName': userName,
+                                      'mobilenumber': mobilenumber,
+                                      'city': city,
+                                      'deviceid': deviceId
+                                    })));
 
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                var commingsoonContext = context;
-                                return commingSoonAlertbox(
-                                    comingSoonDialogContext:
-                                        commingsoonContext);
-                              },
-                            );
+                            // showDialog(
+                            //   context: context,
+                            //   barrierDismissible: false,
+                            //   builder: (context) {
+                            //     var commingsoonContext = context;
+                            //     return commingSoonAlertbox(
+                            //         comingSoonDialogContext:
+                            //             commingsoonContext);
+                            //   },
+                            // );
                           },
                           child: Container(
                             height: 75,
