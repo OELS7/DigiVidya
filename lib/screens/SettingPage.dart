@@ -103,7 +103,7 @@ class _settingPageState extends State<settingPage> {
         //Check json response is empty or not?
         if (jsonResponse.isNotEmpty && jsonResponse['status']) {
           //Delete directory of json file
-          Directory("$dirpath/Digividya/").deleteSync(recursive: true);
+         // Directory("$dirpath/Digividya/").deleteSync(recursive: true);
           jsonData['userLanguage'] = dropdownValue.toString();
           jsonData['sectionAudioFileName'] = [];
           jsonData['topicAudioFileName'] = [];
