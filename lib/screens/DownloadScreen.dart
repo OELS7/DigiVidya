@@ -118,7 +118,7 @@ class _downloadScreenState extends State<downloadScreen> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            vediopage(filePath: videoFilePath),
+                            Container(),
                         settings: RouteSettings(arguments: {
                           'userName': userName,
                           'mobileNamuber': mobilenumber,
