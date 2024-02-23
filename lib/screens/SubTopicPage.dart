@@ -71,7 +71,7 @@ class _supTopicPageState extends State<supTopicPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkConnectivity();
-    _getUpdatedContentFileName();
+    // _getUpdatedContentFileName();
     _fixedExtentScrollController.addListener(() => onScroll());
   }
 
@@ -402,10 +402,10 @@ class _supTopicPageState extends State<supTopicPage>
               subTopicIds = jsonResponse['subtopic_ids'];
               subTopicCardsImage = jsonResponse['subtopics_img'];
               subTopicCardsAudio = jsonResponse['subtopics_aud'];
-              subTopicsLikes = jsonResponse['subtopics_likes'];
-              subTopicView = jsonResponse['subtopics_views'];
+              // subTopicsLikes = jsonResponse['subtopics_likes'];
+              // subTopicView = jsonResponse['subtopics_views'];
               urls = jsonResponse['all_list'];
-              contentUrls = urls[subTopicIds[0]];
+              contentUrls = urls['${subTopicIds[0]}'];
 
               contentUrls.forEach((element) {
                 FileName.add(element.toString().split("/").last.trim());
@@ -414,7 +414,7 @@ class _supTopicPageState extends State<supTopicPage>
               print(
                   "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< $FileName >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-              subTopicId = int.parse(subTopicIds[0]);
+              subTopicId = subTopicIds[0];
 
               subTopicCardImg = subTopicCardsImage['${subTopicIds[0]}'];
 
@@ -426,12 +426,17 @@ class _supTopicPageState extends State<supTopicPage>
                 subTopicTitle.add(element['DST_NAME']);
               });
 
-              subTopicsLikes.forEach((key, value) {
-                subTopicLikesCount.add(value.toString());
-              });
+              // subTopicsLikes.forEach((key, value) {
+              //   subTopicLikesCount.add(value.toString());
+              // });
 
-              subTopicView.forEach((key, value) {
-                subTopicViewsCount.add(value.toString());
+              // subTopicView.forEach((key, value) {
+              //   subTopicViewsCount.add(value.toString());
+              // });
+
+              subTopicDetails.forEach((element) {
+                subTopicLikesCount.add(element['subtopics_likes'].toString());
+                subTopicViewsCount.add(element['subtopics_views'].toString());
               });
             });
             dataFatched.value = true;
@@ -511,14 +516,14 @@ class _supTopicPageState extends State<supTopicPage>
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
           subTopicId =
-              int.parse(subTopicIds[_fixedExtentScrollController.selectedItem]);
+              subTopicIds[_fixedExtentScrollController.selectedItem];
 
           subTopicCardImg = subTopicCardsImage[
               '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
 
 
           contentUrls =
-              urls[subTopicIds[_fixedExtentScrollController.selectedItem]];
+              urls[subTopicIds[_fixedExtentScrollController.selectedItem].toString()];
 
           FileName.clear();
           contentUrls.forEach((element) {
@@ -533,14 +538,14 @@ class _supTopicPageState extends State<supTopicPage>
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
           subTopicId =
-              int.parse(subTopicIds[_fixedExtentScrollController.selectedItem]);
+              subTopicIds[_fixedExtentScrollController.selectedItem];
 
 
           subTopicCardImg = subTopicCardsImage[
               '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
 
           contentUrls =
-              urls[subTopicIds[_fixedExtentScrollController.selectedItem]];
+              urls[subTopicIds[_fixedExtentScrollController.selectedItem].toString()];
 
           FileName.clear();
           contentUrls.forEach((element) {

@@ -33,7 +33,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
       FixedExtentScrollController();
   Connectivity _connectivity = Connectivity();
   ValueNotifier<dynamic> dataFatched = ValueNotifier(false);
-  int sectionCount = 0, topicCount = 0, sectionId = 0, Likes = 0, Views = 0;
+  int sectionCount = 0, topicCount = 0, sectionId = 0;
   String sectionTitle = "",
       sectionDescription = "",
       sectionCardImage = "",
@@ -43,8 +43,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
   List<dynamic> deviceAudioFileName = [];
   List<String> updatedAudioFileName = [];
   List<String> listFileNameFromServer = [];
-  Map<String, dynamic> sectionLikes = {};
-  Map<String, dynamic> sectionView = {};
+  // Map<String, dynamic> sectionLikes = {};
+  // Map<String, dynamic> sectionView = {};
   Map<String, dynamic> cardImage = {};
   Map<String, dynamic> cardsAudio = {};
   List<dynamic> sectionIds = [];
@@ -336,8 +336,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
     deviceAudioFileName.clear();
     updatedAudioFileName.clear();
     listFileNameFromServer.clear();
-    sectionLikes.clear();
-    sectionView.clear();
+    // sectionLikes.clear();
+    // sectionView.clear();
     cardImage.clear();
     cardsAudio.clear();
     sectionIds.clear();
@@ -360,39 +360,40 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
   getSectionDetails() async {
     String dirPath = (await getApplicationSupportDirectory()).path;
     // API url
-    // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSections";
-    String url = "https://digividya.in/DigiVidyaAPI/api/fetchSections";
+    //String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSections";
+     String url = "https://digividya.in/DigiVidyaAPI/api/fetchSections";
 
     // jsonFile use for storing the progress and user details for futher use.
     File jsonFile = File("$dirPath/appInfo.json");
 
     if (jsonFile.existsSync()) {
       var jsonData = jsonDecode(jsonFile.readAsStringSync());
-      //print(jsonData['User_Id']);
+      //print(jsonData['User_Id'] jsonData['User_Id']);
       try {
-        var userData = {'user_id': jsonData['User_Id'].toString()};
+        var userData = {'user_id': "83".toString()};
         var response = await http.post(Uri.parse(url), body: userData);
 
         if (response.statusCode == 200) {
           // here restructure the response that come from server
 
-          Map<String, dynamic> jsonRespons =
+          var jsonRespons =
               jsonDecode(response.body.toString().replaceAll("\n", " "));
+
+          print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $jsonRespons %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
 
           if (jsonRespons.isNotEmpty) {
             setState(() {
               sectionCount = jsonRespons['section_count'];
               sectionDetail = jsonRespons['section_details'];
               sectionIds = jsonRespons['section_ids'];
-              sectionLikes = jsonRespons['section_likes'];
-              sectionView = jsonRespons['section_views'];
+              // sectionLikes = jsonRespons['section_likes'];
+              // sectionView = jsonRespons['section_views'];
               cardImage = jsonRespons['section_img'];
               cardsAudio = jsonRespons['section_aud'];
               sectionTitle = sectionDetail[0]['DS_NAME'];
               sectionId = sectionDetail[0]['DS_ID'];
               topicCount = sectionDetail[0]['topic_count'];
             });
-
             cardImage.forEach((key, value) {
               imageByteData.add(Base64Decoder().convert(value));
             });
@@ -401,12 +402,9 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               cardsTitle.add(element['DS_NAME']);
             });
 
-            sectionLikes.forEach((key, value) {
-              cardsLike.add(value.toString());
-            });
-
-            sectionView.forEach((key, value) {
-              cardsView.add(value.toString());
+            sectionDetail.forEach((element) {
+              cardsLike.add(element["likes_counts"].toString());
+              cardsView.add(element["views_count"].toString());
             });
 
             dataFatched.value = true;

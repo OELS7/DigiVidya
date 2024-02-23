@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+// import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:digividya/widgets/LikeDialog.dart';
@@ -73,7 +74,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   List<dynamic> contentUrls;
   List<String> FileName;
   List<String> deviceFileName = [];
-  List<String> deviceFilePath =[];
+  List<String> deviceFilePath = [];
   var pageContext;
 
   _videoWidgetState(
@@ -108,7 +109,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
             : const Duration(minutes: 00),
         aspectRatio: 763 / 1640);
 
-   videoPlayerController.addListener(_videoListener);
+    videoPlayerController.addListener(_videoListener);
   }
 
   @override
@@ -121,9 +122,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
-        
-      },
+      onPopInvoked: (didPop) {},
       child: Scaffold(
         appBar: AppBar(
           flexibleSpace: Container(
@@ -336,7 +335,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
 
   _startDownload({required String FileUrl}) async {
     if (FileUrl.toString().split("/").last.split(".").last == "mp4") {
-      // for .mp4 Extension
+      // for .mp4 Extension "http://192.168.1.19/prachi/DigiVidyaAPI/public/$fileUrl"
       String Url = "https://digividya.in/DigiVidyaAPI/laravel/public/$FileUrl";
       String dir = (await getApplicationSupportDirectory()).path;
       File videoFile = File(
@@ -383,24 +382,33 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
       File AssessmentZipFile = File(
           "$dir/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}");
 
+      if (!AssessmentZipFile.existsSync()) {
+        // Check if deviceFilePath is not empty and has length more than 1
+        // if (deviceFilePath.isNotEmpty && deviceFilePath.length > 0) {
+        //   // Delete the old file synchronously
+        //   File(deviceFilePath[itemPointer + 1]).deleteSync(recursive: true);
+        // }
+        // print(
+        //     "%%%%%%%%%%%% ${deviceFilePath[itemPointer + 1]} %%%%%%%%%%%%%%%%%%%%%%%%%");
 
-      if (!AssessmentZipFile.existsSync() ) {
-        ((deviceFilePath.isNotEmpty) && (deviceFilePath.length >1)) ? File(deviceFilePath[itemPointer]).deleteSync(recursive: true) : (){};
-        
+        // Create a ReceivePort to receive messages from the spawned Isolate
         ReceivePort mainThreadReceiver = ReceivePort();
 
+        // Spawn an Isolate to download the content
         await Isolate.spawn(_downloadContent, {
           "url": Url,
           "location": AssessmentZipFile.path,
           "sendPort": mainThreadReceiver.sendPort
         });
 
+        // Listen to messages from the spawned Isolate
         mainThreadReceiver.listen((message) {
           if (message is String) {
-            if (message.isNotEmpty && (message.toString() != "download fail")) {
+            if (message.isNotEmpty && message.toString() != "download fail") {
               print("Assessment File Downloading");
               print("$message % Downloaded");
             } else {
+              // Show dialog for internet error
               showDialog(
                 context: context,
                 builder: (context) {
@@ -408,7 +416,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
                   return InternetErrorDialog(
                     internetErrorDialogContext: dialogContext,
                     message:
-                        "Low internet connection . Please check your internet.",
+                        "Low internet connection. Please check your internet.",
                   );
                 },
               );
@@ -416,10 +424,42 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
             }
           }
         });
-      } else {
-        //
       }
-      
+
+//       if (!AssessmentZipFile.existsSync()) {
+//         ((deviceFilePath.isNotEmpty) && (deviceFilePath.length >1)) ? File(deviceFilePath[itemPointer+1]).deleteSync(recursive: true) : (){};
+//         print("%%%%%%%%%%%% ${deviceFilePath[itemPointer + 1]} %%%%%%%%%%%%%%%%%%%%%%%%%");
+// ReceivePort mainThreadReceiver = ReceivePort();
+
+//           await Isolate.spawn(_downloadContent, {
+//             "url": Url,
+//             "location": AssessmentZipFile.path,
+//             "sendPort": mainThreadReceiver.sendPort
+//           });
+
+//           mainThreadReceiver.listen((message) {
+//             if (message is String) {
+//               if (message.isNotEmpty &&
+//                   (message.toString() != "download fail")) {
+//                 print("Assessment File Downloading");
+//                 print("$message % Downloaded");
+//               } else {
+//                 showDialog(
+//                   context: context,
+//                   builder: (context) {
+//                     var dialogContext = context;
+//                     return InternetErrorDialog(
+//                       internetErrorDialogContext: dialogContext,
+//                       message:
+//                           "Low internet connection . Please check your internet.",
+//                     );
+//                   },
+//                 );
+//                 print("Download Fail");
+//               }
+//             }
+//           });
+//       }
     }
     return;
   }
@@ -479,6 +519,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   }
 
   _likeSubTopic() async {
+    //int RadomNumber = Random().nextInt(10)+1;
     String dir = (await getApplicationSupportDirectory()).path;
     File jsonFile = File("$dir/appInfo.json");
     var jsonData = jsonDecode(jsonFile.readAsStringSync());
@@ -594,7 +635,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     }
   }
 
-  void _videoListener() async{
+  void _videoListener() async {
     Duration _totalDuration = videoPlayerController.value.duration;
     Duration _currentPositionOfProgressIndicator =
         videoPlayerController.value.position;
@@ -605,16 +646,13 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
           File(widget.VideoFile).deleteSync(recursive: true);
           _chewieController.exitFullScreen();
 /////////////////////////////////////////////////////////////////////////////////////////////////////
- 
 
-                                _playContent(
+          _playContent(
               contentUrls: contentUrls,
               fileName: FileName,
               itemPointer: (itemPointer));
 
-          
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         } else {
           _chewieController.exitFullScreen();
 
@@ -632,31 +670,41 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         File(widget.VideoFile).deleteSync(recursive: true);
         _chewieController.exitFullScreen();
         videoPlayerController.removeListener(_videoListener);
-        Future.delayed(Duration(milliseconds: 600), () {
-          _showLikeDialog();
-        });
+        print(
+            "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        _showLikeDialog();
       }
     } else {
+      Future.delayed(
+        Duration(seconds: 20),
+        () {
+          print(
+              "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $contentUrls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        },
+      );
       print("Currently Video Is Playing => => => =>");
     }
   }
-  
+
   _getDeviceFileName() async {
     String directory = (await getApplicationSupportDirectory()).path;
-    
-    if(Directory("$directory/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/").existsSync()){
-          Directory("$directory/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/").listSync().forEach((element) {
-      if(element is File){
-        deviceFileName.add(path.basename(element.path).toString().split(".").first);
-        deviceFilePath.add(element.path.toString());
-      }
-    });
+
+    if (Directory(
+            "$directory/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/")
+        .existsSync()) {
+      Directory(
+              "$directory/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/")
+          .listSync()
+          .forEach((element) {
+        if (element is File) {
+          deviceFileName
+              .add(path.basename(element.path).toString().split(".").first);
+          deviceFilePath.add(element.path.toString());
+        }
+      });
     }
 
-
-
     // print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  $deviceFileName  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-
   }
 }
 
@@ -675,16 +723,16 @@ void _downloadContent(Map<String, dynamic> message) {
     response.asStream().listen((http.StreamedResponse r) {
       r.stream.listen((List<int> chunk) {
         // Display percentage of completion
-        debugPrint(
-            'downloadPercentage: ${downloaded / r.contentLength! * 100}');
+        // debugPrint(
+        //     'downloadPercentage: ${downloaded / r.contentLength! * 100}');
 
         chunks.add(chunk);
         downloaded += chunk.length;
         sendPort.send("${(downloaded / r.contentLength!)}");
       }, onDone: () async {
         // Display percentage of completion
-        debugPrint(
-            'downloadPercentage: ${downloaded / r.contentLength! * 100}');
+        // debugPrint(
+        //     'downloadPercentage: ${downloaded / r.contentLength! * 100}');
         sendPort.send("${(downloaded / r.contentLength!)}");
         // Save the file
         File file = new File(downloadLocation);
@@ -696,7 +744,7 @@ void _downloadContent(Map<String, dynamic> message) {
         }
         await file
             .create(recursive: true)
-            .then((value) => file.writeAsBytes(bytes,mode: FileMode.append));
+            .then((value) => file.writeAsBytes(bytes, mode: FileMode.append));
       }, onError: (_) {
         sendPort.send("download fail");
       });

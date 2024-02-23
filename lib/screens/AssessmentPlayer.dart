@@ -31,7 +31,7 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   List<dynamic> contentUrls = [];
   List<String> FileName = [];
   List<String> deviceFileName = [];
-  List<String> deviceFilePath =[];
+  List<String> deviceFilePath = [];
 
   var pageContext;
 
@@ -39,7 +39,7 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   void initState() {
     // TODO: implement initState
     super.initState();
-   _getDiviceFileName();
+    _getDiviceFileName();
   }
 
   @override
@@ -193,14 +193,15 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   _startDownload({required String fileUrl}) async {
     //for video download
     if (fileUrl.split("/").last.split(".").last == "mp4") {
-      //API Call
+      //API Call https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl
       String url = "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl";
       String dir = (await getApplicationSupportDirectory()).path;
 
       File videoFile = File(
           "$dir/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Video/${FileName[itemPointer + 1]}");
 
-      if (!videoFile.existsSync() || FileName[itemPointer] != deviceFileName[itemPointer]) {
+      if (!videoFile.existsSync() ||
+          FileName[itemPointer] != deviceFileName[itemPointer]) {
         ReceivePort mainThreadReceiver = ReceivePort();
 
         // Inititalizing the thread
@@ -232,6 +233,13 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
             }
           }
         });
+        Future.delayed(
+          Duration(seconds: 20),
+          () {
+            print(
+                "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $contentUrls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+          },
+        );
       }
     } else {
       //For assignment download
@@ -243,8 +251,11 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
           "$dir/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/${FileName[itemPointer + 1]}");
 
       if (!AssessmentZipFile.existsSync()) {
+        // ((deviceFilePath.isNotEmpty) && (deviceFilePath.length > 1))
+        //     ? File(deviceFilePath[itemPointer]).deleteSync(recursive: true)
+        //     : () {};
 
-       ((deviceFilePath.isNotEmpty) && (deviceFilePath.length >1)) ?  File(deviceFilePath[itemPointer]).deleteSync(recursive: true) :(){} ;
+
 
         ReceivePort mainThreadReceiver = ReceivePort();
         // Inititalizing the thread
@@ -276,6 +287,50 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
             }
           }
         });
+
+        Future.delayed(
+          Duration(seconds: 20),
+          () {
+            print(
+                "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $contentUrls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+          },
+        );
+      } else {
+        if (FileName[itemPointer] != deviceFileName[itemPointer]) {
+          // await File(deviceFilePath[itemPointer]).delete(recursive: true);
+          
+          // ReceivePort mainThreadReceiver = ReceivePort();
+          // // Inititalizing the thread
+          // await Isolate.spawn(_downloadContent, {
+          //   "url": url,
+          //   "location": AssessmentZipFile.path,
+          //   "sendPort": mainThreadReceiver.sendPort
+          // });
+
+          // // Listning thread response
+          // mainThreadReceiver.listen((message) {
+          //   if (message is String) {
+          //     if (message.isNotEmpty &&
+          //         (message.toString() != "download fail")) {
+          //       print("Assessment Zip File Downloading");
+          //       print("$message % Downloaded");
+          //     } else {
+          //       showDialog(
+          //         context: context,
+          //         builder: (context) {
+          //           var dialogContext = context;
+          //           return InternetErrorDialog(
+          //             internetErrorDialogContext: dialogContext,
+          //             message:
+          //                 "Low internet connection . Please check your internet.",
+          //           );
+          //         },
+          //       );
+          //       print("Download Fail");
+          //     }
+          //   }
+          // });
+        }
       }
     }
   }
@@ -542,21 +597,25 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
     // contentUrls.clear();
     // FileName.clear();
   }
-  
-   _getDiviceFileName() async{
 
+  _getDiviceFileName() async {
     String directory = (await getApplicationSupportDirectory()).path;
-    
-    if(Directory("$directory/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/").existsSync()){
-          Directory("$directory/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/").listSync().forEach((element) {
-      if(element is File){
-        deviceFileName.add(path.basename(element.path).toString().split(".").first);
-        deviceFilePath.add(element.path.toString());
-      }
-    });
-    }
 
-   }
+    if (Directory(
+            "$directory/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/")
+        .existsSync()) {
+      Directory(
+              "$directory/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/")
+          .listSync()
+          .forEach((element) {
+        if (element is File) {
+          deviceFileName
+              .add(path.basename(element.path).toString().split(".").first);
+          deviceFilePath.add(element.path.toString());
+        }
+      });
+    }
+  }
 }
 
 /// Downloading content method
@@ -577,16 +636,16 @@ void _downloadContent(Map<String, dynamic> message) {
     response.asStream().listen((http.StreamedResponse r) {
       r.stream.listen((List<int> chunk) {
         // Display percentage of completion
-        debugPrint(
-            'downloadPercentage: ${downloaded / r.contentLength! * 100}');
+        // debugPrint(
+        //     'downloadPercentage: ${downloaded / r.contentLength! * 100}');
 
         chunks.add(chunk);
         downloaded += chunk.length;
         sendPort.send("${(downloaded / r.contentLength!)}");
       }, onDone: () async {
         // Display percentage of completion
-        debugPrint(
-            'downloadPercentage: ${downloaded / r.contentLength! * 100}');
+        // debugPrint(
+        //     'downloadPercentage: ${downloaded / r.contentLength! * 100}');
         sendPort.send("${(downloaded / r.contentLength!)}");
         // Save the file
         File file = new File(downloadLocation);

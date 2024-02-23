@@ -49,13 +49,13 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
   List<String> listFileNameFromServer = [];
   List<dynamic> imageByteData = [];
   List<String> topicTitle = [];
-  List<String> topicViews = [];
+  List<String> subTopicCountList = [];
+  // List<String> topicViews = [];
   List<String> topicLike = [];
   Map<String, dynamic> topicsCardsImage = {};
   Map<String, dynamic> topicCardsAudio = {};
-  Map<String, dynamic> topicView = {};
-  Map<String, dynamic> topicLikes = {};
-
+  List<String> topicView = [];
+  // List<String> topicLikes = [];
 
   @override
   void initState() {
@@ -63,7 +63,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkConnectivity();
-    
+
     _fixedExtentScrollController.addListener(
       () => onScroll(),
     );
@@ -218,7 +218,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                                     height: 30,
                                     width: 50,
                                   ),
-                                  Text("${topicViews[i]}")
+                                  Text("${topicView[i]}")
                                 ],
                               ),
                             ],
@@ -305,9 +305,9 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
-          subTopicCount =
-              topicDetails[_fixedExtentScrollController.selectedItem]
-                  ['subTopicCount'];
+          subTopicCount = int.parse(
+              subTopicCountList[_fixedExtentScrollController.selectedItem]);
+
           // Likes = topicLikes[
           //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
           // Views = topicView[
@@ -325,9 +325,8 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
-          subTopicCount =
-              topicDetails[_fixedExtentScrollController.selectedItem]
-                  ['subTopicCount'];
+          subTopicCount = int.parse(
+              subTopicCountList[_fixedExtentScrollController.selectedItem]);
           // Likes = topicLikes[
           //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
           // Views = topicView[
@@ -367,12 +366,10 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     listFileNameFromServer.clear();
     imageByteData.clear();
     topicTitle.clear();
-    topicViews.clear();
     topicLike.clear();
     topicsCardsImage.clear();
     topicCardsAudio.clear();
     topicView.clear();
-    topicLikes.clear();
 
     player.disposeAudio();
 
@@ -402,32 +399,25 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
             topicCount = jsonRespons['topic_count'];
             topicDetails = jsonRespons['topics'];
             topicIds = jsonRespons['topic_ids'];
-            topic_id = int.parse(topicIds[0]);
-            // topicTile = topicDetails[0]['DT_NAME'];
-            subTopicCount = topicDetails[0]['subTopicCount'];
-            topicsCardsImage = jsonRespons['topics_img'];
-            topicCardsAudio = jsonRespons['topics_aud'];
+            topic_id = topicIds[0];
+            topicsCardsImage = jsonRespons['topic_img'];
+            topicCardsAudio = jsonRespons['topic_aud'];
             cardImage = topicsCardsImage['${topicIds[0]}'];
-            topicLikes = jsonRespons['topics_likes'];
-            topicView = jsonRespons['topics_views'];
-            // Likes = topicLikes['${topicIds[0]}'];
-            // Views = topicView['${topicIds[0]}'];
-          });
 
-          topicsCardsImage.forEach((key, value) {
-            imageByteData.add(Base64Decoder().convert(value));
-          });
+            topicsCardsImage.forEach((key, value) {
+              imageByteData.add(Base64Decoder().convert(value));
+            });
 
-          topicDetails.forEach((element) {
-            topicTitle.add(element['DT_NAME']);
-          });
+            topicDetails.forEach((element) {
+              topicTitle.add(element['DT_NAME']);
+            });
 
-          topicLikes.forEach((key, value) {
-            topicLike.add(value.toString());
-          });
-
-          topicView.forEach((key, value) {
-            topicViews.add(value.toString());
+            topicDetails.forEach((element) {
+              topicLike.add(element['likes_counts'].toString());
+              topicView.add(element['views_count'].toString());
+              subTopicCountList.add(element['subtopic_count'].toString());
+            });
+            subTopicCount = int.parse(subTopicCountList[0]);
           });
 
           var jsonData = jsonDecode(jsonFile.readAsStringSync());
@@ -466,7 +456,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                   description:
                       "Error on the internet Kindly verify that you are able to access the internet.",
                   retryButton: () {
-                    Future.delayed(Duration(milliseconds: 50),(){
+                    Future.delayed(Duration(milliseconds: 50), () {
                       getAllTopicDetails();
                     });
                     Navigator.of(internalServerErrorContext).pop(false);
@@ -485,9 +475,12 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                   description:
                       "An internal server problem has occurred. Please try submitting your application again.",
                   retryButton: () {
-                    Future.delayed(Duration(milliseconds: 50 ),() {
-                      getAllTopicDetails();
-                    },);
+                    Future.delayed(
+                      Duration(milliseconds: 50),
+                      () {
+                        getAllTopicDetails();
+                      },
+                    );
                     Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "try again");
@@ -623,76 +616,76 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     }
   }
 
-  getUpdatedAudioFile()async{
+  getUpdatedAudioFile() async {
+    String directory = (await getApplicationSupportDirectory()).path;
 
-  String directory = (await getApplicationSupportDirectory()).path;
+    List<Directory> listofFileDirectory = [];
+    List<String> fileName = [];
 
-  List<Directory> listofFileDirectory = [];
-  List<String> fileName = [];
-
-  for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
+    for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
       listFileNameFromServer.add(topicDetails[audioTracks]['DT_AUD_PATH']
           .split("/")
           .last
           .split(".mp3")
           .first);
     }
- 
-  for(int tAudioTrack =0 ;tAudioTrack < topicCount ;tAudioTrack++){
-    File topicAudioFile = File("$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack+1}/${listFileNameFromServer}.mp3");
 
-    if(!topicAudioFile.existsSync()){
-      topicAudioFile.createSync(recursive: true);
+    for (int tAudioTrack = 0; tAudioTrack < topicCount; tAudioTrack++) {
+      File topicAudioFile = File(
+          "$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack + 1}/${listFileNameFromServer}.mp3");
 
-              //reading and decode the audio content and write to the audio file
-        await topicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
-            .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),flush: true);
+      if (!topicAudioFile.existsSync()) {
+        topicAudioFile.createSync(recursive: true);
+
+        //reading and decode the audio content and write to the audio file
+        await topicAudioFile.writeAsBytes(
+            List<int>.from(Base64Decoder()
+                .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),
+            flush: true);
 
         // Storing the path of each audio file for creating playList and Play
         topicsCardsAudio.add(topicAudioFile.path);
+      } else {
+        Directory("$directory/DigiVidya/Section_$section_Id/AudioFile/")
+            .listSync(followLinks: true)
+            .forEach(
+          (element) {
+            // print("%%%%%%%%%%%%%%%% $element %%%%%%%%%%%%%%%%%");
+            if (element is Directory) {
+              listofFileDirectory.add(element);
+            }
+          },
+        );
 
-    }else{
-
-      Directory("$directory/DigiVidya/Section_$section_Id/AudioFile/").listSync(followLinks: true).forEach((element) {
-        // print("%%%%%%%%%%%%%%%% $element %%%%%%%%%%%%%%%%%");
-        if(element is Directory){
-          listofFileDirectory.add(element);
-        }
-      },);
-
-      for(Directory audioDirectory in listofFileDirectory){
-
+        for (Directory audioDirectory in listofFileDirectory) {
           try {
-            Directory("${audioDirectory.path}/").listSync().forEach((element) { 
-              fileName.add(path.basename(element.path).toString().split('.').first);
+            Directory("${audioDirectory.path}/").listSync().forEach((element) {
+              fileName
+                  .add(path.basename(element.path).toString().split('.').first);
             });
-            
-          } catch (e) {
-            
-          }
+          } catch (e) {}
+        }
 
+        if (listFileNameFromServer[tAudioTrack] != fileName[tAudioTrack]) {
+          topicAudioFile.renameSync(
+              "$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack + 1}/${listFileNameFromServer[tAudioTrack]}.mp3");
+
+          //reading and decode the audio content and write to the audio file
+          await topicAudioFile.writeAsBytes(
+              List<int>.from(Base64Decoder()
+                  .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),
+              flush: true);
+
+          // Storing the path of each audio file for creating playList and Play
+          topicsCardsAudio.add(topicAudioFile.path);
+        } else {
+          // Storing the path of each audio file for creating playList and Play
+          topicsCardsAudio.add(topicAudioFile.path);
+        }
+
+        print(
+            "%%%%%%%%%%%%%%%%%%%%%%%%%% $fileName %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
       }
-
-      if(listFileNameFromServer[tAudioTrack] != fileName[tAudioTrack]){
-
-        topicAudioFile.renameSync("$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack+1}/${listFileNameFromServer[tAudioTrack]}.mp3");
-
-                      //reading and decode the audio content and write to the audio file
-        await topicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
-            .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),flush: true);
-
-                        // Storing the path of each audio file for creating playList and Play
-        topicsCardsAudio.add(topicAudioFile.path);
-
-      }else{
-                // Storing the path of each audio file for creating playList and Play
-        topicsCardsAudio.add(topicAudioFile.path);
-      }
-
-      print("%%%%%%%%%%%%%%%%%%%%%%%%%% $fileName %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-
     }
-  }
-
   }
 }
