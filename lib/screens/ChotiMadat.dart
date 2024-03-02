@@ -143,7 +143,7 @@ class _ChotiMadatState extends State<ChotiMadat> {
 
     //API call for user queries and response
     // String url =
-    //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/viewQueriesOfUser";
+        // "http://192.168.1.19/prachi/DigiVidyaAPI/api/viewQueriesOfUser";
     String url = "https://digividya.in/DigiVidyaAPI/api/viewQueriesOfUser";
 
     var response = await http.post(Uri.parse(url), body: userData);
@@ -184,12 +184,12 @@ class _ChotiMadatState extends State<ChotiMadat> {
       });
       //API call for store user queries
       // String url =
-      //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertQueryOfUser";
+          // "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertQueryOfUser";
       String url = "https://digividya.in/DigiVidyaAPI/api/insertQueryOfUser";
 
       Map<String, dynamic> userData = {
         "user_id": userId.toString(),
-        "userquery": query,
+        "user_query": query,
         "query_time": queryDateTime
       };
 

@@ -336,6 +336,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   _startDownload({required String FileUrl}) async {
     if (FileUrl.toString().split("/").last.split(".").last == "mp4") {
       // for .mp4 Extension "http://192.168.1.19/prachi/DigiVidyaAPI/public/$fileUrl"
+      // String Url = "http://192.168.1.19/prachi/DigiVidyaAPI/public/$FileUrl";
       String Url = "https://digividya.in/DigiVidyaAPI/laravel/public/$FileUrl";
       String dir = (await getApplicationSupportDirectory()).path;
       File videoFile = File(
@@ -376,20 +377,22 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
       }
     } else {
       //For .zip Extension
+      // String Url =
+          // "http://192.168.1.19/prachi/DigiVidyaAPI/public/$FileUrl";
       String Url = "https://digividya.in/DigiVidyaAPI/laravel/public/$FileUrl";
       String dir = (await getApplicationSupportDirectory()).path;
 
       File AssessmentZipFile = File(
           "$dir/Section_${section}/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}");
-
+// Old Assessment file deletion operation
       if (!AssessmentZipFile.existsSync()) {
-        // Check if deviceFilePath is not empty and has length more than 1
-        // if (deviceFilePath.isNotEmpty && deviceFilePath.length > 0) {
-        //   // Delete the old file synchronously
-        //   File(deviceFilePath[itemPointer + 1]).deleteSync(recursive: true);
-        // }
-        // print(
-        //     "%%%%%%%%%%%% ${deviceFilePath[itemPointer + 1]} %%%%%%%%%%%%%%%%%%%%%%%%%");
+        if ((itemPointer + 1) < deviceFilePath.length) {
+          if (await File(deviceFilePath[itemPointer + 1].toString())
+              .existsSync()) {
+            File(deviceFilePath[itemPointer + 1].toString())
+                .deleteSync(recursive: true);
+          }
+        }
 
         // Create a ReceivePort to receive messages from the spawned Isolate
         ReceivePort mainThreadReceiver = ReceivePort();
@@ -483,7 +486,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         var LikeDialogBoxContext = context;
         return LikeDialog(yesButton: () {
           Future.delayed(
-            Duration(milliseconds: 600),
+            Duration(milliseconds: 60),
             () {
               _likeSubTopic();
             },
@@ -532,11 +535,15 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
       String api_Url =
           "https://digividya.in/DigiVidyaAPI/api/storeLikesForSubtopic";
 
+      // String api_Url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/storeLikesForSubtopic";
+
       var response = await http.post(Uri.parse(api_Url), body: sendUserData);
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonResponse =
             jsonDecode(response.body.toString().replaceAll("\n", " "));
+
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%% ${jsonResponse['status']} %%%%%%%%%%%%%%%%%%%%%%%%%%");
 
         if (jsonResponse['status']) {
           jsonData['subTopic_Id'] = "";
@@ -612,6 +619,8 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
 
   _setCompletedSubTopic(
       {required String user_Id, required String subTopic_Id}) async {
+    // String Api_Url =
+    //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateUserProgress";
     String Api_Url = "https://digividya.in/DigiVidyaAPI/api/updateUserProgress";
     String dir = (await getApplicationSupportDirectory()).path;
     File jsonFile = File("$dir/appInfo.json");

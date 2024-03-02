@@ -36,7 +36,7 @@ class _SplashState extends State<Splash> {
   @override
   void initState() {
     super.initState();
-    _initShrePreference();
+
     _goToNextPage();
   }
 
@@ -61,14 +61,15 @@ class _SplashState extends State<Splash> {
     Map<String, dynamic> mobilenumber = {'user_id': userId};
 
     //API call for user device id
-    var url = "https://digividya.in/DigiVidyaAPI/api/singleUserDeviceID";
+    // var url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/singleUserDeviceID";
+   var url = "https://digividya.in/DigiVidyaAPI/api/singleUserDeviceID";
     try {
       var response = await http.post(Uri.parse(url), body: mobilenumber);
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonRespons =
             jsonDecode(response.body.toString().replaceAll("\n", " "));
-
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%% device Id From Server : ${jsonRespons['device_id'].toString()} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         return jsonRespons['device_id'].toString();
       } else {
         // If not get device ID show dialog
@@ -117,7 +118,7 @@ class _SplashState extends State<Splash> {
       );
     } else {
       Future.delayed(
-        const Duration(seconds: 3),
+        const Duration(seconds: 1),
         () async {
           var dir = (await getApplicationSupportDirectory()).path;
           File appinfoFile = File("$dir/appInfo.json");
@@ -185,9 +186,5 @@ class _SplashState extends State<Splash> {
     super.dispose();
   }
 
-  void _initShrePreference() async {
-    _sharedPreferences = await SharedPreferences.getInstance();
-    GuestName = await _sharedPreferences.getString("Gestname") ?? "";
-    GuestId = await _sharedPreferences.getString("Gest_id") ?? "";
-  }
+
 }

@@ -245,6 +245,7 @@ class _supTopicPageState extends State<supTopicPage>
                           player.stopAudio();
 
                           if (contentUrls.length != 0) {
+                            
                             _PlayContent(
                                 contentList: contentUrls, FileName: FileName);
                           } else {
@@ -313,8 +314,9 @@ class _supTopicPageState extends State<supTopicPage>
     List<List<int>> chunks = [];
 
     try {
-      final url = Uri.parse(
-          "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl");
+      // "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl"
+      //String url = "http://192.168.1.19/prachi/DigiVidyaAPI/public/$fileUrl";
+      final url = Uri.parse("https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl");
       var request = new http.Request('GET', url);
       var response = http.Client().send(request);
 
@@ -384,7 +386,7 @@ class _supTopicPageState extends State<supTopicPage>
     String dirPath = (await getApplicationSupportDirectory()).path;
     File jsonFile = File("$dirPath/appInfo.json");
     // String url =
-    //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchTopSubtopics";
+        // "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchTopSubtopics";
     String url = "https://digividya.in/DigiVidyaAPI/api/fetchTopSubtopics";
 
     var userData = {"topic_id": topicId.toString()};
@@ -453,9 +455,12 @@ class _supTopicPageState extends State<supTopicPage>
                   description:
                       "Error on the internet Kindly verify that you are able to access the internet.",
                   retryButton: () {
-                    Future.delayed(Duration(milliseconds: 50),() {
-                      getSubTopicDetails();
-                    },);
+                    Future.delayed(
+                      Duration(milliseconds: 50),
+                      () {
+                        getSubTopicDetails();
+                      },
+                    );
                     Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "reload");
@@ -475,9 +480,12 @@ class _supTopicPageState extends State<supTopicPage>
                   description:
                       "Error on the internet Kindly verify that you are able to access the internet.",
                   retryButton: () {
-                    Future.delayed(Duration(milliseconds: 50),() {
-                      getSubTopicDetails();
-                    },);
+                    Future.delayed(
+                      Duration(milliseconds: 50),
+                      () {
+                        getSubTopicDetails();
+                      },
+                    );
                     Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "reload");
@@ -494,9 +502,12 @@ class _supTopicPageState extends State<supTopicPage>
                   description:
                       "An internal server problem has occurred. Please try submitting your application again.",
                   retryButton: () {
-                    Future.delayed(Duration(milliseconds: 50),() {
-                      getSubTopicDetails();
-                    },);
+                    Future.delayed(
+                      Duration(milliseconds: 50),
+                      () {
+                        getSubTopicDetails();
+                      },
+                    );
                     Navigator.of(internalServerErrorContext).pop(false);
                   },
                   ButtonText: "try again");
@@ -515,15 +526,14 @@ class _supTopicPageState extends State<supTopicPage>
         ScrollDirection.reverse) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
-          subTopicId =
-              subTopicIds[_fixedExtentScrollController.selectedItem];
+          subTopicId = subTopicIds[_fixedExtentScrollController.selectedItem];
 
           subTopicCardImg = subTopicCardsImage[
               '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
 
-
-          contentUrls =
-              urls[subTopicIds[_fixedExtentScrollController.selectedItem].toString()];
+          contentUrls = urls[
+              subTopicIds[_fixedExtentScrollController.selectedItem]
+                  .toString()];
 
           FileName.clear();
           contentUrls.forEach((element) {
@@ -537,21 +547,19 @@ class _supTopicPageState extends State<supTopicPage>
     } else {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
-          subTopicId =
-              subTopicIds[_fixedExtentScrollController.selectedItem];
-
+          subTopicId = subTopicIds[_fixedExtentScrollController.selectedItem];
 
           subTopicCardImg = subTopicCardsImage[
               '${subTopicIds[_fixedExtentScrollController.selectedItem]}'];
 
-          contentUrls =
-              urls[subTopicIds[_fixedExtentScrollController.selectedItem].toString()];
+          contentUrls = urls[
+              subTopicIds[_fixedExtentScrollController.selectedItem]
+                  .toString()];
 
           FileName.clear();
           contentUrls.forEach((element) {
             FileName.add(element.toString().split("/").last.trim());
           });
-
 
           player.playPreviousTrack(
               previousTrackIndex: (_fixedExtentScrollController.selectedItem));
@@ -848,14 +856,15 @@ class _supTopicPageState extends State<supTopicPage>
             );
           } else {
             ZipFile.extractToDirectory(
-                    zipFile: AssessmentZipFile,
-                    destinationDir: Directory(
-                        "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"),onExtracting: (zipEntry, progress) {
-                          print(zipEntry.name);
-                          print(progress.round()*100);
-                          return ZipFileOperation.includeItem;
-                        },)
-                .then((_) {
+              zipFile: AssessmentZipFile,
+              destinationDir: Directory(
+                  "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"),
+              onExtracting: (zipEntry, progress) {
+                print(zipEntry.name);
+                print(progress.round() * 100);
+                return ZipFileOperation.includeItem;
+              },
+            ).then((_) {
               File assessmentHtmlFile = File(
                   "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
               if (assessmentHtmlFile.existsSync()) {
@@ -898,11 +907,12 @@ class _supTopicPageState extends State<supTopicPage>
   void _playSpecificFile({required String ContentFileAddress}) async {
     String dir = (await getApplicationSupportDirectory()).path;
     if (ContentFileAddress.split(".").last == "mp4") {
+      _setSubTopicViewCount(directoryPath: dir);
       setState(() {
         Future.delayed(
           const Duration(milliseconds: 900),
           () {
-            _setSubTopicViewCount(directoryPath: dir);
+            
             Navigator.pushReplacementNamed(context, '/vidoePage', arguments: {
               "filePath": ContentFileAddress,
               "minutes": 0,
@@ -923,6 +933,7 @@ class _supTopicPageState extends State<supTopicPage>
     } else {
       //Playing Assessment File
       setState(() {
+        _setSubTopicViewCount(directoryPath: dir);
         ZipFile.extractToDirectory(
                 zipFile: File(ContentFileAddress),
                 destinationDir: Directory(
@@ -978,13 +989,13 @@ class _supTopicPageState extends State<supTopicPage>
       player.stopAudio();
     }
   }
-  
-  _getUpdatedContentFileName() async{
-   String directory = (await getApplicationSupportDirectory()).path; 
-   List<Directory> listofFileDirectory = [];
-   List<String> fileName = [];
 
-       for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
+  _getUpdatedContentFileName() async {
+    String directory = (await getApplicationSupportDirectory()).path;
+    List<Directory> listofFileDirectory = [];
+    List<String> fileName = [];
+
+    for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
       audioFileName.add(subTopicDetails[audioTracks]['DST_AUD_PATH']
           .split("/")
           .last
@@ -992,53 +1003,52 @@ class _supTopicPageState extends State<supTopicPage>
           .first);
     }
 
-    for(var audioTracks = 0; audioTracks < subTopicCount; audioTracks++){
-      File sTopicAudioFile = File("$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks+1}/${audioFileName[audioTracks]}.mp3");
+    for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
+      File sTopicAudioFile = File(
+          "$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks + 1}/${audioFileName[audioTracks]}.mp3");
 
-      if(!sTopicAudioFile.existsSync()){
-
+      if (!sTopicAudioFile.existsSync()) {
         sTopicAudioFile.createSync(recursive: true);
 
-        await sTopicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
-            .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])),flush: true);
-        subTopicAudioFilePath.add(sTopicAudioFile.path);        
+        await sTopicAudioFile.writeAsBytes(
+            List<int>.from(Base64Decoder()
+                .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])),
+            flush: true);
+        subTopicAudioFilePath.add(sTopicAudioFile.path);
+      } else {
+        Directory(
+                "$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/")
+            .listSync(followLinks: true)
+            .forEach((element) {
+          if (element is Directory) {
+            listofFileDirectory.add(element);
+          }
+        });
 
-      }else{
-
-          Directory("$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/").listSync(followLinks: true).forEach((element) { 
-            if(element is Directory){
-              listofFileDirectory.add(element);
-
-            }
-          });
-         
         // print("%%%%%%%%%%%%%%%%%%%%% $listofFileDirectory %%%%%%%%%%%%%%%");
-          for(Directory directory in listofFileDirectory){
-            try {
-              Directory("${directory.path}/").listSync().forEach((element) { 
-                // print("%%%%%%%%%%%%%%%%%%%%% $element %%%%%%%%%%%%%%%");
-               fileName.add(path.basename(element.path).toString().split(".").first);
+        for (Directory directory in listofFileDirectory) {
+          try {
+            Directory("${directory.path}/").listSync().forEach((element) {
+              // print("%%%%%%%%%%%%%%%%%%%%% $element %%%%%%%%%%%%%%%");
+              fileName
+                  .add(path.basename(element.path).toString().split(".").first);
+            });
+          } catch (e) {}
+        }
 
-              });
-            } catch (e) {
-              
-            }
-          }
+        if (audioFileName[audioTracks] != fileName[audioTracks]) {
+          sTopicAudioFile.renameSync(
+              "$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks + 1}/${audioFileName[audioTracks]}.mp3");
 
-
-          if(audioFileName[audioTracks]!= fileName[audioTracks]){
-            sTopicAudioFile.renameSync("$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks+1}/${audioFileName[audioTracks]}.mp3");
-
-                    await sTopicAudioFile.writeAsBytes(List<int>.from(Base64Decoder()
-            .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])),flush: true);
-        subTopicAudioFilePath.add(sTopicAudioFile.path);    
-
-          }else{
-        subTopicAudioFilePath.add(sTopicAudioFile.path);   
-          }
-
+          await sTopicAudioFile.writeAsBytes(
+              List<int>.from(Base64Decoder()
+                  .convert(subTopicCardsAudio['${subTopicIds[audioTracks]}'])),
+              flush: true);
+          subTopicAudioFilePath.add(sTopicAudioFile.path);
+        } else {
+          subTopicAudioFilePath.add(sTopicAudioFile.path);
+        }
       }
     }
-
   }
 }

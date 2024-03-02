@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -14,6 +15,7 @@ import 'package:digividya/widgets/ExitAppDialog.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +49,8 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
   List<String> filteredContactNumber = [];
   List<String> AppreciatedBy = [];
   List<String> friendsInitials = [];
+  Map<String, String> phoneContactNumber = {};
+  late Isolate isolate;
 
   @override
   void initState() {
@@ -106,7 +110,8 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
           ),
           leading: Container(
             margin: const EdgeInsets.only(left: 10),
-            child: Image.asset("assets/app_log/DigiVidyaLogo.webp"),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+            child: Image.asset("assets/app_log/DigiVidyaLogo_old.webp"),
           ),
           title: const Center(
             child: Text(
@@ -164,10 +169,11 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
 
     if (dalyNotification.getString("Last open date") == FormatedDate) {
       // show Nothing
+     
     } else {
       // show Dialog Box
       dalyNotification.setString("Last open date", FormatedDate);
-      _fetchContact().then((_) {
+       _fetchContact().then((_) {
         _getFriendsList().then((_) {
           _getContactPersonName().then((_) {
             _getAppreciation().then((_) {
@@ -180,48 +186,43 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
       });
     }
 
-    print(FormatedDate);
+    //print(FormatedDate);
   }
 
   //show modal only when user open app first time in a day
   Future<void> _showModal() async {
-    Future.delayed(
-      const Duration(milliseconds: 900),
-      () {
-        showModalBottomSheet(
-            context: context,
-            enableDrag: false,
-            isScrollControlled: true,
-            isDismissible: true,
-            showDragHandle: true,
-            useSafeArea: true,
-            builder: (context) {
-              return CarouselSlider(
-                items: [
-                  // to call function of appreciated by user friends
-                  topicAppreciatedBy(),
-                  // to call function appreciate to your friend
-                  topicVideoViewBy(),
-                ],
-                carouselController: _carouselController,
-                options: CarouselOptions(
-                    height: MediaQuery.of(context).size.height * 0.9,
-                    autoPlay: false,
-                    enableInfiniteScroll: false,
-                    enlargeCenterPage: true,
-                    initialPage: 0,
-                    scrollDirection: Axis.horizontal,
-                    viewportFraction: 1,
-                    onPageChanged: (index, reason) {
-                      setState(() {
-                        currentIndex = index;
-                      });
-                    },
-                    aspectRatio: 16 / 9),
-              );
-            });
-      },
-    );
+    showModalBottomSheet(
+        context: context,
+        enableDrag: false,
+        isScrollControlled: true,
+        isDismissible: true,
+        showDragHandle: true,
+        useSafeArea: true,
+        builder: (context) {
+          return CarouselSlider(
+            items: [
+              // to call function of appreciated by user friends
+              topicAppreciatedBy(),
+              // to call function appreciate to your friend
+              topicVideoViewBy(),
+            ],
+            carouselController: _carouselController,
+            options: CarouselOptions(
+                height: MediaQuery.of(context).size.height * 0.9,
+                autoPlay: false,
+                enableInfiniteScroll: false,
+                enlargeCenterPage: true,
+                initialPage: 0,
+                scrollDirection: Axis.horizontal,
+                viewportFraction: 1,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    currentIndex = index;
+                  });
+                },
+                aspectRatio: 16 / 9),
+          );
+        });
   }
 
   @override
@@ -250,7 +251,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: personName.length,
-                padding: EdgeInsets.all(10),
+                padding: EdgeInsets.all(8),
                 itemBuilder: (context, index) {
                   return Container(
                     width: 120,
@@ -357,7 +358,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
           child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text("Appreciate by your friends ",
+          Text("Appreciated by your friends ",
               style: TextStyle(
                   fontFamily: 'Fontmain',
                   fontSize: 20,
@@ -366,6 +367,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
               //125
               height: MediaQuery.of(context).size.height * 0.185,
               width: MediaQuery.of(context).size.width,
+              //color: Colors.blue,
               padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -374,6 +376,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
                   return Container(
                     width: 120,
                     height: MediaQuery.of(context).size.height,
+                    padding: EdgeInsets.all(8),
                     child: Column(
                       children: [
                         CircleAvatar(
@@ -387,7 +390,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
                               backgroundColor: Color.fromRGBO(3, 45, 96, 1),
                               child: Center(
                                   child: Text(
-                                "${AppreciatedBy[index]}",
+                                "${AppreciatedBy[index] == friend_List[index] ? personName[index][0] : "U"}",
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 28),
                               )),
@@ -398,8 +401,8 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
                           height: 2,
                         ),
                         Text(
-                          personName[index],
-                          style: TextStyle(color: Colors.white, fontSize: 28),
+                          AppreciatedBy[index] == friend_List[index] ? personName[index] : "U",
+                          style: TextStyle(color: Colors.black, fontSize: 15),
                         )
                       ],
                     ),
@@ -412,25 +415,25 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
           Text("WELL DONE !!",
               style: TextStyle(
                   fontFamily: 'Fontmain',
-                  fontSize: 35,
+                  fontSize: 28,
                   color: Color.fromRGBO(3, 45, 96, 1))),
           Container(
-            height: 250,
+            height: 200,
             decoration: BoxDecoration(
                 image: DecorationImage(
                     image: AssetImage(
                         'assets/images/AppreciateByFriend-Modal.webp'))),
           ),
           Container(
-            padding: EdgeInsets.fromLTRB(25, 0, 25, 0),
+            padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
             child: Text(" Your friends appreciate you.",
                 style: TextStyle(
                     color: Color.fromRGBO(3, 45, 96, 1), fontSize: 20)),
           ),
           Container(
-            height: 60,
-            width: 200,
-            margin: const EdgeInsets.all(20),
+            height: 55,
+            width: 185,
+            margin: const EdgeInsets.all(15),
             child: GestureDetector(
               onTap: () {
                 _carouselController.nextPage(
@@ -467,7 +470,6 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
 
   //To fetch contact list of user
   _fetchContact() async {
-    List<String> contactNumbers = [];
     List<Contact> _allContact = [];
 
     var status = await Permission.contacts.status;
@@ -476,93 +478,56 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
       //fetch contact list
       _allContact = await ContactsService.getContacts();
 
-      List<String> Filtercontacts = [];
+      // ReceivePort _MainthreadReciverPort = ReceivePort();
 
-      for (var number in _allContact) {
-        number.phones!.map((e) {
-          contactNumbers.add(e.value.toString());
-        }).join(",");
+      // await Isolate.spawn(processContact, {
+      //   "senderPort": _MainthreadReciverPort.sendPort,
+      //   "ContactsObject": _allContact
+      // });
+
+      // _MainthreadReciverPort.listen(
+      //   (message) {
+      //     // if (filteredContactNumber.contains(message[1].toString())) {
+      //     //   phoneContactNumber[message[0].toString()] = message[0].toString();
+      //     //   filteredContactNumber.add(message[1].toString());
+      //     // }
+
+      //     if (message is List) {
+      //       var mycontact = message as List<String>;
+
+      //       if (mycontact.isNotEmpty) {
+      //         phoneContactNumber[mycontact[0].toString()] =
+      //             mycontact[1].toString();
+      //         filteredContactNumber.add(mycontact[1].toString());
+      //         // print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+      //        // print(phoneContactNumber);
+      //         // print(filteredContactNumber);
+      //       } else {}
+
+      //       // print("this is List of String");
+      //       // print(" $mycontact ");
+      //     } else {
+      //       print("this is another");
+      //     }
+
+      //     //   int i=1;
+      //     // print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ${i++}: $message %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+      //   },
+      // );
+
+      // _getFriendsList();
+
+      // Future.delayed(Duration(microseconds: 60));
+
+      List<Future<void>> future = [];
+      for (Contact _contact in _allContact) {
+        future.add(_processContact(_contact));
       }
 
-      for (var number = 0; number < contactNumbers.length; number++) {
-        //Cheak number is grater or equal to 10
-        if (contactNumbers[number].length >= 10) {
-          //Number contain space
-          if (contactNumbers[number].contains(" ")) {
-            contactNumbers[number] =
-                contactNumbers[number].toString().replaceAll(' ', '');
-            //Cheak number grater than 10
-            if (contactNumbers[number].length > 10) {
-              print("Before ${contactNumbers[number]}");
-              // Remove first 3 digit i.e.+91
-              contactNumbers[number] = contactNumbers[number]
-                  .toString()
-                  .substring(3, contactNumbers[number].length);
-              //Add to new list
-              setState(() {
-                Filtercontacts.add(contactNumbers[number]);
-              });
+      await Future.wait(future);
 
-              print("After ${contactNumbers[number]}");
-            } else {
-              // Add as it is to list
-              setState(() {
-                Filtercontacts.add(contactNumbers[number]);
-              });
-            }
-          } else {
-            // Number not contain space
-            print("Number not have space");
-            //Cheak number is grater 10
-            if (contactNumbers[number].length > 10) {
-              print("number length is greater than 10");
-              //Cheak number contain +91
-              if (contactNumbers[number].contains("+91")) {
-                print("number contain +91 ");
-                contactNumbers[number] = contactNumbers[number]
-                    .substring(3, contactNumbers[number].length)
-                    .toString();
-                setState(() {
-                  Filtercontacts.add(contactNumbers[number]);
-                });
-              } else {
-                setState(() {
-                  Filtercontacts.add(contactNumbers[number]);
-                });
-              }
-            } else {
-              // Add as it is to list
-              setState(() {
-                Filtercontacts.add(contactNumbers[number]);
-              });
-            }
-          }
-        }
-      }
-
-      //Removing the duplicate numbers of contact list
-      for (var number = 0; number < Filtercontacts.length; number++) {
-        if (filteredContactNumber.isEmpty &&
-            isValidMobileNumber(Filtercontacts[number])) {
-          filteredContactNumber.add(Filtercontacts[number]);
-        } else {
-          if (filteredContactNumber.isNotEmpty &&
-              !filteredContactNumber.contains(Filtercontacts[number]) &&
-              isValidMobileNumber(Filtercontacts[number])) {
-            filteredContactNumber.add(Filtercontacts[number]);
-          }
-        }
-      }
+      //print("%%%%%%%%%%%%%%%%%% $filteredContactNumber %%%%%%%%%%%%%%%%%");
     } else {}
-  }
-
-  // Function to check if a mobile number is valid
-  bool isValidMobileNumber(String mobileNumber) {
-    // Regular expression for valid mobile numbers in India
-    RegExp regex = RegExp(r'^[6-9]\d{9}$');
-
-    // Check if the mobile number matches the regular expression
-    return regex.hasMatch(mobileNumber);
   }
 
   //For Friendlist
@@ -575,6 +540,9 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
       //API call for friendlist
       // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateFriends";
       String url = "https://digividya.in/DigiVidyaAPI/api/updateFriends";
+
+      print(
+          "%%%%%%%%%%%%%%%%%%%%%%% ${filteredContactNumber} %%%%%%%%%%%%%%%%%%%%%%");
 
       var userData = {
         "user_id": jsonData['User_Id'].toString(),
@@ -591,47 +559,35 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
 
       var response = await http.post(Uri.parse(url), body: userData);
       if (response.statusCode == 200) {
+        print("Connection");
         print("Connection established.....");
         Map<String, dynamic> jsonRespons =
             jsonDecode(response.body.toString().replaceAll("\n", " "));
         if (jsonRespons.isNotEmpty) {
-          print("${jsonRespons['new_friend_list']}");
+          print(
+              "%%%%%%%%%%%%%%%%%%%%%%%% Response Receive : ${jsonRespons['new_friend_list']} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
           //Cheak any number add/update in contact list if found add it in list
           for (var number = 0;
               number < jsonRespons['new_friend_list'].length;
               number++) {
             friend_List.add(jsonRespons['new_friend_list'][number]);
           }
-        } else {}
+        }
       } else {
         print("Connection failed ... ");
       }
     }
   }
 
-  //
+  // Finding the friends name that matches with my contact`
   _getContactPersonName() async {
-    List<Contact> contacts = await ContactsService.getContacts();
+    List<Future<void>> _personName = [];
 
-    for (var numbers in contacts) {
-      numbers.phones!.map((e) {
-        for (var number = 0; number < friend_List.length; number++) {
-          if (e.value.toString() == friend_List[number] &&
-              !personName.contains(numbers.displayName.toString())) {
-            personName.add(numbers.displayName.toString());
-            print("Number do not contain +91 are in friend list ");
-          }
-          if (e.value.toString() == "+91${friend_List[number]}" &&
-              !personName.contains(numbers.displayName.toString())) {
-            personName.add(numbers.displayName.toString());
-            print("Number contain +91 are in friend list ");
-          }
-        }
-      }).join(",");
-    }
+    friend_List.forEach((element) {
+      _personName.add(_getFriendsName(element));
+    });
 
-    print(
-        "***************************** $personName ****************************");
+    await Future.wait(_personName);
   }
 
   //For back button
@@ -653,7 +609,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
     String dirPath = (await getApplicationSupportDirectory()).path;
     //API Call for which friends appreciate you
     // String url =
-    //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchMyAppreciation";
+    // "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchMyAppreciation";
     String url = "https://digividya.in/DigiVidyaAPI/api/fetchMyAppreciation";
 
     File JsonFile = File("$dirPath/appInfo.json");
@@ -676,6 +632,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
         }
         print(jsonRespons['new_friend_list']);
       } else {
+        AppreciatedBy = [];
         print("No friends");
       }
     } else {}
@@ -683,39 +640,47 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
 
   //Match number and name from contactlist and display initials of friendlist as user save their number in phone contact list
   _getFriendsname({required List<String> friendsNumber}) async {
-    List<Contact> contacts = await ContactsService.getContacts();
-    for (var phoneNumbers in contacts) {
-      phoneNumbers.phones!.map((e) {
-        for (var number = 0; number < friendsNumber.length; number++) {
-          if (friendsInitials.isEmpty) {
-            if (e.value.toString() == friendsNumber[number]) {
-              friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-            }
+    List<Future<void>> _getInitial = [];
 
-            if (e.value.toString() == "+91${friendsNumber[number]}") {
-              friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-            }
-          } else {
-            if (e.value.toString() == friendsNumber[number] &&
-                !friendsInitials
-                    .contains(phoneNumbers.displayName.toString()[0])) {
-              friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-            }
+    friendsNumber.forEach((element) {
+      _getInitial.add(createFirendsInitialsList(element));
+    });
 
-            if ((e.value.toString() == friendsNumber[number] &&
-                    !friendsInitials
-                        .contains(phoneNumbers.displayName.toString()[0])) ||
-                (e.value.toString() == "+91${friendsNumber[number]}" &&
-                    !friendsInitials
-                        .contains(phoneNumbers.displayName.toString()[0]))) {
-              friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-            }
-          }
-        }
-      }).join(",");
-    }
+    await Future.wait(_getInitial);
 
-    print(friendsInitials);
+    // List<Contact> contacts = await ContactsService.getContacts();
+    // for (var phoneNumbers in contacts) {
+    //   phoneNumbers.phones!.map((e) {
+    //     for (var number = 0; number < friendsNumber.length; number++) {
+    //       if (friendsInitials.isEmpty) {
+    //         if (e.value.toString() == friendsNumber[number]) {
+    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
+    //         }
+
+    //         if (e.value.toString() == "+91${friendsNumber[number]}") {
+    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
+    //         }
+    //       } else {
+    //         if (e.value.toString() == friendsNumber[number] &&
+    //             !friendsInitials
+    //                 .contains(phoneNumbers.displayName.toString()[0])) {
+    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
+    //         }
+
+    //         if ((e.value.toString() == friendsNumber[number] &&
+    //                 !friendsInitials
+    //                     .contains(phoneNumbers.displayName.toString()[0])) ||
+    //             (e.value.toString() == "+91${friendsNumber[number]}" &&
+    //                 !friendsInitials
+    //                     .contains(phoneNumbers.displayName.toString()[0]))) {
+    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
+    //         }
+    //       }
+    //     }
+    //   }).join(",");
+    // }
+
+    // print(friendsInitials);
   }
 
   //function for send appreciation to your friend
@@ -725,7 +690,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
     var jsonData = jsonDecode(jsonFile.readAsStringSync());
     //API call for send appreciation to your friend
     // String url =
-    //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertMyAppreciationToFriends";
+    // "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertMyAppreciationToFriends";
     String url =
         "https://digividya.in/DigiVidyaAPI/api/insertMyAppreciationToFriends";
 
@@ -769,8 +734,79 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
         await DeviceInfoPlugin().androidInfo;
     setState(() {
       DeviceApi = androidDeviceInfo.version.sdkInt;
-      print(
-          "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ My device API Number is ${DeviceApi}");
+      // print(
+      //     "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ My device API Number is ${DeviceApi}");
     });
+  }
+
+  Future<void> _processContact(Contact contact) async {
+    // Process each phone number of the contact
+    for (Item phone in contact.phones!) {
+      // Format phone number
+
+      PhoneNumber phoneNumber =
+          PhoneNumber.parse(phone.value.toString(), callerCountry: IsoCode.IN);
+
+      String formattedNumber = phoneNumber.international.toString();
+
+      // Remove country code and store 10-digit numbers
+      if (formattedNumber.length == 13) {
+        formattedNumber = formattedNumber.substring(3); // Remove country code
+        if (formattedNumber.length == 10) {
+          phoneContactNumber[contact.displayName!] = formattedNumber;
+          filteredContactNumber.add(formattedNumber);
+        }
+      }
+    }
+  }
+
+  Future<void> _getFriendsName(String element) async {
+    phoneContactNumber.forEach((key, value) {
+      if (value == element) {
+        personName.add(key.toString());
+      }
+    });
+  }
+
+  Future<void> createFirendsInitialsList(String element) async {
+    phoneContactNumber.forEach((key, value) {
+      if (value == element) {
+        friendsInitials.add(key.toString()[0]);
+      }
+    });
+  }
+}
+
+void processContact(Map<String, dynamic> message) {
+  var contacts = message["ContactsObject"] as List<Contact>;
+  SendPort senderPort = message["senderPort"] as SendPort;
+  List<String> personContact = []; // Initialize inside the loop
+
+  for (Contact _contact in contacts) {
+    if (_contact.phones != null) {
+      for (Item phone in _contact.phones!) {
+        // Format phone number
+        PhoneNumber phoneNumber = PhoneNumber.parse(phone.value.toString(),
+            callerCountry: IsoCode.IN);
+
+        String formattedNumber = phoneNumber.international.toString();
+
+        // Remove country code and store 10-digit numbers
+        if (formattedNumber.length == 13) {
+          formattedNumber = formattedNumber.substring(3); // Remove country code
+          if (formattedNumber.length == 10) {
+            // Initialize inside the loop to avoid reusing the same object
+            // personContact = ["", ""];
+            personContact.add(_contact.displayName!.toString());
+            personContact.add(formattedNumber.toString());
+            // print(
+            //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $personContact %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+            Future.delayed(Duration(milliseconds: 10));
+            senderPort.send(personContact);
+            personContact.clear();
+          }
+        }
+      }
+    }
   }
 }

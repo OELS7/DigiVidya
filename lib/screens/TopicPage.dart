@@ -227,7 +227,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         GestureDetector(
                           onTap: () async {
                             print("Start button pressesd");
-                            if (subTopicCount != 0) {
+                            if (topicDetails[i]['subtopic_count'] != 0) {
                               player.stopAudio();
                               Navigator.of(context).pushReplacementNamed(
                                   '/subTopicPage',
@@ -305,8 +305,8 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
-          subTopicCount = int.parse(
-              subTopicCountList[_fixedExtentScrollController.selectedItem]);
+          // subTopicCount = int.parse(
+          //     subTopicCountList[_fixedExtentScrollController.selectedItem]);
 
           // Likes = topicLikes[
           //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
@@ -325,8 +325,8 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
-          subTopicCount = int.parse(
-              subTopicCountList[_fixedExtentScrollController.selectedItem]);
+          // subTopicCount = int.parse(
+          //     subTopicCountList[_fixedExtentScrollController.selectedItem]);
           // Likes = topicLikes[
           //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
           // Views = topicView[
@@ -415,9 +415,9 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
             topicDetails.forEach((element) {
               topicLike.add(element['likes_counts'].toString());
               topicView.add(element['views_count'].toString());
-              subTopicCountList.add(element['subtopic_count'].toString());
+              // subTopicCountList.add(element['subtopic_count'].toString());
             });
-            subTopicCount = int.parse(subTopicCountList[0]);
+            // subTopicCount = int.parse(subTopicCountList[0]);
           });
 
           var jsonData = jsonDecode(jsonFile.readAsStringSync());

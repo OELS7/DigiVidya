@@ -185,6 +185,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 25),
@@ -296,7 +297,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               nextTrackIndex: (_fixedExtentScrollController.selectedItem));
         });
       });
-      print("upward scrolling");
+      // print("upward scrolling");
+      // print("Section ${_fixedExtentScrollController.selectedItem+1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
     } else {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -310,6 +312,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
         });
       });
       print("revers scrolling");
+      print("Section ${_fixedExtentScrollController.selectedItem+1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
     }
   }
 
@@ -360,7 +363,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
   getSectionDetails() async {
     String dirPath = (await getApplicationSupportDirectory()).path;
     // API url
-    //String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSections";
+    // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSections";
      String url = "https://digividya.in/DigiVidyaAPI/api/fetchSections";
 
     // jsonFile use for storing the progress and user details for futher use.
@@ -393,6 +396,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               sectionTitle = sectionDetail[0]['DS_NAME'];
               sectionId = sectionDetail[0]['DS_ID'];
               topicCount = sectionDetail[0]['topic_count'];
+
             });
             cardImage.forEach((key, value) {
               imageByteData.add(Base64Decoder().convert(value));
@@ -406,6 +410,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               cardsLike.add(element["likes_counts"].toString());
               cardsView.add(element["views_count"].toString());
             });
+
+            // print("Section ${0+1} Audio File Name : ${listFileNameFromServer[0]}");
 
             dataFatched.value = true;
             // print(cardsAudio); Base64Decoder().convert(image)

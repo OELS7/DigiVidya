@@ -193,15 +193,15 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   _startDownload({required String fileUrl}) async {
     //for video download
     if (fileUrl.split("/").last.split(".").last == "mp4") {
-      //API Call https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl
+      //API Call http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSections
+      // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/public/$fileUrl";
       String url = "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl";
       String dir = (await getApplicationSupportDirectory()).path;
 
       File videoFile = File(
           "$dir/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Video/${FileName[itemPointer + 1]}");
 
-      if (!videoFile.existsSync() ||
-          FileName[itemPointer] != deviceFileName[itemPointer]) {
+      if (!videoFile.existsSync()) {
         ReceivePort mainThreadReceiver = ReceivePort();
 
         // Inititalizing the thread
@@ -233,29 +233,25 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
             }
           }
         });
-        Future.delayed(
-          Duration(seconds: 20),
-          () {
-            print(
-                "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $contentUrls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-          },
-        );
       }
     } else {
       //For assignment download
       //API call
+      // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSections/$fileUrl";
       String url = "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl";
       String dir = (await getApplicationSupportDirectory()).path;
 
       File AssessmentZipFile = File(
           "$dir/Section_${section}/Topic_${topic}/subTopic_${subTopic}/Assessment/${FileName[itemPointer + 1]}");
-
+// Old Assessment file deletion operation
       if (!AssessmentZipFile.existsSync()) {
-        // ((deviceFilePath.isNotEmpty) && (deviceFilePath.length > 1))
-        //     ? File(deviceFilePath[itemPointer]).deleteSync(recursive: true)
-        //     : () {};
-
-
+        if ((itemPointer + 1) < deviceFilePath.length) {
+          if (await File(deviceFilePath[itemPointer + 1].toString())
+              .existsSync()) {
+            File(deviceFilePath[itemPointer + 1].toString())
+                .deleteSync(recursive: true);
+          }
+        }
 
         ReceivePort mainThreadReceiver = ReceivePort();
         // Inititalizing the thread
@@ -288,17 +284,10 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
           }
         });
 
-        Future.delayed(
-          Duration(seconds: 20),
-          () {
-            print(
-                "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $contentUrls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-          },
-        );
       } else {
         if (FileName[itemPointer] != deviceFileName[itemPointer]) {
           // await File(deviceFilePath[itemPointer]).delete(recursive: true);
-          
+
           // ReceivePort mainThreadReceiver = ReceivePort();
           // // Inititalizing the thread
           // await Isolate.spawn(_downloadContent, {
@@ -455,6 +444,8 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
       String api_Url =
           "https://digividya.in/DigiVidyaAPI/api/storeLikesForSubtopic";
 
+      // String api_Url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/storeLikesForSubtopic";
+
       var response = await http.post(Uri.parse(api_Url), body: sendUserData);
 
       if (response.statusCode == 200) {
@@ -537,6 +528,7 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   void _setSubTopicCompleted(
       {required String user_Id, required String subTopic_Id}) async {
     //API call for user progress
+    // String Api_Url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateUserProgress";
     String Api_Url = "https://digividya.in/DigiVidyaAPI/api/updateUserProgress";
     String dir = (await getApplicationSupportDirectory()).path;
     File jsonFile = File("$dir/appInfo.json");
@@ -544,7 +536,9 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
     if (!jsonData.containsKey("completedSubTopic")) {
       var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
       var response = await http.post(Uri.parse(Api_Url), body: userData);
-      if (response.statusCode == 200) {}
+      if (response.statusCode == 200) {
+        print("${response.body.replaceAll("\n", " ")}");
+      }
     } else {
       List completedSubTopicList = jsonData['completedSubTopic'];
 

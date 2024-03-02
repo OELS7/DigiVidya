@@ -196,7 +196,7 @@ class _freetimeState extends State<freetime> {
 
     try {
       //API call for user info insert in Database
-      //var url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertUserInfo";
+      // var url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertUserInfo";
       var url = "https://digividya.in/DigiVidyaAPI/api/insertUserInfo";
       var response = await http.post(Uri.parse(url), body: UserData);
 
@@ -209,8 +209,9 @@ class _freetimeState extends State<freetime> {
               "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% New User Registered %%%%%%%%%%%%%%%%%%%%");
           String dirPath = (await getApplicationSupportDirectory()).path;
           File jsonFile = File("$dirPath/appInfo.json");
-
+          
           if (!await jsonFile.exists()) {
+            jsonFile.createSync(recursive: true);
             Map<String, dynamic> userData = {
               'User_Id': jsonRespons['userinfo']['DUI_ID'],
               'UserName': userName,
@@ -239,7 +240,7 @@ class _freetimeState extends State<freetime> {
                 preciseAlarm: true,
                 summary: "Daily reminder");
 
-            Future.delayed(Duration(milliseconds: 600), () {
+            Future.delayed(Duration(milliseconds: 50), () {
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -306,6 +307,7 @@ class _freetimeState extends State<freetime> {
         }
       } else {
         //If internal server error occured
+        print("%%%%%%%%%%%%%%%%%%%%% Server Status Code : ${response.statusCode} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         showDialog(
           context: context,
           builder: (context) {
