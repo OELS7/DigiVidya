@@ -144,7 +144,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                 Navigator.of(context).pushReplacementNamed('/TopicPage',
                     arguments: {
                       'section': sectionId,
-                      'topic_count': topicCount
+                      'topic_count': sectionDetail[i]['topic_count']
                     });
               } else {
                 showDialog(
@@ -290,8 +290,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
         setState(() {
           sectionId =
               sectionDetail[_fixedExtentScrollController.selectedItem]['DS_ID'];
-          topicCount = sectionDetail[_fixedExtentScrollController.selectedItem]
-              ['topic_count'];
+          // topicCount = sectionDetail[_fixedExtentScrollController.selectedItem]
+          //     ['topic_count'];
 
           player.playNextTrack(
               nextTrackIndex: (_fixedExtentScrollController.selectedItem));
@@ -304,8 +304,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
         setState(() {
           sectionId =
               sectionDetail[_fixedExtentScrollController.selectedItem]['DS_ID'];
-          topicCount = sectionDetail[_fixedExtentScrollController.selectedItem]
-              ['topic_count'];
+          // topicCount = sectionDetail[_fixedExtentScrollController.selectedItem]
+          //     ['topic_count'];
 
           player.playPreviousTrack(
               previousTrackIndex: _fixedExtentScrollController.selectedItem);
@@ -395,7 +395,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               cardsAudio = jsonRespons['section_aud'];
               sectionTitle = sectionDetail[0]['DS_NAME'];
               sectionId = sectionDetail[0]['DS_ID'];
-              topicCount = sectionDetail[0]['topic_count'];
+             // topicCount = sectionDetail[0]['topic_count'];
 
             });
             cardImage.forEach((key, value) {

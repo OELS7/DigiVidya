@@ -235,7 +235,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                                     'section': sectionID,
                                     'topic': topic_id,
                                     'topicCount': topicCount,
-                                    'subTopicCount': subTopicCount
+                                    'subTopicCount': topicDetails[i]['subtopic_count']
                                   });
                             } else {
                               showDialog(
