@@ -93,11 +93,16 @@ class _Profile2State extends State<Profile2> {
                     children: [
                       Padding(padding: EdgeInsets.only(bottom: 10)),
                       Container(
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        width: MediaQuery.of(context).size.width * 0.4,
                         margin: EdgeInsets.only(left: 20),
                         child: Text(
                           UserName,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white, fontSize: 18),
+                          textAlign: TextAlign.center, 
+                          softWrap: true, 
+                          maxLines: 5,
+                          overflow: TextOverflow.ellipsis,                        
+                          style: TextStyle(color: Colors.white, fontSize: 18,),
                         ),
                       ),
                     ],

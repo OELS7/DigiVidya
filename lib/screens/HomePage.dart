@@ -38,6 +38,8 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
   CarouselController _carouselController = CarouselController();
   ValueNotifier<bool> Like = ValueNotifier<bool>(false);
   ValueNotifier<bool> Dislike = ValueNotifier<bool>(false);
+  ValueNotifier<bool> friendsAppriciation = ValueNotifier<bool>(false);
+  ValueNotifier<bool> friendsName = ValueNotifier<bool>(false);
   int currentIndex = 0;
   var isprofileuploaded = true;
   String contactno = "";
@@ -51,6 +53,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
   List<String> friendsInitials = [];
   Map<String, String> phoneContactNumber = {};
   late Isolate isolate;
+  Stopwatch stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -111,7 +114,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
           leading: Container(
             margin: const EdgeInsets.only(left: 10),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-            child: Image.asset("assets/app_log/DigiVidyaLogo.webp"),
+            child: Image.asset("assets/app_log/DigiVidyaLogo_old.webp"),
           ),
           title: const Center(
             child: Text(
@@ -169,21 +172,46 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
 
     if (dalyNotification.getString("Last open date") == FormatedDate) {
       // show Nothing
-     
     } else {
       // show Dialog Box
       dalyNotification.setString("Last open date", FormatedDate);
-       _fetchContact().then((_) {
-        _getFriendsList().then((_) {
-          _getContactPersonName().then((_) {
-            _getAppreciation().then((_) {
-              _getFriendsname(friendsNumber: AppreciatedBy).then((_) {
-                _showModal();
+
+//stopwatch.start();
+      Future.wait([
+        _fetchContact().then((_) {
+          // print(
+          //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by fetchContact Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%");
+          // stopwatch.reset();
+          // stopwatch.start();
+          _getFriendsList().then((_) {
+            // print(
+            //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by FriendsList Method : ${stopwatch.elapsedMilliseconds / 1000} %%%%%%%%%%%%%%%%%%%%%%%%%");
+            // stopwatch.reset();
+            // stopwatch.start();
+            _getContactPersonName().then((_) {
+              // print(
+              //     "%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by getContactPersonName Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%%%%%%");
+              // stopwatch.reset();
+              // stopwatch.start();
+              _getAppreciation().then((_) {
+                // print(
+                //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by getAppreciation Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%%%%%");
+                // stopwatch.reset();
+                // stopwatch.start();
+                _getFriendsname(friendsNumber: AppreciatedBy).then((_) {
+                  // print(
+                  //     "%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by getFriendsName Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%%%%");
+                  // stopwatch.stop();
+                  // stopwatch.reset();
+                  friendsAppriciation.value = true;
+                  friendsName.value = true;
+                });
               });
             });
           });
-        });
-      });
+        }),
+      ]);
+      _showModal();
     }
 
     //print(FormatedDate);
@@ -235,241 +263,491 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
   //Function for appreciate to your friend
   topicVideoViewBy() {
     return Scaffold(
-      body: SafeArea(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text("Appreciate to your friends",
-              style: TextStyle(
-                  fontFamily: 'Fontmain',
-                  fontSize: 20,
-                  color: const Color.fromRGBO(1, 118, 211, 1))),
-          Container(
-              height: MediaQuery.of(context).size.height * 0.185,
-              width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: personName.length,
-                padding: EdgeInsets.all(8),
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: 120,
-                    height: MediaQuery.of(context).size.height,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: const Color.fromRGBO(1, 118, 211, 1),
-                          child: CircleAvatar(
-                            radius: 37,
-                            backgroundColor: Colors.white,
-                            child: CircleAvatar(
-                              radius: 33,
-                              backgroundColor:
-                                  const Color.fromRGBO(1, 118, 211, 1),
-                              child: Center(
-                                  child: Text(
-                                "${personName[index][0]}",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 28),
-                              )),
-                            ),
+        body: SafeArea(
+      child: ValueListenableBuilder(
+        valueListenable: friendsName,
+        builder: (context, value, child) {
+          if (value) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text("Appreciate to your friends",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 20,
+                        color: const Color.fromRGBO(1, 118, 211, 1))),
+                Container(
+                    height: MediaQuery.of(context).size.height * 0.235,
+                    width: MediaQuery.of(context).size.width,
+                    padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: personName.length,
+                      padding: EdgeInsets.all(7),
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 120,
+                          height: MediaQuery.of(context).size.height,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundColor:
+                                    const Color.fromRGBO(1, 118, 211, 1),
+                                child: CircleAvatar(
+                                  radius: 37,
+                                  backgroundColor: Colors.white,
+                                  child: CircleAvatar(
+                                    radius: 33,
+                                    backgroundColor:
+                                        const Color.fromRGBO(1, 118, 211, 1),
+                                    child: Center(
+                                        child: Text(
+                                      "${personName[index][0]}",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 28),
+                                    )),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 2,
+                              ),
+                              Text(
+                                personName[index],
+                                style: TextStyle(fontSize: 15),
+                              )
+                            ],
                           ),
-                        ),
-                        SizedBox(
-                          height: 2,
-                        ),
-                        Text(
-                          personName[index],
-                          style: TextStyle(fontSize: 15),
-                        )
-                      ],
-                    ),
-                  );
-                },
-              )),
-          Divider(
-            color: Colors.blue,
-          ),
-          Text("EXCELLENT WORK !!",
-              style: TextStyle(
-                  fontFamily: 'Fontmain',
-                  fontSize: 28,
-                  color: const Color.fromRGBO(1, 118, 211, 1))),
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage(
-                        'assets/images/AppreciateToFriend-Modal.webp'))),
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
-            child: Text(
-                " You can also appreciate your friends for better digital skills.",
-                style: TextStyle(
-                    color: const Color.fromRGBO(1, 118, 211, 1), fontSize: 20)),
-          ),
-          Container(
-            height: 55,
-            width: 185,
-            margin: const EdgeInsets.all(15),
-            child: GestureDetector(
-              onTap: () {
-                _sendAppreciationToFriend().then((_) {
-                  Navigator.pop(context, false);
-                });
-              },
-              child: Center(
-                child: Container(
-                  height: MediaQuery.of(context).size.height,
-                  width: MediaQuery.of(context).size.width,
+                        );
+                      },
+                    )),
+                Divider(
+                  color: Colors.blue,
+                ),
+                Text("EXCELLENT WORK !!",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 28,
+                        color: const Color.fromRGBO(1, 118, 211, 1))),
+                Container(
+                  height: 200,
                   decoration: BoxDecoration(
                       image: DecorationImage(
                           image: AssetImage(
-                              'assets/images/AppreciateToFriend-Button.webp'),
-                          fit: BoxFit.fill)),
-                  child: Center(
-                    child: Text(
-                      'Appreciate',
-                      style: TextStyle(
-                        fontFamily: 'Fontmain',
-                        fontSize: 25,
-                        color: Colors.white,
+                              'assets/images/AppreciateToFriend-Modal.webp'))),
+                ),
+                // Container(
+                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
+                //   child: Text(
+                //       " You can also appreciate your friends for better digital skills.",
+                //       style: TextStyle(
+                //           color: const Color.fromRGBO(1, 118, 211, 1),
+                //           fontSize: 20)),
+                // ),
+                Container(
+                  height: 55,
+                  width: 185,
+                  margin: const EdgeInsets.all(15),
+                  child: GestureDetector(
+                    onTap: () {
+                      _sendAppreciationToFriend().then((_) {
+                        Navigator.pop(context, false);
+                      });
+                    },
+                    child: Center(
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: AssetImage(
+                                    'assets/images/AppreciateToFriend-Button.webp'),
+                                fit: BoxFit.fill)),
+                        child: Center(
+                          child: Text(
+                            'Appreciate',
+                            style: TextStyle(
+                              fontFamily: 'Fontmain',
+                              fontSize: 25,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
-      )),
-    );
+              ],
+            );
+          } else {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text("Appreciate to your friends",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 20,
+                        color: const Color.fromRGBO(1, 118, 211, 1))),
+                Container(
+                    height: MediaQuery.of(context).size.height * 0.235,
+                    width: MediaQuery.of(context).size.width,
+                    padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: personName.length,
+                      padding: EdgeInsets.all(7),
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 120,
+                          height: MediaQuery.of(context).size.height,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundColor:
+                                    const Color.fromRGBO(1, 118, 211, 1),
+                                child: CircleAvatar(
+                                  radius: 37,
+                                  backgroundColor: Colors.white,
+                                  child: CircleAvatar(
+                                    radius: 33,
+                                    backgroundColor:
+                                        const Color.fromRGBO(1, 118, 211, 1),
+                                    child: Center(
+                                        child: Text(
+                                      "${personName[index][0]}",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 28),
+                                    )),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 2,
+                              ),
+                              Text(
+                                personName[index],
+                                style: TextStyle(fontSize: 15),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    )),
+                Divider(
+                  color: Colors.blue,
+                ),
+                Text("EXCELLENT WORK !!",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 28,
+                        color: const Color.fromRGBO(1, 118, 211, 1))),
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(
+                              'assets/images/AppreciateToFriend-Modal.webp'))),
+                ),
+                // Container(
+                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
+                //   child: Text(
+                //       " You can also appreciate your friends for better digital skills.",
+                //       style: TextStyle(
+                //           color: const Color.fromRGBO(1, 118, 211, 1),
+                //           fontSize: 20)),
+                // ),
+                Container(
+                  height: 55,
+                  width: 185,
+                  margin: const EdgeInsets.all(15),
+                  child: GestureDetector(
+                    onTap: () {
+                      _sendAppreciationToFriend().then((_) {
+                        Navigator.pop(context, false);
+                      });
+                    },
+                    child: Center(
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: AssetImage(
+                                    'assets/images/AppreciateToFriend-Button.webp'),
+                                fit: BoxFit.fill)),
+                        child: Center(
+                          child: Text(
+                            'Appreciate',
+                            style: TextStyle(
+                              fontFamily: 'Fontmain',
+                              fontSize: 25,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        },
+      ),
+    ));
   }
 
   // to call function of appreciated by user friends
   topicAppreciatedBy() {
     return Scaffold(
       body: SafeArea(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Text("Appreciated by your friends ",
-              style: TextStyle(
-                  fontFamily: 'Fontmain',
-                  fontSize: 20,
-                  color: Color.fromRGBO(3, 45, 96, 1))),
-          Container(
-              //125
-              height: MediaQuery.of(context).size.height * 0.185,
-              width: MediaQuery.of(context).size.width,
-              //color: Colors.blue,
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: AppreciatedBy.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: 120,
-                    height: MediaQuery.of(context).size.height,
-                    padding: EdgeInsets.all(8),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Color.fromRGBO(3, 45, 96, 1),
-                          child: CircleAvatar(
-                            radius: 37,
-                            backgroundColor: Colors.white,
-                            child: CircleAvatar(
-                              radius: 33,
-                              backgroundColor: Color.fromRGBO(3, 45, 96, 1),
-                              child: Center(
-                                  child: Text(
-                                "${AppreciatedBy[index] == friend_List[index] ? personName[index][0] : "U"}",
+          child: ValueListenableBuilder(
+        valueListenable: friendsAppriciation,
+        builder: (context, value, child) {
+          if (value) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text("Appreciated by your friends ",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 20,
+                        color: Color.fromRGBO(3, 45, 96, 1))),
+                Container(
+                    //125
+                    height: MediaQuery.of(context).size.height * 0.235,
+                    width: MediaQuery.of(context).size.width,
+                    //color: Colors.blue,
+                    padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: AppreciatedBy.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 120,
+                          height: MediaQuery.of(context).size.height,
+                          padding: EdgeInsets.all(7),
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundColor: Color.fromRGBO(3, 45, 96, 1),
+                                child: CircleAvatar(
+                                  radius: 37,
+                                  backgroundColor: Colors.white,
+                                  child: CircleAvatar(
+                                    radius: 33,
+                                    backgroundColor:
+                                        Color.fromRGBO(3, 45, 96, 1),
+                                    child: Center(
+                                        child: Text(
+                                      "${AppreciatedBy[index] == friend_List[index] ? personName[index][0] : "U"}",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 28),
+                                    )),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 2,
+                              ),
+                              Text(
+                                AppreciatedBy[index] == friend_List[index]
+                                    ? personName[index]
+                                    : "U",
                                 style: TextStyle(
-                                    color: Colors.white, fontSize: 28),
-                              )),
-                            ),
+                                    color: Colors.black, fontSize: 15),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    )),
+                Divider(
+                  color: Color.fromRGBO(3, 45, 96, 1),
+                ),
+                Text("WELL DONE !!",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 28,
+                        color: Color.fromRGBO(3, 45, 96, 1))),
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(
+                              'assets/images/AppreciateByFriend-Modal.webp'))),
+                ),
+                // Container(
+                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
+                //   child: Text(" Your friends appreciate you.",
+                //       style: TextStyle(
+                //           color: Color.fromRGBO(3, 45, 96, 1), fontSize: 20)),
+                // ),
+                Container(
+                  height: 55,
+                  width: 185,
+                  margin: const EdgeInsets.all(15),
+                  child: GestureDetector(
+                    onTap: () {
+                      _carouselController.nextPage(
+                          curve: Curves.easeInOut,
+                          duration: Duration(milliseconds: 600));
+                    },
+                    child: Container(
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          // color: Color.fromRGBO(3, 45, 96, 1),
+                          borderRadius: BorderRadius.all(Radius.circular(30)),
+                          image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/images/AppreciateByFriend-Button.webp'),
+                              fit: BoxFit.fill)),
+                      child: Center(
+                        child: Text(
+                          'Next',
+                          style: TextStyle(
+                            fontFamily: 'Fontmain',
+                            fontSize: 25,
+                            color: Colors.white,
                           ),
                         ),
-                        SizedBox(
-                          height: 2,
-                        ),
-                        Text(
-                          AppreciatedBy[index] == friend_List[index] ? personName[index] : "U",
-                          style: TextStyle(color: Colors.black, fontSize: 15),
-                        )
-                      ],
-                    ),
-                  );
-                },
-              )),
-          Divider(
-            color: Color.fromRGBO(3, 45, 96, 1),
-          ),
-          Text("WELL DONE !!",
-              style: TextStyle(
-                  fontFamily: 'Fontmain',
-                  fontSize: 28,
-                  color: Color.fromRGBO(3, 45, 96, 1))),
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage(
-                        'assets/images/AppreciateByFriend-Modal.webp'))),
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
-            child: Text(" Your friends appreciate you.",
-                style: TextStyle(
-                    color: Color.fromRGBO(3, 45, 96, 1), fontSize: 20)),
-          ),
-          Container(
-            height: 55,
-            width: 185,
-            margin: const EdgeInsets.all(15),
-            child: GestureDetector(
-              onTap: () {
-                _carouselController.nextPage(
-                    curve: Curves.easeInOut,
-                    duration: Duration(milliseconds: 600));
-              },
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                    // color: Color.fromRGBO(3, 45, 96, 1),
-                    borderRadius: BorderRadius.all(Radius.circular(30)),
-                    image: DecorationImage(
-                        image: AssetImage(
-                            'assets/images/AppreciateByFriend-Button.webp'),
-                        fit: BoxFit.fill)),
-                child: Center(
-                  child: Text(
-                    'Next',
-                    style: TextStyle(
-                      fontFamily: 'Fontmain',
-                      fontSize: 25,
-                      color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
+              ],
+            );
+          } else {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text("Appreciated by your friends ",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 20,
+                        color: Color.fromRGBO(3, 45, 96, 1))),
+                Container(
+                    //125
+                    height: MediaQuery.of(context).size.height * 0.235,
+                    width: MediaQuery.of(context).size.width,
+                    //color: Colors.blue,
+                    padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: AppreciatedBy.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 120,
+                          height: MediaQuery.of(context).size.height,
+                          padding: EdgeInsets.all(7),
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 40,
+                                backgroundColor: Color.fromRGBO(3, 45, 96, 1),
+                                child: CircleAvatar(
+                                  radius: 37,
+                                  backgroundColor: Colors.white,
+                                  child: CircleAvatar(
+                                    radius: 33,
+                                    backgroundColor:
+                                        Color.fromRGBO(3, 45, 96, 1),
+                                    child: Center(
+                                        child: Text(
+                                      "${AppreciatedBy[index] == friend_List[index] ? personName[index][0] : "U"}",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 28),
+                                    )),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 2,
+                              ),
+                              Text(
+                                AppreciatedBy[index] == friend_List[index]
+                                    ? personName[index]
+                                    : "U",
+                                style: TextStyle(
+                                    color: Colors.black, fontSize: 15),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    )),
+                Divider(
+                  color: Color.fromRGBO(3, 45, 96, 1),
+                ),
+                Text("WELL DONE !!",
+                    style: TextStyle(
+                        fontFamily: 'Fontmain',
+                        fontSize: 28,
+                        color: Color.fromRGBO(3, 45, 96, 1))),
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(
+                              'assets/images/AppreciateByFriend-Modal.webp'))),
+                ),
+                // Container(
+                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
+                //   child: Text(" Your friends appreciate you.",
+                //       style: TextStyle(
+                //           color: Color.fromRGBO(3, 45, 96, 1), fontSize: 20)),
+                // ),
+                Container(
+                  height: 55,
+                  width: 185,
+                  margin: const EdgeInsets.all(15),
+                  child: GestureDetector(
+                    onTap: () {
+                      _carouselController.nextPage(
+                          curve: Curves.easeInOut,
+                          duration: Duration(milliseconds: 600));
+                    },
+                    child: Container(
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          // color: Color.fromRGBO(3, 45, 96, 1),
+                          borderRadius: BorderRadius.all(Radius.circular(30)),
+                          image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/images/AppreciateByFriend-Button.webp'),
+                              fit: BoxFit.fill)),
+                      child: Center(
+                        child: Text(
+                          'Next',
+                          style: TextStyle(
+                            fontFamily: 'Fontmain',
+                            fontSize: 25,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        },
       )),
     );
   }
 
   //To fetch contact list of user
-  _fetchContact() async {
+  Future<void> _fetchContact() async {
     List<Contact> _allContact = [];
 
     var status = await Permission.contacts.status;
