@@ -114,7 +114,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
           leading: Container(
             margin: const EdgeInsets.only(left: 10),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-            child: Image.asset("assets/app_log/DigiVidyaLogo_old.webp"),
+            child: Image.asset("assets/app_log/DigiVidyaLogo.webp"),
           ),
           title: const Center(
             child: Text(
