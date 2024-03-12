@@ -42,7 +42,7 @@ class _commingSoonAlertboxState extends State<commingSoonAlertbox> {
               left: MediaQuery.of(context).size.width * 0.1,
               right: MediaQuery.of(context).size.width * 0.1,
               child: Text(
-                "This section will be publish shortly.",
+                "This section will be published shortly.",
                 textAlign: TextAlign.start,
                 style: TextStyle(
                   fontSize: 16,

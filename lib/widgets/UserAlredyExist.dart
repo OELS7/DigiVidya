@@ -49,7 +49,7 @@ class _userAlreadyExistState extends State<userAlreadyExist> {
                 ),
                 child: Center(
                   child: Text(
-                    "You have not deleted your previous account.Please use your another contact number.",
+                    "You have not deleted your previous account.Please use another contact number.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 18,
