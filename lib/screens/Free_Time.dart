@@ -204,7 +204,7 @@ class _freetimeState extends State<freetime> {
         Map<String, dynamic> jsonRespons =
             jsonDecode(response.body.toString().replaceAll("\n", " "));
 
-        if (jsonRespons['status'] != "Already registered") {
+        if (jsonRespons['status']) {
           print(
               "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% New User Registered %%%%%%%%%%%%%%%%%%%%");
           String dirPath = (await getApplicationSupportDirectory()).path;
@@ -316,7 +316,7 @@ class _freetimeState extends State<freetime> {
                 internalServerErrorContext: internalServerErrorContext,
                 ErrorTitle: "Internal Server error",
                 description:
-                    "An internal server problem has occurred. Please try submitting your application again.",
+                    "Internal server problem has occurred. Please try again.",
                 retryButton: () {
                   Future.delayed(
                     Duration(milliseconds: 50),
@@ -343,7 +343,7 @@ class _freetimeState extends State<freetime> {
                 internalServerErrorContext: internalServerErrorContext,
                 ErrorTitle: "Internet Error",
                 description:
-                    "Error on the internet Kindly verify that you are able to access the internet.",
+                    "Looks like you might be offline. Please check your internet connection and try again.",
                 retryButton: () {
                   submitRequest(userName, mobileNumber, city, language,
                       device_id, freeTime, hours, minutes, 0);
@@ -360,7 +360,7 @@ class _freetimeState extends State<freetime> {
                 internalServerErrorContext: internalServerErrorContext,
                 ErrorTitle: "Internal Server error",
                 description:
-                    "An internal server problem has occurred. Please try submitting your application again.",
+                    "Internal server problem has occurred. Please try again.",
                 retryButton: () {
                   Future.delayed(
                     Duration(milliseconds: 50),

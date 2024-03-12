@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -14,7 +15,6 @@ import 'package:digividya/screens/FragmentFrame.dart';
 import 'package:digividya/widgets/ExitAppDialog.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -40,6 +40,8 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
   ValueNotifier<bool> Dislike = ValueNotifier<bool>(false);
   ValueNotifier<bool> friendsAppriciation = ValueNotifier<bool>(false);
   ValueNotifier<bool> friendsName = ValueNotifier<bool>(false);
+  ValueNotifier<bool> LoadingFrient = ValueNotifier(false);
+  ValueNotifier<bool> refreshList = ValueNotifier(false);
   int currentIndex = 0;
   var isprofileuploaded = true;
   String contactno = "";
@@ -51,9 +53,11 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
   List<String> filteredContactNumber = [];
   List<String> AppreciatedBy = [];
   List<String> friendsInitials = [];
-  Map<String, String> phoneContactNumber = {};
+  List<String> friendsNumberFromServer = [];
+  Map<String, dynamic> phoneContactNumber = {};
   late Isolate isolate;
   Stopwatch stopwatch = Stopwatch();
+  late SharedPreferences _sharedPreferences;
 
   @override
   void initState() {
@@ -69,7 +73,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
     return Future.delayed(
       Duration.zero,
       () {
-        print("**************** Page pop **********");
+        // print("**************** Page pop **********");
         return false;
       },
     );
@@ -114,7 +118,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
           leading: Container(
             margin: const EdgeInsets.only(left: 10),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-            child: Image.asset("assets/app_log/DigiVidyaLogo.webp"),
+            child: Image.asset("assets/app_log/DigiVidyaLogo_old.webp"),
           ),
           title: const Center(
             child: Text(
@@ -164,55 +168,68 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
     );
   }
 
+//=>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   // To take user last open app date
   Future<void> showAlert() async {
     SharedPreferences dalyNotification = await SharedPreferences.getInstance();
+    _sharedPreferences = await SharedPreferences.getInstance();
     DateTime date = DateTime.now();
     FormatedDate = DateFormat('dd-MM-yyyy').format(date);
 
-    if (dalyNotification.getString("Last open date") == FormatedDate) {
-      // show Nothing
-    } else {
-      // show Dialog Box
-      dalyNotification.setString("Last open date", FormatedDate);
+    var contactList = await _sharedPreferences.getString("processedContact");
 
-//stopwatch.start();
-      Future.wait([
-        _fetchContact().then((_) {
-          // print(
-          //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by fetchContact Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%");
-          // stopwatch.reset();
-          // stopwatch.start();
-          _getFriendsList().then((_) {
-            // print(
-            //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by FriendsList Method : ${stopwatch.elapsedMilliseconds / 1000} %%%%%%%%%%%%%%%%%%%%%%%%%");
-            // stopwatch.reset();
-            // stopwatch.start();
-            _getContactPersonName().then((_) {
-              // print(
-              //     "%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by getContactPersonName Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%%%%%%");
-              // stopwatch.reset();
-              // stopwatch.start();
-              _getAppreciation().then((_) {
-                // print(
-                //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by getAppreciation Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%%%%%");
-                // stopwatch.reset();
-                // stopwatch.start();
-                _getFriendsname(friendsNumber: AppreciatedBy).then((_) {
-                  // print(
-                  //     "%%%%%%%%%%%%%%%%%%%%%%%%%% Time taken by getFriendsName Method : ${stopwatch.elapsedMilliseconds/1000} %%%%%%%%%%%%%%%%%%%%%%");
-                  // stopwatch.stop();
-                  // stopwatch.reset();
-                  friendsAppriciation.value = true;
-                  friendsName.value = true;
-                });
-              });
-            });
-          });
-        }),
-      ]);
-      _showModal();
+    phoneContactNumber = jsonDecode(contactList ?? "{}");
+
+    print(
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% The Users Contact List : $phoneContactNumber %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+    friend_List = await _sharedPreferences.getStringList("friendsNumber") ?? [];
+
+    phoneContactNumber.forEach(
+      (key, value) {
+        friend_List.forEach(
+          (element) {
+            if (value == element) {
+              print("Result : ${value.toString()}, ${element}");
+              personName.add(key.toString());
+            }
+          },
+        );
+      },
+    );
+
+    print(
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% The Users Friends Contact List : $friend_List %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+    AppreciatedBy =
+        await _sharedPreferences.getStringList("UserAppreciation") ?? [];
+
+    print(
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% The Users Appreciation List : $AppreciatedBy %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///
+//
+
+    if (personName.length != 0) {
+      if (dalyNotification.getString("Last open date") == FormatedDate) {
+        // show Nothing
+      } else {
+        // show Dialog Box
+        dalyNotification.setString("Last open date", FormatedDate);
+        _showModal();
+        LoadingFrient.value = true;
+        friendsAppriciation.value = true;
+        friendsName.value = true;
+      }
+    } else {
+      print("Person Name list is Empty");
     }
+
+    // dalyNotification.setString("Last open date", FormatedDate);
+
+    // ProcessAppreciationData();
+    // _showModal();
 
     //print(FormatedDate);
   }
@@ -317,6 +334,10 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
                               ),
                               Text(
                                 personName[index],
+                                softWrap: false,
+                                maxLines: 2,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               )
                             ],
@@ -395,48 +416,107 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
                     height: MediaQuery.of(context).size.height * 0.235,
                     width: MediaQuery.of(context).size.width,
                     padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: personName.length,
-                      padding: EdgeInsets.all(7),
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: 120,
-                          height: MediaQuery.of(context).size.height,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 40,
-                                backgroundColor:
-                                    const Color.fromRGBO(1, 118, 211, 1),
-                                child: CircleAvatar(
-                                  radius: 37,
-                                  backgroundColor: Colors.white,
-                                  child: CircleAvatar(
-                                    radius: 33,
-                                    backgroundColor:
-                                        const Color.fromRGBO(1, 118, 211, 1),
-                                    child: Center(
-                                        child: Text(
-                                      "${personName[index][0]}",
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 28),
-                                    )),
-                                  ),
+                    child: ValueListenableBuilder(
+                      valueListenable: refreshList,
+                      builder: (context, value, child) {
+                        if (value) {
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: personName.length,
+                            padding: EdgeInsets.all(7),
+                            itemBuilder: (context, index) {
+                              return Container(
+                                width: 120,
+                                height: MediaQuery.of(context).size.height,
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 40,
+                                      backgroundColor:
+                                          const Color.fromRGBO(1, 118, 211, 1),
+                                      child: CircleAvatar(
+                                        radius: 37,
+                                        backgroundColor: Colors.white,
+                                        child: CircleAvatar(
+                                          radius: 33,
+                                          backgroundColor: const Color.fromRGBO(
+                                              1, 118, 211, 1),
+                                          child: Center(
+                                              child: Text(
+                                            "${personName[index][0]}",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 28),
+                                          )),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 2,
+                                    ),
+                                    Text(
+                                      personName[index],
+                                      softWrap: false,
+                                      maxLines: 2,
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 15),
+                                    )
+                                  ],
                                 ),
-                              ),
-                              SizedBox(
-                                height: 2,
-                              ),
-                              Text(
-                                personName[index],
-                                style: TextStyle(fontSize: 15),
-                              )
-                            ],
-                          ),
-                        );
+                              );
+                            },
+                          );
+                        } else {
+                          return IconButton(
+                              onPressed: () async {
+                                var contactList = await _sharedPreferences
+                                    .getString("processedContact");
+
+                                phoneContactNumber =
+                                    jsonDecode(contactList ?? "{}");
+
+                                print(
+                                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% The Users Contact List : $phoneContactNumber %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+                                friend_List = await _sharedPreferences
+                                        .getStringList("friendsNumber") ??
+                                    [];
+
+                                phoneContactNumber.forEach(
+                                  (key, value) {
+                                    friend_List.forEach(
+                                      (element) {
+                                        if (value == element) {
+                                          print(
+                                              "Result : ${value.toString()}, ${element}");
+                                          personName.add(key.toString());
+                                        }
+                                      },
+                                    );
+                                  },
+                                );
+
+                                print(
+                                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% The Users Friends Contact List : $friend_List %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+                                AppreciatedBy = await _sharedPreferences
+                                        .getStringList("UserAppreciation") ??
+                                    [];
+
+                                print(
+                                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% The Users Appreciation List : $AppreciatedBy %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+                                LoadingFrient.value = true;
+                                friendsAppriciation.value = true;
+                                friendsName.value = true;
+                                refreshList.value = true;
+                              },
+                              icon: Icon(Icons.refresh));
+                        }
                       },
                     )),
                 Divider(
@@ -525,48 +605,69 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
                     width: MediaQuery.of(context).size.width,
                     //color: Colors.blue,
                     padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: AppreciatedBy.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: 120,
-                          height: MediaQuery.of(context).size.height,
-                          padding: EdgeInsets.all(7),
-                          child: Column(
-                            children: [
-                              CircleAvatar(
-                                radius: 40,
-                                backgroundColor: Color.fromRGBO(3, 45, 96, 1),
-                                child: CircleAvatar(
-                                  radius: 37,
-                                  backgroundColor: Colors.white,
-                                  child: CircleAvatar(
-                                    radius: 33,
-                                    backgroundColor:
-                                        Color.fromRGBO(3, 45, 96, 1),
-                                    child: Center(
-                                        child: Text(
-                                      "${AppreciatedBy[index] == friend_List[index] ? personName[index][0] : "U"}",
+                    child: ValueListenableBuilder(
+                      valueListenable: LoadingFrient,
+                      builder: (context, value, child) {
+                        if (value) {
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: AppreciatedBy.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                width: 120,
+                                height: MediaQuery.of(context).size.height,
+                                padding: EdgeInsets.all(7),
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 40,
+                                      backgroundColor:
+                                          Color.fromRGBO(3, 45, 96, 1),
+                                      child: CircleAvatar(
+                                        radius: 37,
+                                        backgroundColor: Colors.white,
+                                        child: CircleAvatar(
+                                          radius: 33,
+                                          backgroundColor:
+                                              Color.fromRGBO(3, 45, 96, 1),
+                                          child: Center(
+                                              child: Text(
+                                            "${AppreciatedBy[index] == friend_List[index] ? personName[index][0] : "U"}",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 28),
+                                          )),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 2,
+                                    ),
+                                    Text(
+                                      AppreciatedBy[index] == friend_List[index]
+                                          ? personName[index]
+                                          : "U",
+                                      softWrap: false,
+                                      maxLines: 2,
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 28),
-                                    )),
-                                  ),
+                                          color: Colors.black, fontSize: 15),
+                                    )
+                                  ],
                                 ),
-                              ),
-                              SizedBox(
-                                height: 2,
-                              ),
-                              Text(
-                                AppreciatedBy[index] == friend_List[index]
-                                    ? personName[index]
-                                    : "U",
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 15),
-                              )
-                            ],
-                          ),
-                        );
+                              );
+                            },
+                          );
+                        } else {
+                          return AppreciatedBy.length == 0
+                              ? Center(
+                                  child: Text("You have no frients yet."),
+                                )
+                              : Center(
+                                  child: Text("please wait while Loading...."),
+                                );
+                        }
                       },
                     )),
                 Divider(
@@ -746,128 +847,6 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
     );
   }
 
-  //To fetch contact list of user
-  Future<void> _fetchContact() async {
-    List<Contact> _allContact = [];
-
-    var status = await Permission.contacts.status;
-    // check user granted permission or not ?
-    if (status.isGranted) {
-      //fetch contact list
-      _allContact = await ContactsService.getContacts();
-
-      // ReceivePort _MainthreadReciverPort = ReceivePort();
-
-      // await Isolate.spawn(processContact, {
-      //   "senderPort": _MainthreadReciverPort.sendPort,
-      //   "ContactsObject": _allContact
-      // });
-
-      // _MainthreadReciverPort.listen(
-      //   (message) {
-      //     // if (filteredContactNumber.contains(message[1].toString())) {
-      //     //   phoneContactNumber[message[0].toString()] = message[0].toString();
-      //     //   filteredContactNumber.add(message[1].toString());
-      //     // }
-
-      //     if (message is List) {
-      //       var mycontact = message as List<String>;
-
-      //       if (mycontact.isNotEmpty) {
-      //         phoneContactNumber[mycontact[0].toString()] =
-      //             mycontact[1].toString();
-      //         filteredContactNumber.add(mycontact[1].toString());
-      //         // print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      //        // print(phoneContactNumber);
-      //         // print(filteredContactNumber);
-      //       } else {}
-
-      //       // print("this is List of String");
-      //       // print(" $mycontact ");
-      //     } else {
-      //       print("this is another");
-      //     }
-
-      //     //   int i=1;
-      //     // print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ${i++}: $message %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-      //   },
-      // );
-
-      // _getFriendsList();
-
-      // Future.delayed(Duration(microseconds: 60));
-
-      List<Future<void>> future = [];
-      for (Contact _contact in _allContact) {
-        future.add(_processContact(_contact));
-      }
-
-      await Future.wait(future);
-
-      //print("%%%%%%%%%%%%%%%%%% $filteredContactNumber %%%%%%%%%%%%%%%%%");
-    } else {}
-  }
-
-  //For Friendlist
-  _getFriendsList() async {
-    String dirPath = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dirPath/appInfo.json");
-
-    if (jsonFile.existsSync()) {
-      var jsonData = jsonDecode(jsonFile.readAsStringSync());
-      //API call for friendlist
-      // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateFriends";
-      String url = "https://digividya.in/DigiVidyaAPI/api/updateFriends";
-
-      print(
-          "%%%%%%%%%%%%%%%%%%%%%%% ${filteredContactNumber} %%%%%%%%%%%%%%%%%%%%%%");
-
-      var userData = {
-        "user_id": jsonData['User_Id'].toString(),
-        "contact_list": filteredContactNumber
-            .toString()
-            .split("[")
-            .last
-            .split("]")
-            .first
-            .toString()
-            .replaceAll(", ", ","),
-        "app_opened_date": FormatedDate
-      };
-
-      var response = await http.post(Uri.parse(url), body: userData);
-      if (response.statusCode == 200) {
-        print("Connection");
-        print("Connection established.....");
-        Map<String, dynamic> jsonRespons =
-            jsonDecode(response.body.toString().replaceAll("\n", " "));
-        if (jsonRespons.isNotEmpty) {
-          print(
-              "%%%%%%%%%%%%%%%%%%%%%%%% Response Receive : ${jsonRespons['new_friend_list']} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-          //Cheak any number add/update in contact list if found add it in list
-          for (var number = 0;
-              number < jsonRespons['new_friend_list'].length;
-              number++) {
-            friend_List.add(jsonRespons['new_friend_list'][number]);
-          }
-        }
-      } else {
-        print("Connection failed ... ");
-      }
-    }
-  }
-
-  // Finding the friends name that matches with my contact`
-  _getContactPersonName() async {
-    List<Future<void>> _personName = [];
-
-    friend_List.forEach((element) {
-      _personName.add(_getFriendsName(element));
-    });
-
-    await Future.wait(_personName);
-  }
-
   //For back button
   Future<bool> _OnBackButtonPress() {
     return Future.delayed(
@@ -880,85 +859,6 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
         return false;
       },
     );
-  }
-
-  //Function for display which friends appreciate you
-  _getAppreciation() async {
-    String dirPath = (await getApplicationSupportDirectory()).path;
-    //API Call for which friends appreciate you
-    // String url =
-    // "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchMyAppreciation";
-    String url = "https://digividya.in/DigiVidyaAPI/api/fetchMyAppreciation";
-
-    File JsonFile = File("$dirPath/appInfo.json");
-    var jsonData = jsonDecode(JsonFile.readAsStringSync());
-    String userId = jsonData['User_Id'].toString();
-
-    var userData = {"user_id": userId};
-
-    var response = await http.post(Uri.parse(url), body: userData);
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> jsonRespons =
-          jsonDecode(response.body.toString().replaceAll("\n", " "));
-      List<dynamic> myAppreciation = jsonRespons['new_friend_list'];
-
-      //Check any one appreciate or not
-      if (myAppreciation.isNotEmpty) {
-        for (var number = 0; number < myAppreciation.length; number++) {
-          AppreciatedBy.add(myAppreciation[number].toString());
-        }
-        print(jsonRespons['new_friend_list']);
-      } else {
-        AppreciatedBy = [];
-        print("No friends");
-      }
-    } else {}
-  }
-
-  //Match number and name from contactlist and display initials of friendlist as user save their number in phone contact list
-  _getFriendsname({required List<String> friendsNumber}) async {
-    List<Future<void>> _getInitial = [];
-
-    friendsNumber.forEach((element) {
-      _getInitial.add(createFirendsInitialsList(element));
-    });
-
-    await Future.wait(_getInitial);
-
-    // List<Contact> contacts = await ContactsService.getContacts();
-    // for (var phoneNumbers in contacts) {
-    //   phoneNumbers.phones!.map((e) {
-    //     for (var number = 0; number < friendsNumber.length; number++) {
-    //       if (friendsInitials.isEmpty) {
-    //         if (e.value.toString() == friendsNumber[number]) {
-    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-    //         }
-
-    //         if (e.value.toString() == "+91${friendsNumber[number]}") {
-    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-    //         }
-    //       } else {
-    //         if (e.value.toString() == friendsNumber[number] &&
-    //             !friendsInitials
-    //                 .contains(phoneNumbers.displayName.toString()[0])) {
-    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-    //         }
-
-    //         if ((e.value.toString() == friendsNumber[number] &&
-    //                 !friendsInitials
-    //                     .contains(phoneNumbers.displayName.toString()[0])) ||
-    //             (e.value.toString() == "+91${friendsNumber[number]}" &&
-    //                 !friendsInitials
-    //                     .contains(phoneNumbers.displayName.toString()[0]))) {
-    //           friendsInitials.add(phoneNumbers.displayName.toString()[0]);
-    //         }
-    //       }
-    //     }
-    //   }).join(",");
-    // }
-
-    // print(friendsInitials);
   }
 
   //function for send appreciation to your friend
@@ -1017,6 +917,105 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
     });
   }
 
+  // void ProcessAppreciationData() async {
+  //   // _fetchContactList();
+
+  //   prepareContact();
+  // }
+
+  // void _fetchContactList() async {
+  //   _sharedPreferences = await SharedPreferences.getInstance();
+
+  //   if (!_sharedPreferences.containsKey("processedContact")) {
+  //     //In this block we fetch all the contact and fillter and formate in valide phone number
+  //     List<Contact> _allContact = [];
+
+  //     var status = await Permission.contacts.status;
+  //     // check user granted permission or not ?
+  //     if (status.isGranted) {
+  //       //fetch contact list
+  //       _allContact = await ContactsService.getContacts();
+
+  //       List<Future<void>> future = []; // this is list of future method
+  //       for (Contact _contact in _allContact) {
+  //         print("Processing Contacts");
+  //         future
+  //             .add(_processContact(_contact)); // This is the future void method
+  //       }
+
+  //       print("waiting for result");
+
+  //       await Future.wait(future); // This line perform paraller processing
+  //       print("Contact Processing completd");
+
+  //       print("Waiting for friends Number from Server");
+  //       //getting friends number from server
+  //       await getFriendsNumberFromServer().then((value) {
+  //         friendsNumberFromServer = value;
+  //       });
+
+  //       print("friends Number receive");
+
+  //       if (!_sharedPreferences.containsKey("processedContact") &&
+  //           !_sharedPreferences.containsKey("friendsNumber")) {
+  //         print("Inserting in Shared Preference");
+  //         _sharedPreferences.setString(
+  //             "processedContact", jsonEncode(phoneContactNumber));
+  //         _sharedPreferences.setStringList(
+  //             "friendsNumber", friendsNumberFromServer);
+  //       }
+
+  //       print("Number of Friend got from Server : ${friendsNumberFromServer}");
+  //     } else {}
+  //   } else {
+  //     // In this Block we keep track of new contact number is added in the device
+  //     print(
+  //         "In this Block we keep track of new contact number is added in the device");
+  //     List<Contact> _allContact = [];
+
+  //     var status = await Permission.contacts.status;
+  //     // check user granted permission or not ?
+  //     if (status.isGranted) {
+  //       //fetch contact list
+  //       _allContact = await ContactsService.getContacts();
+
+  //       List<Future<void>> future = [];
+  //       for (Contact _contact in _allContact) {
+  //         future.add(_processContact(_contact));
+  //       }
+
+  //       await Future.wait(future);
+
+  //       print(
+  //           "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $filteredContactNumber %%%%%%%%%%%%%%%%%%%%%%");
+
+  //       //getting friends number from server
+  //       await getFriendsNumberFromServer().then((value) {
+  //         friendsNumberFromServer = value;
+  //       });
+
+  //       if (_sharedPreferences.getString("processedContact") != null &&
+  //           _sharedPreferences.getStringList("friendsNumber") != null) {
+  //         Map<String, dynamic> oldContact = jsonDecode(
+  //             await _sharedPreferences.getString("processedContact") ?? "{}");
+
+  //         phoneContactNumber.forEach((key, value) {
+  //           if (!oldContact.containsKey(key)) {
+  //             oldContact[key] = value;
+  //             print(
+  //                 "%%%%%%%%%%%%%%%%%%%%% Contact Update %%%%%%%%%%%%%%%%%%%%%%%");
+  //           }
+  //         });
+
+  //         _sharedPreferences.setString(
+  //             "processedContact", jsonEncode(oldContact));
+  //       }
+
+  //       print("Number of Friend got from Server : ${friendsNumberFromServer}");
+  //     } else {}
+  //   }
+  // }
+
   Future<void> _processContact(Contact contact) async {
     // Process each phone number of the contact
     for (Item phone in contact.phones!) {
@@ -1038,52 +1037,153 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _getFriendsName(String element) async {
-    phoneContactNumber.forEach((key, value) {
-      if (value == element) {
-        personName.add(key.toString());
+  Future<List<String>> getFriendsNumberFromServer() async {
+    List<String> friendsNumber = [];
+    String dirPath = (await getApplicationSupportDirectory()).path;
+    File jsonFile = File("$dirPath/appInfo.json");
+    DateTime date = DateTime.now();
+    FormatedDate = DateFormat('dd-MM-yyyy').format(date);
+    var jsonData = jsonDecode(jsonFile.readAsStringSync());
+    // String LocalTestingLink = "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateFriends";
+    String getNumber_Url =
+        "https://digividya.in/DigiVidyaAPI/api/updateFriends";
+    var userData = {
+      "user_id": jsonData['User_Id'].toString(),
+      "contact_list": filteredContactNumber
+          .toString()
+          .split("[")
+          .last
+          .split("]")
+          .first
+          .toString()
+          .replaceAll(", ", ","),
+      "app_opened_date": FormatedDate
+    };
+
+    try {
+      var response = await http.post(Uri.parse(getNumber_Url), body: userData);
+      if (response.statusCode == 200) {
+        print("Connection");
+        print("Connection established.....");
+        Map<String, dynamic> jsonRespons =
+            jsonDecode(response.body.toString().replaceAll("\n", " "));
+        if (jsonRespons.isNotEmpty) {
+          //Cheak any number add/update in contact list if found add it in list
+          for (var number = 0;
+              number < jsonRespons['new_friend_list'].length;
+              number++) {
+            friendsNumber.add(jsonRespons['new_friend_list'][number]);
+          }
+        }
+      } else {
+        print("Connection failed ... ${response.statusCode} ");
       }
-    });
+    } on HttpException catch (e) {
+      print("Exception got : ${e.message.toString()}");
+    }
+
+    return friendsNumber;
   }
 
-  Future<void> createFirendsInitialsList(String element) async {
-    phoneContactNumber.forEach((key, value) {
-      if (value == element) {
-        friendsInitials.add(key.toString()[0]);
+  // Getting User Appreciation List From Server
+  void _getMyAppreciationList() async {
+    // String LocalTestingLink = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchMyAppreciation";
+    String getappreciationList_Url =
+        "https://digividya.in/DigiVidyaAPI/api/fetchMyAppreciation";
+    String dirPath = (await getApplicationSupportDirectory()).path;
+    File JsonFile = File("$dirPath/appInfo.json");
+    var jsonData = jsonDecode(JsonFile.readAsStringSync());
+    String userId = jsonData['User_Id'].toString();
+    List<String> AppreciatedBy = [];
+
+    try {
+      var userData = {"user_id": userId};
+
+      var response =
+          await http.post(Uri.parse(getappreciationList_Url), body: userData);
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonRespons =
+            jsonDecode(response.body.toString().replaceAll("\n", " "));
+        List<dynamic> myAppreciation = jsonRespons['new_friend_list'];
+
+        //Check any one appreciate or not
+        if (myAppreciation.isNotEmpty) {
+          for (var number = 0; number < myAppreciation.length; number++) {
+            AppreciatedBy.add(myAppreciation[number].toString());
+          }
+          _sharedPreferences = await SharedPreferences.getInstance();
+          if (!_sharedPreferences.containsKey("UserAppreciation")) {
+            _sharedPreferences.setStringList("UserAppreciation", AppreciatedBy);
+          } else {
+            if (_sharedPreferences
+                .getStringList("UserAppreciation")!
+                .isNotEmpty) {
+              _sharedPreferences.setStringList(
+                  "UserAppreciation", AppreciatedBy);
+            } else {}
+          }
+        } else {
+          AppreciatedBy = [];
+        }
       }
-    });
+    } on http.ClientException catch (e) {
+      print("Exception got :${e.message.toString()}");
+    }
+
+    print("Friends Number who Appreciated You : ${AppreciatedBy}");
+  }
+
+  void prepareContact() async {
+    List<Contact> _contact = await ContactsService.getContacts();
+    stopwatch.start();
+    print("Entering in Contact Processing Phas");
+    for (var singleContact = 0;
+        singleContact < _contact.length;
+        singleContact++) {
+      ReceivePort mainThreadReceiver = ReceivePort();
+      Isolate isolate = await Isolate.spawn(filtercontact, {
+        "ContactOfPerson": _contact[singleContact],
+        "MainthreadPort": mainThreadReceiver.sendPort
+      });
+      mainThreadReceiver.listen((message) {
+        phoneContactNumber[message[0].toString()] = message[1].toString();
+        filteredContactNumber.add(message[1].toString());
+      });
+
+      print(
+          "%%%%%%%%%%%%%%%%%%%%%%%%%% Contact Number ${singleContact + 1} is Filtered %%%%%%%%%%%%%%%%%%%%%%%%");
+    }
+
+    print(
+        "Time Taken to fillter the valid MobileNumber : ${(stopwatch.elapsedMilliseconds / 1000).toString()}");
+
+    stopwatch.stop();
   }
 }
 
-void processContact(Map<String, dynamic> message) {
-  var contacts = message["ContactsObject"] as List<Contact>;
-  SendPort senderPort = message["senderPort"] as SendPort;
-  List<String> personContact = []; // Initialize inside the loop
+void filtercontact(dynamic message) async {
+  Contact contact = message['ContactOfPerson'] as Contact;
+  SendPort sendPort = message['MainthreadPort'] as SendPort;
 
-  for (Contact _contact in contacts) {
-    if (_contact.phones != null) {
-      for (Item phone in _contact.phones!) {
-        // Format phone number
-        PhoneNumber phoneNumber = PhoneNumber.parse(phone.value.toString(),
-            callerCountry: IsoCode.IN);
+  // Process each phone number of the contact
+  for (Item phone in contact.phones!) {
+    // Format phone number
 
-        String formattedNumber = phoneNumber.international.toString();
+    PhoneNumber phoneNumber =
+        PhoneNumber.parse(phone.value.toString(), callerCountry: IsoCode.IN);
 
-        // Remove country code and store 10-digit numbers
-        if (formattedNumber.length == 13) {
-          formattedNumber = formattedNumber.substring(3); // Remove country code
-          if (formattedNumber.length == 10) {
-            // Initialize inside the loop to avoid reusing the same object
-            // personContact = ["", ""];
-            personContact.add(_contact.displayName!.toString());
-            personContact.add(formattedNumber.toString());
-            // print(
-            //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $personContact %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-            Future.delayed(Duration(milliseconds: 10));
-            senderPort.send(personContact);
-            personContact.clear();
-          }
-        }
+    String formattedNumber = phoneNumber.international.toString();
+
+    // Remove country code and store 10-digit numbers
+    if (formattedNumber.length == 13) {
+      formattedNumber = formattedNumber.substring(3); // Remove country code
+      if (formattedNumber.length == 10) {
+        // phoneContactNumber[contact.displayName!] = formattedNumber;
+        // filteredContactNumber.add(formattedNumber);
+        print(
+            "thread send this Data ${[contact.displayName!, formattedNumber]}");
+        sendPort.send([contact.displayName!, formattedNumber]);
       }
     }
   }

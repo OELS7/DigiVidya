@@ -227,7 +227,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         GestureDetector(
                           onTap: () async {
                             print("Start button pressesd");
-                            if (topicDetails[i]['subtopic_count'] != 0) {
+                            if (topicDetails[i]['subtopic_count']!=0) {
                               player.stopAudio();
                               Navigator.of(context).pushReplacementNamed(
                                   '/subTopicPage',
@@ -235,7 +235,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                                     'section': sectionID,
                                     'topic': topic_id,
                                     'topicCount': topicCount,
-                                    'subTopicCount': topicDetails[i]['subtopic_count']
+                                    'subTopicCount': subTopicCount
                                   });
                             } else {
                               showDialog(
@@ -300,8 +300,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         ScrollDirection.reverse)) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
-          topic_id =
-              int.parse(topicIds[_fixedExtentScrollController.selectedItem]);
+          topic_id =topicIds[_fixedExtentScrollController.selectedItem];
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
@@ -320,8 +319,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     } else {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
-          topic_id =
-              int.parse(topicIds[_fixedExtentScrollController.selectedItem]);
+          topic_id =topicIds[_fixedExtentScrollController.selectedItem];
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
@@ -415,9 +413,9 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
             topicDetails.forEach((element) {
               topicLike.add(element['likes_counts'].toString());
               topicView.add(element['views_count'].toString());
-              // subTopicCountList.add(element['subtopic_count'].toString());
+              subTopicCountList.add(element['subtopic_count'].toString());
             });
-            // subTopicCount = int.parse(subTopicCountList[0]);
+            subTopicCount = int.parse(subTopicCountList[0]);
           });
 
           var jsonData = jsonDecode(jsonFile.readAsStringSync());
@@ -454,7 +452,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                   internalServerErrorContext: internalServerErrorContext,
                   ErrorTitle: "Internet Error",
                   description:
-                      "Error on the internet Kindly verify that you are able to access the internet.",
+                      "Looks like you might be offline. Please check your internet connection and try again.",
                   retryButton: () {
                     Future.delayed(Duration(milliseconds: 50), () {
                       getAllTopicDetails();
@@ -473,7 +471,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                   internalServerErrorContext: internalServerErrorContext,
                   ErrorTitle: "Internal Server error",
                   description:
-                      "An internal server problem has occurred. Please try submitting your application again.",
+                      "Internal server problem has occurred. Please try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),

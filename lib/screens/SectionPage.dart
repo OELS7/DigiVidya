@@ -297,8 +297,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               nextTrackIndex: (_fixedExtentScrollController.selectedItem));
         });
       });
-      // print("upward scrolling");
-      // print("Section ${_fixedExtentScrollController.selectedItem+1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
+      print("upward scrolling");
+      print("Section ${_fixedExtentScrollController.selectedItem+1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
     } else {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -311,8 +311,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               previousTrackIndex: _fixedExtentScrollController.selectedItem);
         });
       });
-      print("revers scrolling");
-      print("Section ${_fixedExtentScrollController.selectedItem+1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
+      // print("revers scrolling");
+      // print("Section ${_fixedExtentScrollController.selectedItem+1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
     }
   }
 
@@ -395,7 +395,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               cardsAudio = jsonRespons['section_aud'];
               sectionTitle = sectionDetail[0]['DS_NAME'];
               sectionId = sectionDetail[0]['DS_ID'];
-             // topicCount = sectionDetail[0]['topic_count'];
+              // topicCount = sectionDetail[0]['topic_count'];
 
             });
             cardImage.forEach((key, value) {
@@ -432,7 +432,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               return InternetErrorDialog(
                 internetErrorDialogContext: dialogContext,
                 message:
-                    "Status code ${response.statusCode} Internal server error please try after some time.",
+                    "Internal server problem has occurred. Please try again.",
               );
             },
           );
@@ -449,7 +449,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                   internalServerErrorContext: internalServerErrorContext,
                   ErrorTitle: "Internet Error",
                   description:
-                      "Error on the internet Kindly verify that you are able to access the internet.",
+                      " Looks like you might be offline. Please check your internet connection and try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -470,7 +470,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                   internalServerErrorContext: internalServerErrorContext,
                   ErrorTitle: "Internal Server error",
                   description:
-                      "An internal server problem has occurred. Please try submitting your application again.",
+                      " Internal server problem has occurred. Please try again.",
                   retryButton: () {
                     getSectionDetails().then((_) {
                       Navigator.of(context).pop(internalServerErrorContext);
@@ -648,7 +648,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
           var internetErrorContext = context;
           return InternetErrorDialog(
             internetErrorDialogContext: internetErrorContext,
-            message: "Please check your internet connectivity..",
+            message: "Looks like you might be offline. Please check your internet connection and try again.",
           );
         },
       );

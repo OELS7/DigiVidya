@@ -2,16 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-//import 'package:digividya/screens/Register.dart';
 import 'package:digividya/screens/HomePage.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
 import 'package:digividya/screens/LoginType.dart';
 import 'package:digividya/widgets/internalServerError.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 
 // ignore: must_be_immutable
 class Splash extends StatefulWidget {
@@ -29,7 +27,6 @@ class _SplashState extends State<Splash> {
   String GuestId = "";
   var values;
   Connectivity _connectivity = Connectivity();
-  late SharedPreferences _sharedPreferences;
 
   get title => null;
 
@@ -58,20 +55,24 @@ class _SplashState extends State<Splash> {
 
   //Function for device id
   Future<String> getDeviceId(String userId) async {
-    Map<String, dynamic> mobilenumber = {'user_id': userId};
+    Map<String, dynamic> UserId = {'user_id': userId};
+
+    //print("%%%%%%%%%%%%%%%%%%%%%%%% User Id : $userId %%%%%%%%%%%%%%%%%%%%%");
 
     //API call for user device id
     // var url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/singleUserDeviceID";
    var url = "https://digividya.in/DigiVidyaAPI/api/singleUserDeviceID";
     try {
-      var response = await http.post(Uri.parse(url), body: mobilenumber);
+      var response = await http.post(Uri.parse(url), body: UserId);
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonRespons =
             jsonDecode(response.body.toString().replaceAll("\n", " "));
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%% device Id From Server : ${jsonRespons['device_id'].toString()} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+            //print("%%%%%%%%%%%%%%%%%%%%%%%%%%% device Id From Server : ${jsonRespons['device_id'].toString()} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         return jsonRespons['device_id'].toString();
       } else {
+        // print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Response Status code : ${response.statusCode} %%%%%%%%%%%%%%%%%%%%%%");
+        // print("${response.body}");
         // If not get device ID show dialog
         showDialog(
           context: context,
@@ -81,7 +82,7 @@ class _SplashState extends State<Splash> {
                         internalServerErrorContext: internetErrorContext,
                         ErrorTitle: "Internal Server Error",
                         description:
-                            "Thier is any issue in server side please retry.",
+                            "Internal server problem has occurred. Please try again.",
                         ButtonText: "ok",
                         retryButton: () {
                           Future.delayed(Duration(milliseconds: 80),(){
@@ -160,7 +161,7 @@ class _SplashState extends State<Splash> {
                         internalServerErrorContext: internetErrorDialog,
                         ErrorTitle: "Internet Error",
                         description:
-                            "Error on the internet Kindly verify that you are able to access the internet.",
+                            "Looks like you might be offline. Please check your internet connection and try again.",
                         ButtonText: "ok",
                         retryButton: () {
                           Navigator.of(internetErrorDialog).pop();

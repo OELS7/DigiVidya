@@ -245,7 +245,6 @@ class _supTopicPageState extends State<supTopicPage>
                           player.stopAudio();
 
                           if (contentUrls.length != 0) {
-                            
                             _PlayContent(
                                 contentList: contentUrls, FileName: FileName);
                           } else {
@@ -453,7 +452,7 @@ class _supTopicPageState extends State<supTopicPage>
                   internalServerErrorContext: internalServerErrorContext,
                   ErrorTitle: "Internet Error",
                   description:
-                      "Error on the internet Kindly verify that you are able to access the internet.",
+                      "Looks like you might be offline. Please check your internet connection and try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -478,7 +477,7 @@ class _supTopicPageState extends State<supTopicPage>
                   internalServerErrorContext: internalServerErrorContext,
                   ErrorTitle: "Internet Error",
                   description:
-                      "Error on the internet Kindly verify that you are able to access the internet.",
+                      "Looks like you might be offline. Please check your internet connection and try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -500,7 +499,7 @@ class _supTopicPageState extends State<supTopicPage>
                   internalServerErrorContext: internalServerErrorContext,
                   ErrorTitle: "Internal Server error",
                   description:
-                      "An internal server problem has occurred. Please try submitting your application again.",
+                      "Internal server problem has occurred. Please try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
