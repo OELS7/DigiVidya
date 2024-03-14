@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:digividya/screens/HomePage.dart';
 import 'package:digividya/widgets/InternalServerError.dart';
 import 'package:digividya/widgets/userAlredyExist.dart';
+import 'package:digividya/widgets/SubmittingIndecator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -29,6 +30,7 @@ class _freetimeState extends State<freetime> {
   String device_id = "";
   String language = "";
   Connectivity _connectivity = Connectivity();
+  var SubmittingIndecatorContext;
   @override
   void initState() {
     super.initState();
@@ -194,6 +196,8 @@ class _freetimeState extends State<freetime> {
       'has_paid': "0"
     };
 
+    _ShowLoadingAlert();
+
     try {
       //API call for user info insert in Database
       // var url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertUserInfo";
@@ -209,7 +213,7 @@ class _freetimeState extends State<freetime> {
               "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% New User Registered %%%%%%%%%%%%%%%%%%%%");
           String dirPath = (await getApplicationSupportDirectory()).path;
           File jsonFile = File("$dirPath/appInfo.json");
-          
+
           if (!await jsonFile.exists()) {
             jsonFile.createSync(recursive: true);
             Map<String, dynamic> userData = {
@@ -239,6 +243,8 @@ class _freetimeState extends State<freetime> {
                 isrepeat: true,
                 preciseAlarm: true,
                 summary: "Daily reminder");
+
+              Navigator.pop(SubmittingIndecatorContext,false);
 
             Future.delayed(Duration(milliseconds: 50), () {
               Navigator.pushReplacement(
@@ -285,7 +291,9 @@ class _freetimeState extends State<freetime> {
                   preciseAlarm: true,
                   summary: "Daily reminder");
 
-              Future.delayed(Duration(milliseconds: 600), () {
+                  Navigator.pop(SubmittingIndecatorContext,false);
+
+              Future.delayed(Duration(milliseconds: 50), () {
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -294,6 +302,7 @@ class _freetimeState extends State<freetime> {
               });
             }
           } else {
+            Navigator.pop(SubmittingIndecatorContext,false);
             print(
                 "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Showwing Dialog Box for alredy Register user %%%%%%%%%%%%%%%%%%%%%%%%%");
             //If user alerady exit then show dialog
@@ -307,7 +316,9 @@ class _freetimeState extends State<freetime> {
         }
       } else {
         //If internal server error occured
-        print("%%%%%%%%%%%%%%%%%%%%% Server Status Code : ${response.statusCode} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        Navigator.pop(SubmittingIndecatorContext,false);
+        print(
+            "%%%%%%%%%%%%%%%%%%%%% Server Status Code : ${response.statusCode} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         showDialog(
           context: context,
           builder: (context) {
@@ -335,6 +346,7 @@ class _freetimeState extends State<freetime> {
       print("Error from Free time : ${e.message}");
       final _checkConnectivity = await _connectivity.checkConnectivity();
       if (_checkConnectivity == ConnectivityResult.none) {
+        Navigator.pop(SubmittingIndecatorContext,false);
         showDialog(
           context: context,
           builder: (context) {
@@ -352,6 +364,7 @@ class _freetimeState extends State<freetime> {
           },
         );
       } else {
+        Navigator.pop(SubmittingIndecatorContext,false);
         showDialog(
           context: context,
           builder: (context) {
@@ -376,5 +389,15 @@ class _freetimeState extends State<freetime> {
         );
       }
     }
+  }
+
+  void _ShowLoadingAlert() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        SubmittingIndecatorContext = context;
+        return SubmittingIndecator();
+      },
+    );
   }
 }

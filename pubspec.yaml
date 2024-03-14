@@ -1,7 +1,7 @@
 name: digividya
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.20
+version: 0.1.21
 # Change version code when you have to upload bundle on playstore.
 
 
@@ -44,6 +44,7 @@ dependencies:
   phone_numbers_parser: ^8.1.3
   flutter_libphonenumber: ^2.2.1
   upgrader: ^9.0.0
+  lottie: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -76,12 +77,7 @@ flutter:
     - assets/images/Englishinvitation.webp
     - assets/images/Button-23-min.webp
     - assets/app_icons/heart.png
-    - assets/images/old-woman_2.webp
     - assets/images/Language.webp
-    - assets/images/swatiFace.png
-    - assets/images/rameshFace.png
-    - assets/images/Old man with device.png
-    - assets/images/OLD Man.png
     - assets/images/Handset_change_alert.png
     - assets/images/ProfileDrawer.webp
     - assets/images/ProfileIcon.webp
@@ -102,6 +98,7 @@ flutter:
     - assets/images/Registration & Pay Now UI_ 23 Jan Updated-04-04.png
     - assets/AppIntroVideos/Marathi/Marathi.mp4
     - assets/AppIntroVideos/Hindi/Hindi.mp4
+    - assets/Animation/Animation - 1710389401962.json
 
   fonts:
     - family: Fontmain
