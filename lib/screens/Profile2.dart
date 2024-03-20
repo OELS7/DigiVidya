@@ -112,22 +112,22 @@ class _Profile2State extends State<Profile2> {
           Column(
             children: [
               Padding(padding: EdgeInsets.fromLTRB(5, 40, 5, 10)),
-              Container(
-                margin: EdgeInsets.all(12),
-                height: MediaQuery.of(context).size.height * 0.065,
-                width: MediaQuery.of(context).size.width * 0.69,
-                child: OutlinedButton.icon(
-                  icon: Icon(Icons.supervised_user_circle_sharp),
-                  label: Text("Profile"),
-                  onPressed: () => print("it's pressed"),
-                  style: ElevatedButton.styleFrom(
-                    side: BorderSide(width: 1.0, color: Colors.blue),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32.0),
-                    ),
-                  ),
-                ),
-              ),
+              // Container(
+              //   margin: EdgeInsets.all(12),
+              //   height: MediaQuery.of(context).size.height * 0.065,
+              //   width: MediaQuery.of(context).size.width * 0.69,
+              //   child: OutlinedButton.icon(
+              //     icon: Icon(Icons.supervised_user_circle_sharp),
+              //     label: Text("Profile"),
+              //     onPressed: () => print("it's pressed"),
+              //     style: ElevatedButton.styleFrom(
+              //       side: BorderSide(width: 1.0, color: Colors.blue),
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(32.0),
+              //       ),
+              //     ),
+              //   ),
+              // ),
               Container(
                 margin: EdgeInsets.all(15),
                 height: MediaQuery.of(context).size.height * 0.065,

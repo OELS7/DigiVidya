@@ -1,7 +1,7 @@
 name: digividya
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.21
+version: 0.1.22
 # Change version code when you have to upload bundle on playstore.
 
 
@@ -66,7 +66,7 @@ flutter:
     - assets/images/submit_btn.webp
     - assets/images/marathi.webp
     - assets/images/hindi.webp
-    - assets/images/english.webp
+    # - assets/images/english.webp
     - assets/App popups/Pop_up ICONS/assessment.webp
     - assets/images/AppreciateByFriend-Button.webp
     - assets/images/AppreciateByFriend-Modal.webp
@@ -74,7 +74,7 @@ flutter:
     - assets/images/AppreciateToFriend-Modal.webp
     - assets/images/ChangeLanguage.webp
     - assets/App popups/Pop_up ICONS/like.svg
-    - assets/images/Englishinvitation.webp
+    # - assets/images/Englishinvitation.webp
     - assets/images/Button-23-min.webp
     - assets/app_icons/heart.png
     - assets/images/Language.webp

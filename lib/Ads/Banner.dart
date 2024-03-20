@@ -133,7 +133,8 @@ class _banneradState extends State<bannerad> {
           width: MediaQuery.of(context).size.width * 1,
         ),
         Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.128,
+          top: MediaQuery.of(context).size.height*0.63 ,
+            bottom: MediaQuery.of(context).size.height * 0.139,
             left: MediaQuery.of(context).size.width * 0.1,
             right: MediaQuery.of(context).size.width * 0.1,
             child: GestureDetector(
@@ -155,21 +156,22 @@ class _banneradState extends State<bannerad> {
                   case "hindi":
                     whatsAppInviteImage = 'assets/images/HindiInvitation.webp';
                     break;
-                  case "english":
-                    whatsAppInviteImage =
-                        'assets/images/Englishinvitation.webp';
-                    break;
+                  // case "english":
+                  //   whatsAppInviteImage =
+                  //       'assets/images/Englishinvitation.webp';
+                  //   break;
                   default:
                 }
 
                 CallSharedImg(imagePath: whatsAppInviteImage);
 
-                print(
-                    "Banner height: ${_bannerAd.size.height.toDouble()} Banner Width : ${_bannerAd.size.width.toDouble()}");
+                // print(
+                //     "Banner height: ${_bannerAd.size.height.toDouble()} Banner Width : ${_bannerAd.size.width.toDouble()}");
               },
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.05,
+                height: MediaQuery.of(context).size.height / 15,
                 width: MediaQuery.of(context).size.width * 0.3,
+                padding: EdgeInsets.symmetric(horizontal: 10,vertical: 10),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.white),
                     borderRadius: BorderRadius.only(
@@ -195,7 +197,7 @@ class _banneradState extends State<bannerad> {
               ),
             )),
         Positioned(
-            top: MediaQuery.of(context).size.height * 0.665,
+            top: MediaQuery.of(context).size.height * 0.685,
             left: MediaQuery.of(context).size.width * 0.3,
             right: MediaQuery.of(context).size.width * 0.3,
             bottom: MediaQuery.of(context).size.height * 0.02,
@@ -228,7 +230,7 @@ class _banneradState extends State<bannerad> {
             right: MediaQuery.of(context).size.width * 0.02,
             child: _isAdloades
                 ? Container(
-                    height: _bannerAd.size.height.toDouble(),
+                    height: _bannerAd.size.height.toDouble()* 0.8,
                     width: _bannerAd.size.width.toDouble(),
                     child: AdWidget(ad: _bannerAd),
                   )
@@ -271,21 +273,21 @@ class _banneradState extends State<bannerad> {
       case "marathi":
         setState(() {
           inviteImage = 'assets/images/marathi.webp';
-          ButtonText = "आपल्या मित्रांना मदत करण्यासाठी येथे क्लिक करा";
+          ButtonText = " मदत करण्यासाठी येथे क्लिक करा.";
         });
         break;
       case "hindi":
         setState(() {
           inviteImage = "assets/images/hindi.webp";
-          ButtonText = "अपने दोस्तों की मदद करने के लिए यहाँ क्लिक करें";
+          ButtonText = "मदद के लिए यहां क्लिक करें.";
         });
         break;
-      case "english":
-        setState(() {
-          inviteImage = "assets/images/english.webp";
-          ButtonText = "Click here to help your friends";
-        });
-        break;
+      // case "english":
+      //   setState(() {
+      //     inviteImage = "assets/images/english.webp";
+      //     ButtonText = "Click here to help your friends";
+      //   });
+      //   break;
       default:
     }
   }
