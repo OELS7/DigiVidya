@@ -325,9 +325,9 @@ class _freetimeState extends State<freetime> {
             var internalServerErrorContext = context;
             return internalServerError(
                 internalServerErrorContext: internalServerErrorContext,
-                ErrorTitle: "Internal Server error",
+                ErrorTitle: "Low Internet Connection",
                 description:
-                    "Internal server problem has occurred. Please try again.",
+                    "Poor internet connection. Please try again.",
                 retryButton: () {
                   Future.delayed(
                     Duration(milliseconds: 50),
@@ -371,9 +371,9 @@ class _freetimeState extends State<freetime> {
             var internalServerErrorContext = context;
             return internalServerError(
                 internalServerErrorContext: internalServerErrorContext,
-                ErrorTitle: "Internal Server error",
+                ErrorTitle: "Low Internet Connection",
                 description:
-                    "Internal server problem has occurred. Please try again.",
+                    " Poor internet connection. Please try again.",
                 retryButton: () {
                   Future.delayed(
                     Duration(milliseconds: 50),

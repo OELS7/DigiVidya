@@ -1,7 +1,7 @@
 name: digividya
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.22
+version: 0.1.23
 # Change version code when you have to upload bundle on playstore.
 
 
@@ -81,6 +81,7 @@ flutter:
     - assets/images/Handset_change_alert.png
     - assets/images/ProfileDrawer.webp
     - assets/images/ProfileIcon.webp
+    - assets/images/completed-tick-icon 22-01.png
     - assets/App popups/Pop_up ICONS/VideoPlayerIcon.webp
     - assets/App popups/Pop_up ICONS/AppExitBg.webp
     - assets/App popups/Pop_up ICONS/downloadPopUp.webp

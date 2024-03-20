@@ -80,9 +80,9 @@ class _SplashState extends State<Splash> {
             var internetErrorContext = context;
             return internalServerError(
                         internalServerErrorContext: internetErrorContext,
-                        ErrorTitle: "Internal Server Error",
+                        ErrorTitle: "Low Internet Connection",
                         description:
-                            "Internal server problem has occurred. Please try again.",
+                            "Poor internet connection. Please try again.",
                         ButtonText: "ok",
                         retryButton: () {
                           Future.delayed(Duration(milliseconds: 80),(){

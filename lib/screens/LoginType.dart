@@ -12,11 +12,15 @@ class loginType extends StatefulWidget {
 
 class _loginTypeState extends State<loginType> {
   String device_id = "";
+  String MobileNo = "";
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     device_id = generateDevicId();
+    MobileNo = generateMobileNo();
+    print("%%%%%%%%%%%%%%%%%%%%%% Generated Mobile Number : $MobileNo %%%%%%%%%%%%%%%%%%%%%");
+    
   }
 
   //Function to generate random device ID
@@ -85,7 +89,7 @@ class _loginTypeState extends State<loginType> {
                               builder: (context) => freetime(),
                               settings: RouteSettings(arguments: {
                                 "userName": "Guest",
-                                "mobileNo": "1111111111",
+                                "mobileNo": MobileNo,
                                 "city": "Thane",
                                 "device_id": device_id,
                                 "language": 'Marathi'
@@ -115,5 +119,14 @@ class _loginTypeState extends State<loginType> {
         ],
       )),
     );
+  }
+  
+  String generateMobileNo() {
+    Random random = Random();
+    String  mobilenumber ="";
+    for(int mobNumber=0 ; mobNumber<10 ; mobNumber++){
+       mobilenumber+=random.nextInt(10).toString();
+    }
+    return mobilenumber;
   }
 }

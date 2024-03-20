@@ -30,6 +30,7 @@ class _supTopicPageState extends State<supTopicPage>
   final ValueNotifier<double> _valueNotifier = ValueNotifier<double>(0.0);
   Connectivity _connectivity = Connectivity();
   ValueNotifier<dynamic> dataFatched = ValueNotifier(false);
+  ValueNotifier<bool> completedListOfBool = ValueNotifier<bool>(false);
   late ConcatenatingAudioSource playList;
   late bgAudioPlayer player;
   Map<String, dynamic> subTopicCardsImage = {};
@@ -50,6 +51,7 @@ class _supTopicPageState extends State<supTopicPage>
   List<String> subTopicViewsCount = [];
   List<String> subTopicLikesCount = [];
   List<String> UpdatedFileName = [];
+  List<bool> add_InVisibleList = [];
 
   int sectionId = 0,
       topicId = 0,
@@ -70,7 +72,9 @@ class _supTopicPageState extends State<supTopicPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
     _checkConnectivity();
+    // _completedSubTopic();
     // _getUpdatedContentFileName();
     _fixedExtentScrollController.addListener(() => onScroll());
   }
@@ -84,6 +88,7 @@ class _supTopicPageState extends State<supTopicPage>
     topicId = argument['topic'];
     subTopicCount = argument['subTopicCount'];
     topicCount = argument['topicCount'];
+    (add_InVisibleList.isEmpty)?addValueToadd_InVisibleList():(){};
 
     pageContext = context;
     return PopScope(
@@ -119,7 +124,20 @@ class _supTopicPageState extends State<supTopicPage>
           builder: (context, value, child) {
             if (value is bool) {
               if (value) {
-                return subTopicList(subTopicCount);
+                return ValueListenableBuilder(
+                  valueListenable: completedListOfBool,
+                  builder: (context, value, child) {
+                   if(value is bool){
+                     if (value) {
+                      return subTopicList(subTopicCount);
+                    } else {
+                      return subTopicList(subTopicCount);
+                    }
+                   }else{
+                    return subTopicList(subTopicCount);
+                   }
+                  },
+                );
               } else {
                 return Center(
                   child: Column(
@@ -166,6 +184,16 @@ class _supTopicPageState extends State<supTopicPage>
     );
   }
 
+  addValueToadd_InVisibleList() {
+    for (int addInVisibleList = 0;
+        addInVisibleList < subTopicCount;
+        addInVisibleList++) {
+      add_InVisibleList.add(false);
+    }
+    print(
+        "%%%%%%%%%%%%%%%%This is bool value of completd list $add_InVisibleList %%%%%%%%%%%%%%%%%%%%%%");
+  }
+
   subTopicList(int subTopicCount) {
     List<Widget> subTopicCards = [];
 
@@ -188,7 +216,15 @@ class _supTopicPageState extends State<supTopicPage>
                   image: DecorationImage(
                       image: MemoryImage(imageByteData[i]), fit: BoxFit.fill)),
             ),
-            // Positioned(top: MediaQuery.of(context).size.height* 0.2,left:  MediaQuery.of(context).size.width* 0.235,child: Visibility(visible: i==0? true :false,child: Image.asset("assets/images/completed-tick-icon 22-01.png",width: MediaQuery.of(context).size.width* 0.5,))),
+            Positioned(
+                top: MediaQuery.of(context).size.height * 0.2,
+                left: MediaQuery.of(context).size.width * 0.235,
+                child: Visibility(
+                    visible: add_InVisibleList[i],
+                    child: Image.asset(
+                      "assets/images/completed-tick-icon 22-01.png",
+                      width: MediaQuery.of(context).size.width * 0.5,
+                    ))),
             Positioned(
                 top: MediaQuery.of(context).size.height * 0.43,
                 left: 0.0,
@@ -315,7 +351,8 @@ class _supTopicPageState extends State<supTopicPage>
     try {
       // "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl"
       //String url = "http://192.168.1.19/prachi/DigiVidyaAPI/public/$fileUrl";
-      final url = Uri.parse("https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl");
+      final url = Uri.parse(
+          "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl");
       var request = new http.Request('GET', url);
       var response = http.Client().send(request);
 
@@ -385,7 +422,7 @@ class _supTopicPageState extends State<supTopicPage>
     String dirPath = (await getApplicationSupportDirectory()).path;
     File jsonFile = File("$dirPath/appInfo.json");
     // String url =
-        // "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchTopSubtopics";
+    // "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchTopSubtopics";
     String url = "https://digividya.in/DigiVidyaAPI/api/fetchTopSubtopics";
 
     var userData = {"topic_id": topicId.toString()};
@@ -440,6 +477,7 @@ class _supTopicPageState extends State<supTopicPage>
                 subTopicViewsCount.add(element['subtopics_views'].toString());
               });
             });
+            _completedSubTopic();
             dataFatched.value = true;
           } else {}
         } else {
@@ -497,9 +535,9 @@ class _supTopicPageState extends State<supTopicPage>
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internal Server error",
+                  ErrorTitle: "Low Internet Connection",
                   description:
-                      "Internal server problem has occurred. Please try again.",
+                      "Poor internet connection. Please try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -911,7 +949,6 @@ class _supTopicPageState extends State<supTopicPage>
         Future.delayed(
           const Duration(milliseconds: 900),
           () {
-            
             Navigator.pushReplacementNamed(context, '/vidoePage', arguments: {
               "filePath": ContentFileAddress,
               "minutes": 0,
@@ -1049,5 +1086,50 @@ class _supTopicPageState extends State<supTopicPage>
         }
       }
     }
+  }
+
+  _completedSubTopic() async {
+    String dirpath = (await getApplicationSupportDirectory()).path;
+    File jsonFile = File("$dirpath/appInfo.json");
+
+    String url = "https://digividya.in/DigiVidyaAPI/api/completedSubtopic";
+
+    if (jsonFile.existsSync()) {
+      try {
+        var jsonData = jsonDecode(jsonFile.readAsStringSync());
+        var userId = jsonData['User_Id'];
+
+        var userData = {"user_id": userId.toString(),"topic_id":topicId.toString()};
+        var response = await http.post(Uri.parse(url), body: userData);
+
+        if (response.statusCode == 200) {
+          Map<String, dynamic> jsonResponse =
+              jsonDecode(response.body.toString().replaceAll("\n", " "));
+
+          if (jsonResponse.isNotEmpty) {
+            print(
+                "%%%%%%%%%%%%%%%%%%%%%%%% $jsonResponse %%%%%%%%%%%%%%%%%%%%%%%");
+            if (jsonResponse['completedIDs'] is List) {
+              print(
+                  "%%%%%%%%%%%%%%%%%%%%%%% Completed Suntopic List ${jsonResponse['completedIDs']} %%%%%%%%%%%%%%%%%%%");
+
+              for (int i = 0; i < jsonResponse['completedIDs'].length; i++) {
+                print(
+                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Iterating JsonResponse for Match %%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                print(" ${int.parse(jsonResponse['completedIDs'][i])}");
+                print(" $subTopicIds ");
+                if (subTopicIds
+                    .contains(int.parse(jsonResponse['completedIDs'][i]))) {
+                  print(
+                      "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SubTopic Id Matches %%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                  add_InVisibleList[subTopicIds.indexOf(int.parse(jsonResponse['completedIDs'][i]))] = true;
+                }
+              }
+              completedListOfBool.value = true;
+            } else {}
+          } else {}
+        }
+      } on http.ClientException catch (e) {}
+    } else {}
   }
 }

@@ -293,9 +293,9 @@ class _Profile2State extends State<Profile2> {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internal Server error",
+                  ErrorTitle: "Low Internet Connection",
                   description:
-                      "An internal server problem has occurred. Please try submitting your application again.",
+                      " Poor internet connection. Please try submitting your application again.",
                   retryButton: () {
                     deleteaccountdetails();
                   },

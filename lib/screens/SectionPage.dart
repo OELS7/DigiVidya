@@ -33,7 +33,9 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
       FixedExtentScrollController();
   Connectivity _connectivity = Connectivity();
   ValueNotifier<dynamic> dataFatched = ValueNotifier(false);
+  ValueNotifier<bool> progressOfSection = ValueNotifier<bool>(false);
   int sectionCount = 0, topicCount = 0, sectionId = 0;
+  double progressData = 0.0;
   String sectionTitle = "",
       sectionDescription = "",
       sectionCardImage = "",
@@ -43,10 +45,12 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
   List<dynamic> deviceAudioFileName = [];
   List<String> updatedAudioFileName = [];
   List<String> listFileNameFromServer = [];
+  List<double> _sectionProgress = [];
   // Map<String, dynamic> sectionLikes = {};
   // Map<String, dynamic> sectionView = {};
   Map<String, dynamic> cardImage = {};
   Map<String, dynamic> cardsAudio = {};
+  Map<String, dynamic> progressOfEachSection = {};
   List<dynamic> sectionIds = [];
   List<dynamic> imageByteData = [];
   List<String> cardsTitle = [];
@@ -54,6 +58,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
   List<String> cardsView = [];
   List<String> _sectionId = [];
   List<String> _topicCount = [];
+  List<int> SectionSTopicCount = [];
+  List<bool> _getCompletedSectionBoolValue = [];
   late bgAudioPlayer player;
   late ConcatenatingAudioSource playList;
 
@@ -73,6 +79,9 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    (_getCompletedSectionBoolValue.isEmpty && _sectionProgress.isEmpty)
+        ? _generateTempBoolValue()
+        : () {};
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {},
@@ -83,7 +92,21 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
           builder: (context, value, child) {
             if (value is bool) {
               if (value) {
-                return topics();
+                return ValueListenableBuilder(
+                  valueListenable: progressOfSection,
+                  builder: (context, value, child) {
+                    if (value is bool) {
+                     // var tem_var = value;
+                      if (value) {
+                        return topics();
+                      } else {
+                        return topics();
+                      }
+                    } else {
+                      return topics();
+                    }
+                  },
+                );
               } else {
                 return Center(
                   child: Column(
@@ -177,6 +200,15 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                             fit: BoxFit.fill)),
                   ),
                   Positioned(
+                      top: MediaQuery.of(context).size.height * 0.2,
+                      left: MediaQuery.of(context).size.width * 0.235,
+                      child: Visibility(
+                          visible: _getCompletedSectionBoolValue[i],
+                          child: Image.asset(
+                            "assets/images/completed-tick-icon 22-01.png",
+                            width: MediaQuery.of(context).size.width * 0.5,
+                          ))),
+                  Positioned(
                       top: MediaQuery.of(context).size.height * 0.43,
                       left: 0.0,
                       right: 0.0,
@@ -185,7 +217,6 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 25),
@@ -266,6 +297,26 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                             )
                           ],
                         ),
+                      )),
+                  Positioned(
+                      top: MediaQuery.of(context).size.height * 0.038,
+                      left: MediaQuery.of(context).size.width * 0.75,
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.055,
+                        width: MediaQuery.of(context).size.height * 0.055,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 5.0,
+                          backgroundColor: Colors.white,
+                          color: Color.fromRGBO(0, 208, 255, 1),
+                          value: !_sectionProgress[i].isNaN ? _sectionProgress[i] : 0.0,
+                        ),
+                      )),
+                  Positioned(
+                      top: MediaQuery.of(context).size.height * 0.053,
+                      left: MediaQuery.of(context).size.width * 0.77,
+                      child: Text(
+                        "${ (!_sectionProgress[i].isNaN ? (_sectionProgress[i]*100).round() : 0)} %",
+                        style: TextStyle(color: Colors.white),
                       ))
                 ],
               ),
@@ -298,7 +349,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
         });
       });
       print("upward scrolling");
-      print("Section ${_fixedExtentScrollController.selectedItem+1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
+      print(
+          "Section ${_fixedExtentScrollController.selectedItem + 1} Audio File Name : ${listFileNameFromServer[_fixedExtentScrollController.selectedItem]}");
     } else {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
@@ -364,7 +416,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
     String dirPath = (await getApplicationSupportDirectory()).path;
     // API url
     // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSections";
-     String url = "https://digividya.in/DigiVidyaAPI/api/fetchSections";
+    String url = "https://digividya.in/DigiVidyaAPI/api/fetchSections";
 
     // jsonFile use for storing the progress and user details for futher use.
     File jsonFile = File("$dirPath/appInfo.json");
@@ -382,7 +434,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
           var jsonRespons =
               jsonDecode(response.body.toString().replaceAll("\n", " "));
 
-          print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $jsonRespons %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+          print(
+              "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $jsonRespons %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
 
           if (jsonRespons.isNotEmpty) {
             setState(() {
@@ -395,8 +448,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               cardsAudio = jsonRespons['section_aud'];
               sectionTitle = sectionDetail[0]['DS_NAME'];
               sectionId = sectionDetail[0]['DS_ID'];
-              // topicCount = sectionDetail[0]['topic_count'];
-
+              topicCount = sectionDetail[0]['topic_count'];
             });
             cardImage.forEach((key, value) {
               imageByteData.add(Base64Decoder().convert(value));
@@ -409,10 +461,11 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
             sectionDetail.forEach((element) {
               cardsLike.add(element["likes_counts"].toString());
               cardsView.add(element["views_count"].toString());
+              SectionSTopicCount.add(element["topic_count"]);
             });
 
             // print("Section ${0+1} Audio File Name : ${listFileNameFromServer[0]}");
-
+            _getSectionCompletedDetails();
             dataFatched.value = true;
             // print(cardsAudio); Base64Decoder().convert(image)
             //store the section id for the user progress
@@ -432,7 +485,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               return InternetErrorDialog(
                 internetErrorDialogContext: dialogContext,
                 message:
-                    "Internal server problem has occurred. Please try again.",
+                    "Poor internet connection. Please try again.",
               );
             },
           );
@@ -468,9 +521,9 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internal Server error",
+                  ErrorTitle: "Low Internet Connection",
                   description:
-                      " Internal server problem has occurred. Please try again.",
+                      " poor internet connection . Please try again.",
                   retryButton: () {
                     getSectionDetails().then((_) {
                       Navigator.of(context).pop(internalServerErrorContext);
@@ -648,7 +701,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
           var internetErrorContext = context;
           return InternetErrorDialog(
             internetErrorDialogContext: internetErrorContext,
-            message: "Looks like you might be offline. Please check your internet connection and try again.",
+            message:
+                "Looks like you might be offline. Please check your internet connection and try again.",
           );
         },
       );
@@ -739,6 +793,74 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
           cardsAudioFilePath.add(audioFile.path);
         }
       }
+    }
+  }
+
+  _generateTempBoolValue() {
+    for (int sectionItem = 0; sectionItem < sectionCount; sectionItem++) {
+      _sectionProgress.add(0.0);
+      _getCompletedSectionBoolValue.add(false);
+    }
+
+    // print(
+        // "%%%%%%%%%%%%%%%%%%%%%%%%%%%% ${_sectionProgress} , ${_getCompletedSectionBoolValue} %%%%%%%%%%%%%%%%%%%%%%%");
+  }
+
+  _getSectionCompletedDetails() async {
+    String dirpath = (await getApplicationSupportDirectory()).path;
+    File jsonFile = File("$dirpath/appInfo.json");
+
+    String url = "https://digividya.in/DigiVidyaAPI/api/completedSections";
+
+    if (jsonFile.existsSync()) {
+      try {
+        var jsonData = jsonDecode(jsonFile.readAsStringSync());
+        var userId = jsonData['User_Id'];
+
+        var userData = {
+          "user_id": userId.toString(),
+        };
+        var response = await http.post(Uri.parse(url), body: userData);
+
+        if (response.statusCode == 200) {
+          Map<String, dynamic> jsonResponse =
+              jsonDecode(response.body.toString().replaceAll("\n", " "));
+
+          if (jsonResponse.isNotEmpty) {
+            Map<String, dynamic> CompletedSectionId =
+                jsonResponse['count_of_IDs'];
+
+            // print(
+                // "%%%%%%%%%%%%%%%% Section Completed count with IDS : $CompletedSectionId %%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+            // This block store the the progress of each cards bool value to show or hide the completed icon on cards.
+            sectionIds.forEach((element) {
+              int indexOfItem = sectionIds.indexOf(element);
+              int pointer = 0;
+              if (CompletedSectionId.containsKey(element.toString()) &&
+                  (CompletedSectionId[element.toString()] ==
+                      SectionSTopicCount[pointer])) {
+                _getCompletedSectionBoolValue[indexOfItem] = true;
+                pointer++;
+              }
+            });
+
+            print(
+                "%%%%%%%%%%%%%%%% Section Completed count with IDS : $CompletedSectionId %%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+            // This block store the progress of each card in _sectionProgress List.
+            for (int itemProgress = 0;
+                itemProgress < sectionCount;
+                itemProgress++) {
+              _sectionProgress[itemProgress] =
+                  (CompletedSectionId[sectionIds[itemProgress].toString()] /
+                      SectionSTopicCount[itemProgress]);
+            }
+
+            progressOfSection.value = true;
+          }
+        }
+      } on http.ClientException catch (e) {}
     }
   }
 }

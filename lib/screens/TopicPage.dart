@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -30,10 +31,12 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
       FixedExtentScrollController();
   Connectivity _connectivity = Connectivity();
   ValueNotifier<dynamic> dataFatched = ValueNotifier(false);
+  ValueNotifier<bool> progressOfTopic = ValueNotifier<bool>(false);
   late ConcatenatingAudioSource playlist;
 
   late bgAudioPlayer player;
   var pageContext;
+  double progressData = 0.0;
   int sectionID = 0,
       topicCount = 0,
       topic_id = 0,
@@ -41,6 +44,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
       section_Id = 0;
 
   String topicTile = "", topicDescription = "", cardImage = "";
+
   List<dynamic> topicDetails = [];
   List<String> topicsCardsAudio = [];
   List<dynamic> deviceAudioFileName = [];
@@ -50,11 +54,15 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
   List<dynamic> imageByteData = [];
   List<String> topicTitle = [];
   List<String> subTopicCountList = [];
+  List<double> TopicProgress = [];
+  // List<int> TopicsSubtopicCounts = [];
   // List<String> topicViews = [];
   List<String> topicLike = [];
   Map<String, dynamic> topicsCardsImage = {};
   Map<String, dynamic> topicCardsAudio = {};
   List<String> topicView = [];
+  Map<String, dynamic> completedSubtopicList = {};
+  List<bool> hideAndshow_CompletedIcon = [];
   // List<String> topicLikes = [];
 
   @override
@@ -79,6 +87,10 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
 
     pageContext = context;
 
+    (TopicProgress.isEmpty && hideAndshow_CompletedIcon.isEmpty)
+        ? _getTemBoolValue()
+        : () {};
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -101,7 +113,20 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
             builder: (context, value, child) {
               if (value is bool) {
                 if (value) {
-                  return subTopic(sectionID, topicCount);
+                  return ValueListenableBuilder(
+                    valueListenable: progressOfTopic,
+                    builder: (context, value, child) {
+                      if (value is bool) {
+                        if (value) {
+                          return subTopic(sectionID, topicCount);
+                        } else {
+                          return subTopic(sectionID, topicCount);
+                        }
+                      } else {
+                        return subTopic(sectionID, topicCount);
+                      }
+                    },
+                  );
                 } else {
                   return Center(
                     child: Column(
@@ -170,6 +195,15 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         fit: BoxFit.fill)),
               ),
               Positioned(
+                  top: MediaQuery.of(context).size.height * 0.2,
+                  left: MediaQuery.of(context).size.width * 0.235,
+                  child: Visibility(
+                      visible: hideAndshow_CompletedIcon[i],
+                      child: Image.asset(
+                        "assets/images/completed-tick-icon 22-01.png",
+                        width: MediaQuery.of(context).size.width * 0.5,
+                      ))),
+              Positioned(
                   top: MediaQuery.of(context).size.height * 0.43,
                   left: 0.0,
                   right: 0.0,
@@ -209,6 +243,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                                   Text("${topicLike[i]}")
                                 ],
                               ),
+                              // LinearProgressIndicator(),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
@@ -227,7 +262,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         GestureDetector(
                           onTap: () async {
                             print("Start button pressesd");
-                            if (topicDetails[i]['subtopic_count']!=0) {
+                            if (topicDetails[i]['subtopic_count'] != 0) {
                               player.stopAudio();
                               Navigator.of(context).pushReplacementNamed(
                                   '/subTopicPage',
@@ -283,6 +318,26 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         )
                       ],
                     ),
+                  )),
+              Positioned(
+                      top: MediaQuery.of(context).size.height * 0.038,
+                      left: MediaQuery.of(context).size.width * 0.75,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.055,
+                    width: MediaQuery.of(context).size.height * 0.055,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 5.0,
+                      backgroundColor: Colors.white,
+                      color: Color.fromARGB(240, 246, 77, 51),
+                      value: !TopicProgress[i].isNaN ? TopicProgress[i] : 0.0,
+                    ),
+                  )),
+              Positioned(
+                  top: MediaQuery.of(context).size.height * 0.053,
+                  left: MediaQuery.of(context).size.width * 0.77,
+                  child: Text(
+                    "${!TopicProgress[i].isNaN ? (TopicProgress[i] * 100).round() : 0} %",
+                    style: TextStyle(color: Colors.white),
                   ))
             ],
           )));
@@ -300,7 +355,8 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         ScrollDirection.reverse)) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
-          topic_id =topicIds[_fixedExtentScrollController.selectedItem];
+          topic_id = topicIds[_fixedExtentScrollController.selectedItem];
+
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
@@ -319,7 +375,8 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     } else {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
-          topic_id =topicIds[_fixedExtentScrollController.selectedItem];
+          topic_id = topicIds[_fixedExtentScrollController.selectedItem];
+
           // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
           //     ['DT_NAME'];
 
@@ -425,7 +482,10 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
           jsonFile.writeAsStringSync(jsonEncode(jsonData));
 
           print(jsonFile.readAsStringSync());
+          _getCompletedSubtopicList();
+
           dataFatched.value = true;
+
           print("This is jsonData: $jsonRespons");
         } else {
           showDialog(
@@ -469,9 +529,9 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internal Server error",
+                  ErrorTitle: "Low Internet Connection",
                   description:
-                      "Internal server problem has occurred. Please try again.",
+                      "Poor internet connection . Please try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -684,6 +744,69 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         print(
             "%%%%%%%%%%%%%%%%%%%%%%%%%% $fileName %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
       }
+    }
+  }
+
+  void _getCompletedSubtopicList() async {
+    String dirpath = (await getApplicationSupportDirectory()).path;
+    File jsonFile = File("$dirpath/appInfo.json");
+
+    String url = "https://digividya.in/DigiVidyaAPI/api/completedTopics";
+
+    if (jsonFile.existsSync()) {
+      try {
+        var jsonData = jsonDecode(jsonFile.readAsStringSync());
+        var userId = jsonData['User_Id'];
+
+        var userData = {
+          "user_id": userId.toString(),
+          "section_id": sectionID.toString()
+        };
+        var response = await http.post(Uri.parse(url), body: userData);
+
+        if (response.statusCode == 200) {
+          Map<String, dynamic> jsonResponse =
+              jsonDecode(response.body.toString().replaceAll("\n", " "));
+          if (jsonResponse.isNotEmpty) {
+            completedSubtopicList = jsonResponse['count_of_IDs'];
+
+            // This block store the bool value of the completed icon to show or hide icon in hideAndShow_CompletedIcon List.
+            topicIds.forEach((element) {
+              int indexOfItem = topicIds.indexOf(element);
+              int pointer = 0;
+              if (completedSubtopicList.containsKey(element.toString()) &&
+                  (completedSubtopicList[element.toString()] ==
+                      int.parse(subTopicCountList[pointer]))) {
+                hideAndshow_CompletedIcon[indexOfItem] = true;
+                pointer++;
+              }
+            });
+
+            // This block store the progress of each card in TopicProgres List
+            for (int itemProgress = 0;
+                itemProgress < topicCount;
+                itemProgress++) {
+              TopicProgress[itemProgress] =
+                  completedSubtopicList[topicIds[itemProgress].toString()] /
+                      int.parse(subTopicCountList[itemProgress]);
+            }
+
+            print(
+                "%%%%%%%%%%%%%%%%%%% Topic Progress : ${TopicProgress} %%%%%%%%%%%%%%%%%%%%%");
+
+            progressOfTopic.value = true;
+          }
+          // print(
+          //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $completedSubtopicList %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        } else {}
+      } catch (e) {}
+    }
+  }
+
+  void _getTemBoolValue() {
+    for (int completedItem = 0; completedItem < topicCount; completedItem++) {
+      hideAndshow_CompletedIcon.add(false);
+      TopicProgress.add(0.0);
     }
   }
 }
