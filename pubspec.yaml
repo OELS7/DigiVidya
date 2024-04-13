@@ -1,7 +1,7 @@
 name: digividya
 description: A new Flutter project.
 publish_to: "none"
-version: 0.1.23
+version: 0.1.25
 # Change version code when you have to upload bundle on playstore.
 
 
@@ -45,6 +45,8 @@ dependencies:
   flutter_libphonenumber: ^2.2.1
   upgrader: ^9.0.0
   lottie: ^3.1.0
+  image_picker: ^1.0.7
+  app_settings: ^5.1.1
 
 dev_dependencies:
   flutter_test:
@@ -100,6 +102,20 @@ flutter:
     - assets/AppIntroVideos/Marathi/Marathi.mp4
     - assets/AppIntroVideos/Hindi/Hindi.mp4
     - assets/Animation/Animation - 1710389401962.json
+    - assets/Animation/Animation - 1711443398866.json
+    - assets/Animation/9kASTq22vM.json
+    - assets/Animation/Animation - 1711598825358.json
+    # - assets/Animation/Animation - 1711601885547.json
+    - assets/Animation/internet_error.json
+    - assets/Animation/Animation - 1711609519678.json
+    - assets/Animation/SnnE6DJDpc.json
+    # - assets/Animation/Animation - 1711620321326.json
+    - assets/Animation/download.json
+    - assets/Animation/Animation - 1711687280301_lock_card.json
+    - assets/Animation/Animation - 1711711975948_exit_video.json
+    - assets/images/LockCardImage.webp
+    - assets/Animation/already_exist_user.json
+    - assets/Animation/Animation - 1711450914885.json
 
   fonts:
     - family: Fontmain

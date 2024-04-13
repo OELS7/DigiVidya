@@ -75,6 +75,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   List<String> FileName;
   List<String> deviceFileName = [];
   List<String> deviceFilePath = [];
+  ValueNotifier<bool> heartButtonPressed = ValueNotifier<bool>(false);
   var pageContext;
 
   _videoWidgetState(
@@ -152,6 +153,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   Future<bool> _onBackPressed() async {
     return (await showDialog(
           context: context,
+          barrierDismissible: false,
           barrierColor: Color.fromARGB(226, 37, 37, 37),
           builder: (context) {
             var exitVideoContext = context;
@@ -359,6 +361,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
             } else {
               showDialog(
                 context: context,
+                barrierDismissible: false,
                 builder: (context) {
                   var dialogContext = context;
                   return InternetErrorDialog(
@@ -414,6 +417,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
               // Show dialog for internet error
               showDialog(
                 context: context,
+                barrierDismissible: false,
                 builder: (context) {
                   var dialogContext = context;
                   return InternetErrorDialog(
@@ -485,20 +489,24 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
       builder: (context) {
         var LikeDialogBoxContext = context;
         return LikeDialog(yesButton: () {
+          heartButtonPressed.value = true;
           Future.delayed(
             Duration(milliseconds: 60),
             () {
               _likeSubTopic();
             },
           );
-          Navigator.of(LikeDialogBoxContext).pop();
+         Future.delayed(Duration(seconds: 2),() {
+            Navigator.of(LikeDialogBoxContext).pop();
+         },);
         }, noButton: () async {
           String dir = (await getApplicationSupportDirectory()).path;
           File jsonFile = File("$dir/appInfo.json");
           var jsonData = jsonDecode(jsonFile.readAsStringSync());
           String user_Id = jsonData['User_Id'].toString();
           String subTopic_Id = jsonData['subTopic_Id'].toString();
-          _setCompletedSubTopic(user_Id: user_Id, subTopic_Id: subTopic_Id)
+          // _setCompletedSubTopic(user_Id: user_Id, subTopic_Id: subTopic_Id)
+          _demouserprogress(user_Id: user_Id , subTopic_Id: subTopic_Id , topic_Id: topicNumber.toString(),)
               .then((_) {
             Future.delayed(
               Duration(milliseconds: 600),
@@ -516,7 +524,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
           });
 
           Navigator.of(LikeDialogBoxContext).pop();
-        });
+        },heartButtonPressed: heartButtonPressed,);
       },
     );
   }
@@ -550,7 +558,8 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
 
           jsonFile.writeAsStringSync(jsonEncode(jsonData));
 
-          _setCompletedSubTopic(user_Id: user_Id, subTopic_Id: subTopic_Id)
+          // _setCompletedSubTopic(user_Id: user_Id, subTopic_Id: subTopic_Id)
+          _demouserprogress(user_Id:user_Id , subTopic_Id: subTopic_Id ,topic_Id: topicNumber.toString(),)
               .then((_) {
             Future.delayed(
               Duration(milliseconds: 600),
@@ -581,6 +590,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
       } else {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) {
             var internetErrorDialogContext = context;
             return InternetErrorDialog(
@@ -593,6 +603,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     } on http.ClientException catch (e) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           var internetErrorDialogContext = context;
           return InternetErrorDialog(
@@ -605,6 +616,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     } on Exception catch (e) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           var internetErrorDialogContext = context;
           return InternetErrorDialog(
@@ -617,30 +629,53 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     }
   }
 
-  _setCompletedSubTopic(
-      {required String user_Id, required String subTopic_Id}) async {
-    // String Api_Url =
-    //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateUserProgress";
-    String Api_Url = "https://digividya.in/DigiVidyaAPI/api/updateUserProgress";
-    String dir = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dir/appInfo.json");
+  // _setCompletedSubTopic(
+  //     {required String user_Id, required String subTopic_Id}) async {
+  //   // String Api_Url =
+  //   //     "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateUserProgress";
+  //   String Api_Url = "https://digividya.in/DigiVidyaAPI/api/updateUserProgress";
+  //   String dir = (await getApplicationSupportDirectory()).path;
+  //   File jsonFile = File("$dir/appInfo.json");
 
-    var jsonData = jsonDecode(jsonFile.readAsStringSync());
-    if (!jsonData.containsKey("completedSubTopic")) {
-      var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
-      var response = await http.post(Uri.parse(Api_Url), body: userData);
-      if (response.statusCode == 200) {}
-    } else {
-      List completedSubTopicList = jsonData['completedSubTopic'];
+  //   var jsonData = jsonDecode(jsonFile.readAsStringSync());
+  //   if (!jsonData.containsKey("completedSubTopic")) {
+  //     var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
+  //     var response = await http.post(Uri.parse(Api_Url), body: userData);
+  //     if (response.statusCode == 200) {}
+  //   } else {
+  //     List completedSubTopicList = jsonData['completedSubTopic'];
 
-      if (!completedSubTopicList.contains(subTopic_Id)) {
-        completedSubTopicList.add(subTopic_Id);
-        jsonData['completedSubTopic'] = completedSubTopicList;
-      }
+  //     if (!completedSubTopicList.contains(subTopic_Id)) {
+  //       completedSubTopicList.add(subTopic_Id);
+  //       jsonData['completedSubTopic'] = completedSubTopicList;
+  //     }
 
-      var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
-      var response = await http.post(Uri.parse(Api_Url), body: userData);
-      if (response.statusCode == 200) {}
+  //     var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
+  //     var response = await http.post(Uri.parse(Api_Url), body: userData);
+  //     if (response.statusCode == 200) {}
+  //   }
+  // }
+
+  // insted of _setcompletedtopic using _demouserprogress 
+  
+  _demouserprogress({
+    required user_Id,
+    required subTopic_Id,
+    required topic_Id,
+    // required section_Id
+  }) async {
+    String Api_url = "https://digividya.in/DigiVidyaAPI/api/insertUserProgress";
+
+    var userData = {
+      "user_id": user_Id,
+      "subtopic_id": subTopic_Id,
+      "topic_id": topic_Id,
+      // "section_id": section_Id
+    };
+
+    var response = await http.post(Uri.parse(Api_url), body: userData);
+    if (response.statusCode == 200) {
+      print("${response.body.replaceAll("\n", " ")}");
     }
   }
 

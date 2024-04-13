@@ -24,10 +24,7 @@ class _videoPlayerState extends State<videoPlayer> {
         <String, dynamic>{}) as Map;
     return Scaffold(
       body: SafeArea(
-          child: SizedBox(
-        height: MediaQuery.of(context).size.height * 1,
-        width: MediaQuery.of(context).size.width * 1,
-        child: videoWidget(
+          child: videoWidget(
           VideoFile: arguments['filePath'],
           minutes: arguments['minutes'],
           seconds: arguments['seconds'],
@@ -39,8 +36,7 @@ class _videoPlayerState extends State<videoPlayer> {
           itemPointer: arguments['itemPointer'],
           contentUrls: arguments['contentUrls'],
           FileName: arguments['FileName'],
-        ),
-      )),
+        )),
     );
   }
 

@@ -22,6 +22,7 @@ class _fragmentFrameState extends State<fragmentFrame> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       onGenerateRoute: app_routes.generatorRoute,

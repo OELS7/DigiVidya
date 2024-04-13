@@ -162,7 +162,7 @@ class _InviteState extends State<Invite> {
       // Update Image_Path with the copied image path
       Image_Path = image.path;
       // ignore: deprecated_member_use
-      await Share.shareFiles([Image_Path], text: "https://digividya.in");
+      await Share.shareFiles([Image_Path], text: "https://play.google.com/store/apps/details?id=com.digividya_2023");
     } catch (e) {
       print("Failed to copy image: $e");
     }

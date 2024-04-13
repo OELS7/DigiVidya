@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-// ignore: must_be_immutable
-class commingSoonAlertbox extends StatefulWidget {
-  var comingSoonDialogContext;
-  commingSoonAlertbox({super.key, required this.comingSoonDialogContext});
+class lockcard extends StatefulWidget {
+  var LockCardDialogContext;
+  lockcard({super.key, required this.LockCardDialogContext});
 
   @override
-  State<commingSoonAlertbox> createState() =>
-      _commingSoonAlertboxState(comingSoonDialogContext);
+  State<lockcard> createState() => _lockcardState(LockCardDialogContext);
 }
 
-class _commingSoonAlertboxState extends State<commingSoonAlertbox> {
-  var comingSoonDialogContext;
-  _commingSoonAlertboxState(this.comingSoonDialogContext);
-
+class _lockcardState extends State<lockcard> {
+  var LockCardDialogContext;
+  _lockcardState(this.LockCardDialogContext);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -26,33 +23,30 @@ class _commingSoonAlertboxState extends State<commingSoonAlertbox> {
                   "assets/App popups/Pop_up ICONS/downloadPopUp.webp"))),
       child: Stack(
         children: [
-          // Container(
-          //   margin: EdgeInsets.symmetric(horizontal: 120, vertical: 39),
-          //   height: MediaQuery.of(context).size.height * 0.1,
-          //   decoration: BoxDecoration(
-          //       image: DecorationImage(
-          //           image: AssetImage(
-          //               "assets/App popups/Pop_up ICONS/ComingSoonIcon.webp"))),
-          // )
           //For icon
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.025,
-            left: MediaQuery.of(context).size.width * 0.285,
-              height: MediaQuery.of(context).size.height * 0.12,
-              width: MediaQuery.of(context).size.width * 0.35,
-              child: LottieBuilder.asset(
-                "assets/Animation/Animation - 1711598825358.json",
-                fit: BoxFit.cover,
+              child: Container(
+            // color: Colors.black,
+            margin: EdgeInsets.symmetric(horizontal: 118, vertical: 0.03),
+            width: MediaQuery.of(context).size.height * 0.12,
+            height: MediaQuery.of(context).size.height * 0.13,
+            child: LottieBuilder.asset(
                 repeat: false,
-              )),
+                // width: 8.0,
+                // height: 1,
+                fit: BoxFit.cover,
+                "assets/Animation/Animation - 1711687280301_lock_card.json"),
+          )),
 
           //For Description
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.185,
+              top: MediaQuery.of(context).size.height * 0.14,
               left: MediaQuery.of(context).size.width * 0.1,
               right: MediaQuery.of(context).size.width * 0.1,
               child: Text(
-                "This section will be published shortly.",
+                maxLines: 5,
+                softWrap: true,
+                "To learn more,delete your 'Guest' account and register as a DigiVidya user.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -70,10 +64,11 @@ class _commingSoonAlertboxState extends State<commingSoonAlertbox> {
               right: MediaQuery.of(context).size.width * 0.29,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(comingSoonDialogContext, false);
+                  print("pressed back");
+                  Navigator.pop(LockCardDialogContext, false);
                 },
                 child: Text(
-                  "Go Back",
+                  "Back",
                   style: TextStyle(
                       fontFamily: "Fontmain",
                       fontSize: 18,

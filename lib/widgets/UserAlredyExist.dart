@@ -1,5 +1,6 @@
 import 'package:digividya/screens/Register.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class userAlreadyExist extends StatefulWidget {
   const userAlreadyExist({super.key});
@@ -16,12 +17,27 @@ class _userAlreadyExistState extends State<userAlreadyExist> {
           horizontal: MediaQuery.of(context).size.width * 0.05),
       decoration: BoxDecoration(
           image: DecorationImage(
-              image: AssetImage(
-                  "assets/App popups/Pop_up ICONS/downloadPopUp.webp"))),
+              image:
+                  AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
       child: Stack(
         children: [
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.36,
+              top: MediaQuery.of(context).size.height * 0.140,
+              left: MediaQuery.of(context).size.width * 0.3,
+              right: MediaQuery.of(context).size.width * 0.3,
+              height: MediaQuery.of(context).size.height * 0.4,
+              // width: MediaQuery.of(context).size.width * 0.02,
+              child: Center(
+                child: LottieBuilder.asset(
+                  "assets/Animation/already_exist_user.json",
+                  repeat: false,
+                  fit: BoxFit.cover,
+                  height: 85,
+                  width: 85,
+                ),
+              )),
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.41,
             left: MediaQuery.of(context).size.width * 0.1,
             right: MediaQuery.of(context).size.width * 0.1,
             child: Center(
@@ -36,10 +52,10 @@ class _userAlreadyExistState extends State<userAlreadyExist> {
           ),
           // User Alredy exist Image here
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.4,
-              left: MediaQuery.of(context).size.width * 0.1,
-              right: MediaQuery.of(context).size.width * 0.1,
-              bottom: MediaQuery.of(context).size.height * 0.39,
+              top: MediaQuery.of(context).size.height * 0.19,
+              left: MediaQuery.of(context).size.width * 0.03,
+              right: MediaQuery.of(context).size.width * 0.03,
+              //bottom: MediaQuery.of(context).size.height * 0.39,
               child: Container(
                 // color: Colors.blue,
                 height: MediaQuery.of(context).size.height * 0.6,
@@ -52,8 +68,8 @@ class _userAlreadyExistState extends State<userAlreadyExist> {
                     "You have not deleted your previous account.Please use another contact number.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.red.shade900,
+                        fontSize: 15,
+                        color: Color.fromRGBO(0, 123, 224, 1),
                         decoration: TextDecoration.none),
                   ),
                 ),
@@ -70,8 +86,9 @@ class _userAlreadyExistState extends State<userAlreadyExist> {
                         builder: (context) => Register(),
                       ));
                 },
-                child: Text("Go Back"),
+                child: Text("Go Back",style: TextStyle(color: Colors.black),),
                 style: ElevatedButton.styleFrom(
+                       // fixedSize: Size(MediaQuery.of(context).size.width * 0.02, MediaQuery.of(context).size.height * 0.02),
                     side: BorderSide(color: Colors.red, width: 3)),
               ))
         ],

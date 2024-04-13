@@ -66,7 +66,7 @@ class _assessmentDialogState extends State<assessmentDialog> {
                           fontFamily: "Fontmain", color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromRGBO(57, 104, 150, 1),
+                        backgroundColor: Color.fromRGBO(33, 117, 187, 1),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30)),
                         fixedSize: Size(MediaQuery.of(context).size.width * 0.5,
@@ -81,7 +81,7 @@ class _assessmentDialogState extends State<assessmentDialog> {
                           fontFamily: "Fontmain", color: Colors.white),
                     ),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromRGBO(36, 179, 121, 1),
+                        backgroundColor: Color.fromRGBO(1, 157, 143, 1),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30)),
                         fixedSize: Size(MediaQuery.of(context).size.width * 0.5,

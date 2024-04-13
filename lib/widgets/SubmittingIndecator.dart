@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-class SubmittingIndecator extends StatefulWidget {
-  const SubmittingIndecator({super.key});
+class SubmittingfIndecator extends StatefulWidget {
+  const SubmittingfIndecator({super.key});
 
   @override
-  State<SubmittingIndecator> createState() => _SubmittingIndecatorState();
+  State<SubmittingfIndecator> createState() => _SubmittingfIndecatorState();
 }
 
-class _SubmittingIndecatorState extends State<SubmittingIndecator> {
+class _SubmittingfIndecatorState extends State<SubmittingfIndecator> {
   @override
   Widget build(BuildContext context) {
     return Container(

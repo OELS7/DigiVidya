@@ -5,8 +5,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:digividya/BgService/bgAudioPlayer.dart';
 import 'package:digividya/widgets/InternalServerError.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
+import 'package:digividya/widgets/Lock_Cards.dart';
 import 'package:digividya/widgets/commingSoonAlertBox.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -43,7 +45,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
       subTopicCount = 0,
       section_Id = 0;
 
-  String topicTile = "", topicDescription = "", cardImage = "";
+  String topicTile = "", topicDescription = "", cardImage = "", UserName = "";
 
   List<dynamic> topicDetails = [];
   List<String> topicsCardsAudio = [];
@@ -175,117 +177,127 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
   subTopic(int sectionNumber, int topic) {
     List<Widget> topicCards = [];
     for (int i = 0; i < topic; i++) {
-      topicCards.add(Card(
-          //color: Colors.blue,
-          shadowColor: Colors.black,
-          margin: const EdgeInsets.symmetric(horizontal: 15.0),
-          elevation: 25,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(58),
-          ),
-          child: Stack(
-            children: [
-              Container(
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(58),
-                    image: DecorationImage(
-                        image: MemoryImage(imageByteData[i]),
-                        fit: BoxFit.fill)),
-              ),
-              Positioned(
-                  top: MediaQuery.of(context).size.height * 0.2,
-                  left: MediaQuery.of(context).size.width * 0.235,
-                  child: Visibility(
-                      visible: hideAndshow_CompletedIcon[i],
-                      child: Image.asset(
-                        "assets/images/completed-tick-icon 22-01.png",
-                        width: MediaQuery.of(context).size.width * 0.5,
-                      ))),
-              Positioned(
-                  top: MediaQuery.of(context).size.height * 0.43,
-                  left: 0.0,
-                  right: 0.0,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 50,
+      topicCards.add(GestureDetector(
+        onTap: () async {
+          print("Start button pressesd");
+          (topicDetails[i]['subtopic_count'] != 0) ? player.stopAudio() : {};
+          (UserName == "Guest" && i != 0)
+              ? showDialog(
+                  barrierDismissible: false,
+                  context: context,
+                  builder: (context) {
+                    var LockCardContext = context;
+                    return lockcard(LockCardDialogContext: LockCardContext);
+                  },
+                )
+              : (topicDetails[i]['subtopic_count'] != 0)
+                  ? Navigator.of(context)
+                      .pushReplacementNamed('/subTopicPage', arguments: {
+                      'section': sectionID,
+                      'topic': topic_id,
+                      'topicCount': topicCount,
+                      'subTopicCount': subTopicCount
+                    })
+                  : showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (context) {
+                        var comingSoonContext = context;
+                        return commingSoonAlertbox(
+                            comingSoonDialogContext: comingSoonContext);
+                      },
+                    );
+        },
+        child: Card(
+            //color: Colors.blue,
+            shadowColor: Colors.black,
+            margin: const EdgeInsets.symmetric(horizontal: 15.0),
+            elevation: 25,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(58),
+            ),
+            child: Stack(
+              children: [
+                Container(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(58),
+                      image: DecorationImage(
+                          image: MemoryImage(imageByteData[i]),
+                          fit: BoxFit.fill)),
+                ),
+                Positioned(
+                    top: MediaQuery.of(context).size.height * 0.2,
+                    //left: MediaQuery.of(context).size.width * 0.19,
+                    right: MediaQuery.of(context).size.width * 0.232,
+                    height: MediaQuery.of(context).size.height * 0.03,
+                    width: MediaQuery.of(context).size.width * 0.45,
+                    child: Visibility(
+                        visible: hideAndshow_CompletedIcon[i],
+                        child: LottieBuilder.asset(
+                          "assets/Animation/9kASTq22vM.json",
+                          alignment: Alignment.center,
+                          fit: BoxFit.cover,
+                          repeat: false,
+                        ))),
+                Positioned(
+                    top: MediaQuery.of(context).size.height * 0.43,
+                    left: 0.0,
+                    right: 0.0,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 50,
+                            ),
+                            child: Text(
+                              topicTitle[i],
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                              softWrap: false,
+                              textAlign: TextAlign.center,
+                              maxLines: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          child: Text(
-                            topicTitle[i],
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                            softWrap: false,
-                            textAlign: TextAlign.center,
-                            maxLines: 10,
-                            overflow: TextOverflow.ellipsis,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Image.asset(
+                                      'assets/app_icons/heart.png',
+                                      height: 30,
+                                      width: 50,
+                                    ),
+                                    Text("${topicLike[i]}")
+                                  ],
+                                ),
+                                // LinearProgressIndicator(),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Image.asset(
+                                      'assets/app_icons/ViewIcon.webp',
+                                      height: 30,
+                                      width: 50,
+                                    ),
+                                    Text("${topicView[i]}")
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Image.asset(
-                                    'assets/app_icons/heart.png',
-                                    height: 30,
-                                    width: 50,
-                                  ),
-                                  Text("${topicLike[i]}")
-                                ],
-                              ),
-                              // LinearProgressIndicator(),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Image.asset(
-                                    'assets/app_icons/ViewIcon.webp',
-                                    height: 30,
-                                    width: 50,
-                                  ),
-                                  Text("${topicView[i]}")
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            print("Start button pressesd");
-                            if (topicDetails[i]['subtopic_count'] != 0) {
-                              player.stopAudio();
-                              Navigator.of(context).pushReplacementNamed(
-                                  '/subTopicPage',
-                                  arguments: {
-                                    'section': sectionID,
-                                    'topic': topic_id,
-                                    'topicCount': topicCount,
-                                    'subTopicCount': subTopicCount
-                                  });
-                            } else {
-                              showDialog(
-                                barrierDismissible: false,
-                                context: context,
-                                builder: (context) {
-                                  var comingSoonContext = context;
-                                  return commingSoonAlertbox(
-                                      comingSoonDialogContext:
-                                          comingSoonContext);
-                                },
-                              );
-                            }
-                          },
-                          child: Container(
+                          Container(
                             height: MediaQuery.of(context).size.height * 0.06,
                             width: MediaQuery.of(context).size.width * 0.45,
                             margin: EdgeInsets.only(
@@ -314,33 +326,45 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                                     fontSize: 16, color: Colors.white),
                               ),
                             ),
-                          ),
-                        )
-                      ],
-                    ),
-                  )),
-              Positioned(
-                      top: MediaQuery.of(context).size.height * 0.038,
-                      left: MediaQuery.of(context).size.width * 0.75,
-                  child: Container(
-                    height: MediaQuery.of(context).size.height * 0.055,
-                    width: MediaQuery.of(context).size.height * 0.055,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 5.0,
-                      backgroundColor: Colors.white,
-                      color: Color.fromARGB(240, 246, 77, 51),
-                      value: !TopicProgress[i].isNaN ? TopicProgress[i] : 0.0,
-                    ),
-                  )),
-              Positioned(
-                  top: MediaQuery.of(context).size.height * 0.053,
-                  left: MediaQuery.of(context).size.width * 0.77,
-                  child: Text(
-                    "${!TopicProgress[i].isNaN ? (TopicProgress[i] * 100).round() : 0} %",
-                    style: TextStyle(color: Colors.white),
-                  ))
-            ],
-          )));
+                          )
+                        ],
+                      ),
+                    )),
+                Positioned(
+                    top: MediaQuery.of(context).size.height * 0.038,
+                    left: MediaQuery.of(context).size.width * 0.75,
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.055,
+                      width: MediaQuery.of(context).size.height * 0.055,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 5.0,
+                        backgroundColor: Colors.white,
+                        color: Color.fromARGB(240, 246, 77, 51),
+                        value: !TopicProgress[i].isNaN ? TopicProgress[i] : 0.0,
+                      ),
+                    )),
+                Positioned(
+                    top: MediaQuery.of(context).size.height * 0.053,
+                    left: MediaQuery.of(context).size.width * 0.77,
+                    child: Text(
+                      "${!TopicProgress[i].isNaN ? (TopicProgress[i] * 100).round() : 0} %",
+                      style: TextStyle(color: Colors.white),
+                    )),
+                (UserName == "Guest")
+                    ? (i != 0)
+                        ? Container(
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage(
+                                      "assets/images/LockCardImage.webp",
+                                    ),
+                                    fit: BoxFit.fill)),
+                          )
+                        : SizedBox()
+                    : SizedBox()
+              ],
+            )),
+      ));
     }
     return ListWheelScrollView(
         physics: const FixedExtentScrollPhysics(),
@@ -443,6 +467,8 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
 
     if (jsonFile.existsSync()) {
       try {
+        var jsonData = jsonDecode(jsonFile.readAsStringSync());
+        UserName = jsonData['UserName'].toString();
         Map<String, dynamic> userData = {'section_id': sectionID.toString()};
         var response = await http.post(Uri.parse(url), body: userData);
 
@@ -490,6 +516,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         } else {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var dialogBoxContext = context;
               return InternetErrorDialog(
@@ -506,13 +533,14 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         if (_checkConnectivity == ConnectivityResult.none) {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internet Error",
+                  ErrorTitle: "No Internet",
                   description:
-                      "Looks like you might be offline. Please check your internet connection and try again.",
+                      "Maybe you don't have a internet connection. Please check and try again.",
                   retryButton: () {
                     Future.delayed(Duration(milliseconds: 50), () {
                       getAllTopicDetails();
@@ -525,13 +553,14 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         } else {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Low Internet Connection",
+                  ErrorTitle: "Poor Connection",
                   description:
-                      "Poor internet connection . Please try again.",
+                      "Maybe you have a poor internet connection. Please try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -651,6 +680,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
     if (_checkConnectivity == ConnectivityResult.none) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           var internetErrorContext = context;
           return InternetErrorDialog(

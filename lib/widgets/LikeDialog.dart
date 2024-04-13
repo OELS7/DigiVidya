@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
+// import 'package:lottie/lottie.dart';
 
 // ignore: must_be_immutable
 class LikeDialog extends StatefulWidget {
   var yesButton;
   var noButton;
-  LikeDialog({super.key, required this.yesButton, required this.noButton});
+  ValueNotifier<bool> heartButtonPressed = ValueNotifier<bool>(false);
+  LikeDialog(
+      {super.key,
+      required this.yesButton,
+      required this.noButton,
+      required this.heartButtonPressed});
 
   @override
-  State<LikeDialog> createState() => _LikeDialogState(yesButton, noButton);
+  State<LikeDialog> createState() =>
+      _LikeDialogState(yesButton, noButton, heartButtonPressed);
 }
 
-class _LikeDialogState extends State<LikeDialog> {
+class _LikeDialogState extends State<LikeDialog> with TickerProviderStateMixin {
   var yesButton;
   var noButton;
-  _LikeDialogState(this.yesButton, this.noButton);
+  ValueNotifier<bool> heartButtonPressed = ValueNotifier<bool>(false);
+
+  _LikeDialogState(this.yesButton, this.noButton, this.heartButtonPressed);
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +39,8 @@ class _LikeDialogState extends State<LikeDialog> {
       decoration: BoxDecoration(
           //color: Colors.blue,
           image: DecorationImage(
-              image: AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
+              image:
+                  AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
       child: Stack(
         children: [
           //For Like icon
@@ -38,8 +54,25 @@ class _LikeDialogState extends State<LikeDialog> {
                       top: MediaQuery.of(context).size.height * 0.002),
                   height: MediaQuery.of(context).size.height * 0.12,
                   width: MediaQuery.of(context).size.width * 0.3,
-                  child: SvgPicture.asset(
-                    "assets/App popups/Pop_up ICONS/like.svg",
+                  // color: Colors.green,
+                  child: ValueListenableBuilder(
+                    valueListenable: heartButtonPressed,
+                    builder: (context, value, child) {
+                      return AnimatedSwitcher(
+                        duration: Duration(milliseconds: 300),
+                        child: value
+                            ? Icon(
+                                Icons.favorite,
+                                color: const Color.fromRGBO(183, 28, 28, 1),
+                                size: 80,
+                              )
+                            : Icon(
+                                Icons.favorite_border,
+                                color: const Color.fromRGBO(183, 28, 28, 1),
+                                size: 80,
+                              ),
+                      );
+                    },
                   ),
                 ),
               )),
@@ -94,5 +127,11 @@ class _LikeDialogState extends State<LikeDialog> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 }

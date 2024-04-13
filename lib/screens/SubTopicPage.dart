@@ -5,10 +5,12 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:digividya/BgService/bgAudioPlayer.dart';
 import 'package:digividya/widgets/InternalServerError.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
+import 'package:digividya/widgets/Lock_Cards.dart';
 import 'package:digividya/widgets/commingSoonAlertBox.dart';
 import 'package:digividya/widgets/DownloadDialogBox.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:lottie/lottie.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
@@ -60,7 +62,7 @@ class _supTopicPageState extends State<supTopicPage>
       Likes = 0,
       Views = 0,
       topicCount = 0;
-  String subTopicCardImg = "", audioName = "";
+  String subTopicCardImg = "", audioName = "", UserName = "";
 
   int sectionNumber = 0, topicNumber = 0, partNumber = 0;
 
@@ -88,7 +90,7 @@ class _supTopicPageState extends State<supTopicPage>
     topicId = argument['topic'];
     subTopicCount = argument['subTopicCount'];
     topicCount = argument['topicCount'];
-    (add_InVisibleList.isEmpty)?addValueToadd_InVisibleList():(){};
+    (add_InVisibleList.isEmpty) ? addValueToadd_InVisibleList() : () {};
 
     pageContext = context;
     return PopScope(
@@ -127,15 +129,15 @@ class _supTopicPageState extends State<supTopicPage>
                 return ValueListenableBuilder(
                   valueListenable: completedListOfBool,
                   builder: (context, value, child) {
-                   if(value is bool){
-                     if (value) {
-                      return subTopicList(subTopicCount);
+                    if (value is bool) {
+                      if (value) {
+                        return subTopicList(subTopicCount);
+                      } else {
+                        return subTopicList(subTopicCount);
+                      }
                     } else {
                       return subTopicList(subTopicCount);
                     }
-                   }else{
-                    return subTopicList(subTopicCount);
-                   }
                   },
                 );
               } else {
@@ -194,109 +196,144 @@ class _supTopicPageState extends State<supTopicPage>
         "%%%%%%%%%%%%%%%%This is bool value of completd list $add_InVisibleList %%%%%%%%%%%%%%%%%%%%%%");
   }
 
+  // Image.asset(
+  //   "assets/images/completed-tick-icon 22-01.png",
+  //   width: MediaQuery.of(context).size.width * 0.5,
+  // )
+
   subTopicList(int subTopicCount) {
     List<Widget> subTopicCards = [];
 
     for (int i = 0; i < subTopicCount; i++) {
-      subTopicCards.add(Card(
-        // color: Colors.blue,
-        margin: const EdgeInsets.symmetric(horizontal: 15.0),
-        shadowColor: Colors.black,
-        elevation: 25,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(58),
-        ),
-        child: Stack(
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(58),
-                  image: DecorationImage(
-                      image: MemoryImage(imageByteData[i]), fit: BoxFit.fill)),
-            ),
-            Positioned(
-                top: MediaQuery.of(context).size.height * 0.2,
-                left: MediaQuery.of(context).size.width * 0.235,
-                child: Visibility(
-                    visible: add_InVisibleList[i],
-                    child: Image.asset(
-                      "assets/images/completed-tick-icon 22-01.png",
-                      width: MediaQuery.of(context).size.width * 0.5,
-                    ))),
-            Positioned(
-                top: MediaQuery.of(context).size.height * 0.43,
-                left: 0.0,
-                right: 0.0,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 50),
-                        child: Text(
-                          subTopicTitle[i],
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                          softWrap: false,
-                          maxLines: 10,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Image.asset(
-                                  'assets/app_icons/heart.png',
-                                  height: 30,
-                                  width: 50,
-                                ),
-                                Text("${subTopicLikesCount[i]}")
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Image.asset(
-                                  'assets/app_icons/ViewIcon.webp',
-                                  height: 30,
-                                  width: 50,
-                                ),
-                                Text("${subTopicViewsCount[i]}")
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () async {
-                          player.stopAudio();
+      subTopicCards.add(GestureDetector(
+        onTap: () async {
+          (contentUrls.length != 0) ? player.stopAudio() : {};
 
-                          if (contentUrls.length != 0) {
-                            _PlayContent(
-                                contentList: contentUrls, FileName: FileName);
-                          } else {
-                            showDialog(
-                              barrierDismissible: false,
-                              context: context,
-                              builder: (context) {
-                                var commingSoonContext = context;
-                                return commingSoonAlertbox(
-                                    comingSoonDialogContext:
-                                        commingSoonContext);
-                              },
-                            );
-                          }
-                        },
-                        child: Container(
+          (UserName == "Guest" && i != 0)
+              ? showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) {
+                    var LockCardContext = context;
+                    return lockcard(LockCardDialogContext: LockCardContext);
+                  },
+                )
+              : (contentUrls.length != 0)
+                  ? _PlayContent(contentList: contentUrls, FileName: FileName)
+                  : showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (context) {
+                        var commingSoonContext = context;
+                        return commingSoonAlertbox(
+                            comingSoonDialogContext: commingSoonContext);
+                      },
+                    );
+        },
+        child: Card(
+          // color: Colors.blue,
+          margin: const EdgeInsets.symmetric(horizontal: 15.0),
+          shadowColor: Colors.black,
+          elevation: 25,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(58),
+          ),
+          child: Stack(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(58),
+                    image: DecorationImage(
+                        image: MemoryImage(imageByteData[i]),
+                        fit: BoxFit.fill)),
+              ),
+              (UserName != "Guest")
+                  ? Positioned(
+                      top: MediaQuery.of(context).size.height * 0.2,
+                      //left: MediaQuery.of(context).size.width * 0.19,
+                      right: MediaQuery.of(context).size.width * 0.232,
+                      height: MediaQuery.of(context).size.height * 0.03,
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      child: Visibility(
+                          visible: add_InVisibleList[i],
+                          child: LottieBuilder.asset(
+                            "assets/Animation/9kASTq22vM.json",
+                            alignment: Alignment.center,
+                            fit: BoxFit.cover,
+                            repeat: false,
+                          )))
+                  : (UserName == "Guest" && i == 0)
+                      ? Positioned(
+                          top: MediaQuery.of(context).size.height * 0.2,
+                          //left: MediaQuery.of(context).size.width * 0.19,
+                          right: MediaQuery.of(context).size.width * 0.232,
+                          height: MediaQuery.of(context).size.height * 0.03,
+                          width: MediaQuery.of(context).size.width * 0.45,
+                          child: Visibility(
+                              visible: add_InVisibleList[i],
+                              child: LottieBuilder.asset(
+                                "assets/Animation/9kASTq22vM.json",
+                                alignment: Alignment.center,
+                                fit: BoxFit.cover,
+                                repeat: false,
+                              )))
+                      : SizedBox(),
+              Positioned(
+                  top: MediaQuery.of(context).size.height * 0.43,
+                  left: 0.0,
+                  right: 0.0,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 50),
+                          child: Text(
+                            subTopicTitle[i],
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                            softWrap: false,
+                            maxLines: 10,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  Image.asset(
+                                    'assets/app_icons/heart.png',
+                                    height: 30,
+                                    width: 50,
+                                  ),
+                                  Text("${subTopicLikesCount[i]}")
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  Image.asset(
+                                    'assets/app_icons/ViewIcon.webp',
+                                    height: 30,
+                                    width: 50,
+                                  ),
+                                  Text("${subTopicViewsCount[i]}")
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
                           height: MediaQuery.of(context).size.height * 0.06,
                           width: MediaQuery.of(context).size.width * 0.45,
                           margin: EdgeInsets.only(
@@ -325,11 +362,20 @@ class _supTopicPageState extends State<supTopicPage>
                             ),
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                ))
-          ],
+                      ],
+                    ),
+                  )),
+              (UserName == "Guest" && i != 0)
+                  ? Container(
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage(
+                                  "assets/images/LockCardImage.webp"),
+                              fit: BoxFit.fill)),
+                    )
+                  : SizedBox()
+            ],
+          ),
         ),
       ));
     }
@@ -407,6 +453,7 @@ class _supTopicPageState extends State<supTopicPage>
       Navigator.of(_downloadDialogBoxContext).pop();
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           var internetErrorContext = context;
           return InternetErrorDialog(
@@ -427,6 +474,8 @@ class _supTopicPageState extends State<supTopicPage>
 
     var userData = {"topic_id": topicId.toString()};
     if (jsonFile.existsSync()) {
+      var jsonData = jsonDecode(jsonFile.readAsStringSync());
+      UserName = jsonData['UserName'].toString();
       var response = await http.post(Uri.parse(url), body: userData);
 
       try {
@@ -484,13 +533,14 @@ class _supTopicPageState extends State<supTopicPage>
           // Show Dialog that indicates the internal server Error.
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internet Error",
+                  ErrorTitle: "Poor Connection",
                   description:
-                      "Looks like you might be offline. Please check your internet connection and try again.",
+                      "Maybe you have a poor internet connection. Please try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -509,13 +559,14 @@ class _supTopicPageState extends State<supTopicPage>
         if (_checkConnectivity == ConnectivityResult.none) {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internet Error",
+                  ErrorTitle: "No Internet",
                   description:
-                      "Looks like you might be offline. Please check your internet connection and try again.",
+                      "Maybe you don't have internet connection. Please check and try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -531,13 +582,14 @@ class _supTopicPageState extends State<supTopicPage>
         } else {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Low Internet Connection",
+                  ErrorTitle: "Poor Connection",
                   description:
-                      "Poor internet connection. Please try again.",
+                      "Maybe you have a poor internet connection. Please try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -728,6 +780,7 @@ class _supTopicPageState extends State<supTopicPage>
         // show Dialog or message
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) {
             var internetErrorContext = context;
             return InternetErrorDialog(
@@ -757,6 +810,7 @@ class _supTopicPageState extends State<supTopicPage>
     if (_checkConnectivity == ConnectivityResult.none) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           var internetErrorContext = context;
           return InternetErrorDialog(
@@ -1099,7 +1153,10 @@ class _supTopicPageState extends State<supTopicPage>
         var jsonData = jsonDecode(jsonFile.readAsStringSync());
         var userId = jsonData['User_Id'];
 
-        var userData = {"user_id": userId.toString(),"topic_id":topicId.toString()};
+        var userData = {
+          "user_id": userId.toString(),
+          "topic_id": topicId.toString()
+        };
         var response = await http.post(Uri.parse(url), body: userData);
 
         if (response.statusCode == 200) {
@@ -1122,7 +1179,8 @@ class _supTopicPageState extends State<supTopicPage>
                     .contains(int.parse(jsonResponse['completedIDs'][i]))) {
                   print(
                       "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SubTopic Id Matches %%%%%%%%%%%%%%%%%%%%%%%%%%%");
-                  add_InVisibleList[subTopicIds.indexOf(int.parse(jsonResponse['completedIDs'][i]))] = true;
+                  add_InVisibleList[subTopicIds.indexOf(
+                      int.parse(jsonResponse['completedIDs'][i]))] = true;
                 }
               }
               completedListOfBool.value = true;

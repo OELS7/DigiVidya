@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 // ignore: must_be_immutable
 class quiteVideoPlayerDialog extends StatefulWidget {
@@ -20,25 +21,27 @@ class _quiteVideoPlayerDialogState extends State<quiteVideoPlayerDialog> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(
-          horizontal: 20, vertical: MediaQuery.of(context).size.height * 0.3),
+      margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.3,bottom: MediaQuery.of(context).size.width* 0.55,left: MediaQuery.of(context).size.width*0.05,right: MediaQuery.of(context).size.width*0.05),
       decoration: BoxDecoration(
+          //color: Colors.blue,
           image: DecorationImage(
               image:
                   AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
       child: Stack(
         children: [
           Positioned(
-              child: Container(
-            margin: EdgeInsets.symmetric(vertical: 10),
-            height: MediaQuery.of(context).size.height * 0.1,
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage(
-                        "assets/App popups/Pop_up ICONS/VideoPlayerIcon.webp"))),
-          )),
+            top: MediaQuery.of(context).size.height* 0,
+            left: MediaQuery.of(context).size.width * 0.32,
+           height: MediaQuery.of(context).size.height / 9,
+          width: MediaQuery.of(context).size.width / 10,
+              child: LottieBuilder.asset(
+              "assets/Animation/Animation - 1711711975948_exit_video.json",
+              repeat: false,
+              fit: BoxFit.cover,
+              height: 140,width: 140,
+            )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.135,
+              top: MediaQuery.of(context).size.height * 0.150,
               left: MediaQuery.of(context).size.width * 0.15,
               right: MediaQuery.of(context).size.width * 0.15,
               child: Container(
@@ -53,7 +56,7 @@ class _quiteVideoPlayerDialogState extends State<quiteVideoPlayerDialog> {
                 ),
               )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.24,
+              top: MediaQuery.of(context).size.height * 0.254,
               left: MediaQuery.of(context).size.width * 0.06,
               right: MediaQuery.of(context).size.width * 0.06,
               child: Container(

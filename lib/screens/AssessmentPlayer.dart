@@ -32,6 +32,7 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   List<String> FileName = [];
   List<String> deviceFileName = [];
   List<String> deviceFilePath = [];
+  ValueNotifier<bool> heartButtonPressed = ValueNotifier<bool>(false);
 
   var pageContext;
 
@@ -158,30 +159,45 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
       //Exit The loop goto bannerAdd page
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           var LikeDialogBox = context;
-          return LikeDialog(yesButton: () {
-            _likeSubTopic();
+          return LikeDialog(
+            yesButton: () {
+              heartButtonPressed.value = true;
+              _likeSubTopic();
 
-            Navigator.of(LikeDialogBox).pop();
-          }, noButton: () async {
-            String dir = (await getApplicationSupportDirectory()).path;
-            File jsonFile = File("$dir/appInfo.json");
-            var jsonData = jsonDecode(jsonFile.readAsStringSync());
-            String user_Id = jsonData['User_Id'].toString();
-            String subTopic_Id = jsonData['subTopic_Id'].toString();
-            _setSubTopicCompleted(user_Id: user_Id, subTopic_Id: subTopic_Id);
-            Future.delayed(Duration(milliseconds: 300), () {
-              Navigator.pushReplacementNamed(pageContext, "/bannerAd",
-                  arguments: {
-                    "section": section,
-                    "topic": topic,
-                    "topicCount": topicCount,
-                    "subTopicCount": subTopicCount
-                  });
-            });
-            Navigator.of(LikeDialogBox).pop();
-          });
+              Future.delayed(
+                Duration(milliseconds: 70),
+                () {
+                  Navigator.of(LikeDialogBox).pop();
+                },
+              );
+            },
+            noButton: () async {
+              String dir = (await getApplicationSupportDirectory()).path;
+              File jsonFile = File("$dir/appInfo.json");
+              var jsonData = jsonDecode(jsonFile.readAsStringSync());
+              String user_Id = jsonData['User_Id'].toString();
+              String subTopic_Id = jsonData['subTopic_Id'].toString();
+              // _setSubTopicCompleted(user_Id: user_Id, subTopic_Id: subTopic_Id);
+              _demoprogrees(
+                  user_Id: user_Id,
+                  topic_Id: topic.toString(),
+                  subTopic_Id: subTopic_Id);
+              Future.delayed(Duration(milliseconds: 300), () {
+                Navigator.pushReplacementNamed(pageContext, "/bannerAd",
+                    arguments: {
+                      "section": section,
+                      "topic": topic,
+                      "topicCount": topicCount,
+                      "subTopicCount": subTopicCount
+                    });
+              });
+              Navigator.of(LikeDialogBox).pop();
+            },
+            heartButtonPressed: heartButtonPressed,
+          );
         },
       );
     }
@@ -283,7 +299,6 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
             }
           }
         });
-
       } else {
         if (FileName[itemPointer] != deviceFileName[itemPointer]) {
           // await File(deviceFilePath[itemPointer]).delete(recursive: true);
@@ -457,7 +472,11 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
 
           jsonFile.writeAsStringSync(jsonEncode(jsonData));
           //this will store the user view.
-          _setSubTopicCompleted(user_Id: user_Id, subTopic_Id: subTopic_Id);
+          // _setSubTopicCompleted(user_Id: user_Id, subTopic_Id: subTopic_Id);
+          _demoprogrees(
+              user_Id: user_Id,
+              topic_Id: topic.toString(),
+              subTopic_Id: subTopic_Id);
           Future.delayed(
             Duration(milliseconds: 600),
             () {
@@ -525,37 +544,59 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   ///Function for userprogress (subtopic complete)
   ///
   /// This method store the progress of user on the server.
-  void _setSubTopicCompleted(
-      {required String user_Id, required String subTopic_Id}) async {
-    //API call for user progress
-    // String Api_Url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateUserProgress";
-    String Api_Url = "https://digividya.in/DigiVidyaAPI/api/updateUserProgress";
-    String dir = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dir/appInfo.json");
-    var jsonData = jsonDecode(jsonFile.readAsStringSync());
-    if (!jsonData.containsKey("completedSubTopic")) {
-      var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
-      var response = await http.post(Uri.parse(Api_Url), body: userData);
-      if (response.statusCode == 200) {
-        print("${response.body.replaceAll("\n", " ")}");
-      }
-    } else {
-      List completedSubTopicList = jsonData['completedSubTopic'];
+  // void _setSubTopicCompleted(
+  //     {required String user_Id, required String subTopic_Id}) async {
+  //   //API call for user progress
+  //   // String Api_Url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/updateUserProgress";
+  //   String Api_Url = "https://digividya.in/DigiVidyaAPI/api/updateUserProgress";
+  //   String dir = (await getApplicationSupportDirectory()).path;
+  //   File jsonFile = File("$dir/appInfo.json");
+  //   var jsonData = jsonDecode(jsonFile.readAsStringSync());
+  //   if (!jsonData.containsKey("completedSubTopic")) {
+  //     var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
+  //     var response = await http.post(Uri.parse(Api_Url), body: userData);
+  //     if (response.statusCode == 200) {
+  //       print("${response.body.replaceAll("\n", " ")}");
+  //     }
+  //   } else {
+  //     List completedSubTopicList = jsonData['completedSubTopic'];
 
-      if (!completedSubTopicList.contains(subTopic_Id)) {
-        completedSubTopicList.add(subTopic_Id);
-        jsonData['completedSubTopic'] = completedSubTopicList;
-      }
+  //     if (!completedSubTopicList.contains(subTopic_Id)) {
+  //       completedSubTopicList.add(subTopic_Id);
+  //       jsonData['completedSubTopic'] = completedSubTopicList;
+  //     }
 
-      var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
-      var response = await http.post(Uri.parse(Api_Url), body: userData);
-      if (response.statusCode == 200) {}
+  //     var userData = {"user_id": user_Id, "subtopic_id": subTopic_Id};
+  //     var response = await http.post(Uri.parse(Api_Url), body: userData);
+  //     if (response.statusCode == 200) {}
+  //   }
+  // }
+
+  // Insted of _setsubtopiccompleted use _demoprogress API Call funtion
+  void _demoprogrees(
+      {required String user_Id,
+      // required String section_Id,
+      required String topic_Id,
+      required String subTopic_Id}) async {
+    String Api_url = "https://digividya.in/DigiVidyaAPI/api/insertUserProgress";
+
+    var userData = {
+      "user_id": user_Id,
+      // "section_id": section_Id,
+      "topic_id": topic_Id,
+      "subtopic_id": subTopic_Id
+    };
+    var response = await http.post(Uri.parse(Api_url), body: userData);
+    if (response.statusCode == 200) {
+      print("${response.body.replaceAll("\n", " ")}");
     }
   }
 
   Future<bool> _onBackButtonPressed() async {
     return (await showDialog(
           context: context,
+          barrierDismissible: false,
+          useSafeArea: true,
           builder: (context) {
             var dialogBoc = context;
             return exitAssessment(

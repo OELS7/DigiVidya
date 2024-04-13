@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:digividya/screens/HomePage.dart';
 import 'package:digividya/widgets/InternalServerError.dart';
-import 'package:digividya/widgets/userAlredyExist.dart';
 import 'package:digividya/widgets/SubmittingIndecator.dart';
+import 'package:digividya/widgets/userAlredyExist.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -30,7 +30,7 @@ class _freetimeState extends State<freetime> {
   String device_id = "";
   String language = "";
   Connectivity _connectivity = Connectivity();
-  var SubmittingIndecatorContext;
+  var SubmittingIndecatorContext ;
   @override
   void initState() {
     super.initState();
@@ -39,6 +39,7 @@ class _freetimeState extends State<freetime> {
 
   @override
   Widget build(BuildContext context) {
+
     ScreenHiegth = MediaQuery.of(context).size.height;
     ScreenWidth = MediaQuery.of(context).size.width;
     var arguments = (ModalRoute.of(context)!.settings.arguments ??
@@ -308,7 +309,7 @@ class _freetimeState extends State<freetime> {
             //If user alerady exit then show dialog
             showDialog(
                 context: context,
-                barrierDismissible: true,
+                barrierDismissible: false,
                 builder: (context) {
                   return userAlreadyExist();
                 });
@@ -320,14 +321,15 @@ class _freetimeState extends State<freetime> {
         print(
             "%%%%%%%%%%%%%%%%%%%%% Server Status Code : ${response.statusCode} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         showDialog(
+          barrierDismissible: false,
           context: context,
           builder: (context) {
             var internalServerErrorContext = context;
             return internalServerError(
                 internalServerErrorContext: internalServerErrorContext,
-                ErrorTitle: "Low Internet Connection",
+                ErrorTitle: "Poor Connection",
                 description:
-                    "Poor internet connection. Please try again.",
+                    "Maybe you have a poor internet connection. Please try again.",
                 retryButton: () {
                   Future.delayed(
                     Duration(milliseconds: 50),
@@ -349,13 +351,14 @@ class _freetimeState extends State<freetime> {
         Navigator.pop(SubmittingIndecatorContext,false);
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) {
             var internalServerErrorContext = context;
             return internalServerError(
                 internalServerErrorContext: internalServerErrorContext,
-                ErrorTitle: "Internet Error",
+                ErrorTitle: "No Internet",
                 description:
-                    "Looks like you might be offline. Please check your internet connection and try again.",
+                    "Maybe you don't have internet. Please check and try again.",
                 retryButton: () {
                   submitRequest(userName, mobileNumber, city, language,
                       device_id, freeTime, hours, minutes, 0);
@@ -367,13 +370,14 @@ class _freetimeState extends State<freetime> {
         Navigator.pop(SubmittingIndecatorContext,false);
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) {
             var internalServerErrorContext = context;
             return internalServerError(
                 internalServerErrorContext: internalServerErrorContext,
-                ErrorTitle: "Low Internet Connection",
+                ErrorTitle: "Poor connection",
                 description:
-                    " Poor internet connection. Please try again.",
+                    "Maybe you have a poor internet connection. Please try again.",
                 retryButton: () {
                   Future.delayed(
                     Duration(milliseconds: 50),
@@ -394,9 +398,10 @@ class _freetimeState extends State<freetime> {
   void _ShowLoadingAlert() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         SubmittingIndecatorContext = context;
-        return SubmittingIndecator();
+        return SubmittingfIndecator();
       },
     );
   }

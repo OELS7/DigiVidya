@@ -1,16 +1,22 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:app_settings/app_settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:digividya/screens/AboutUsPage.dart';
 import 'package:digividya/screens/PrivacyPolicy.dart';
 import 'package:digividya/screens/Register.dart';
 import 'package:digividya/screens/SettingPage.dart';
+import 'package:digividya/widgets/CustomAlertForPermission.dart';
 import 'package:digividya/widgets/DeleteAccountDialog.dart';
 import 'package:digividya/widgets/InternalServerError.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile2 extends StatefulWidget {
   const Profile2({super.key});
@@ -20,18 +26,20 @@ class Profile2 extends StatefulWidget {
 }
 
 class _Profile2State extends State<Profile2> {
+  final imagePicker = ImagePicker();
   String UserName = "";
-
   get title => null;
-
   get content => null;
   var userId;
+  String FilePath = "";
   Connectivity _connectivity = Connectivity();
+  ValueNotifier<bool> profileChange = ValueNotifier<bool>(false);
 
   @override
   void initState() {
     super.initState();
     _getUserName();
+    _getUserImage();
   }
 
   @override
@@ -40,75 +48,109 @@ class _Profile2State extends State<Profile2> {
       body: Column(
         children: [
           Container(
-              height: 220,
-              width: MediaQuery.of(context).size.width * 1,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(50),
-                    bottomLeft: Radius.circular(50),
-                  ),
-                  image: DecorationImage(
-                      image: AssetImage('assets/images/ProfileDrawer.webp'),
-                      fit: BoxFit.fill)),
-              child: Row(
-                children: [
-                  // * set profile image using image picker *
-                  Container(
-                    // height: 60,
-                    // width: 30,
+            height: 220,
+            width: MediaQuery.of(context).size.width * 1,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(50),
+                  bottomLeft: Radius.circular(50),
+                ),
+                image: DecorationImage(
+                    image: AssetImage('assets/images/ProfileDrawer.webp'),
+                    fit: BoxFit.fill)),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.08,
+                  left: MediaQuery.of(context).size.width * 0.048,
+                  child: ValueListenableBuilder(
+                    valueListenable: profileChange,
+                    builder: (context, value, child) {
+                      if (value is bool) {
+                        if (value) {
+                          return Container(
+                            height: MediaQuery.of(context).size.height * 0.125,
+                            width: MediaQuery.of(context).size.width * 0.25,
+                            decoration: BoxDecoration(
+                                //borderRadius: BorderRadius.all(Radius.circular(100000000000000)),
 
-                    margin: EdgeInsets.only(left: 20),
-                    child: Stack(
-                      children: [
-                        ProfilePicture(
-                          name: '',
-                          radius: 45,
-                          fontsize: 28,
-                        ),
-                        CircleAvatar(
-                          radius: 45,
-                          child: Image.asset(
-                            'assets/images/ProfileIcon.webp',
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                        // Positioned(
-                        //     bottom: 1,
-                        //     right: 1,
-                        //     child: InkWell(
-                        //         onTap: () {
-                        //           getImage();
-                        //         },
-                        //         child: Icon(
-                        //           Icons.camera_alt,
-                        //           size: 30,
-                        //           color: Colors.white,
-                        //         ))),
-                      ],
-                    ),
+                                // color: Colors.green,
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                    image: FileImage(File(FilePath),),
+                                    fit: BoxFit.cover)),
+                          );
+                        } else {
+                          return Container(
+                            height: MediaQuery.of(context).size.height * 0.125,
+                            width: MediaQuery.of(context).size.width * 0.25,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                    image: AssetImage(
+                                      'assets/images/ProfileIcon.webp',
+                                    ),
+                                    fit: BoxFit.cover)),
+                          );
+                        }
+                      } else {
+                        return Container(
+                          height: MediaQuery.of(context).size.height * 0.125,
+                          width: MediaQuery.of(context).size.width * 0.25,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                  image: AssetImage(
+                                    'assets/images/ProfileIcon.webp',
+                                  ),
+                                  fit: BoxFit.cover)),
+                        );
+                      }
+                    },
                   ),
-
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Padding(padding: EdgeInsets.only(bottom: 10)),
-                      Container(
-                        height: MediaQuery.of(context).size.height * 0.1,
-                        width: MediaQuery.of(context).size.width * 0.4,
-                        margin: EdgeInsets.only(left: 20),
+                ),
+                Positioned(
+                    top: MediaQuery.of(context).size.height * 0.087,
+                    left: MediaQuery.of(context).size.width * 0.299,
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      //color: Colors.blue,
+                      margin: EdgeInsets.only(left: 10),
+                      child: Center(
                         child: Text(
                           UserName,
-                          textAlign: TextAlign.center, 
-                          softWrap: true, 
+                          textAlign: TextAlign.center,
+                          softWrap: true,
                           maxLines: 5,
-                          overflow: TextOverflow.ellipsis,                        
-                          style: TextStyle(color: Colors.white, fontSize: 18,),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                          ),
                         ),
                       ),
-                    ],
-                  )
-                ],
-              )),
+                    )),
+                Positioned(
+                    top: MediaQuery.of(context).size.height * 0.158,
+                    left: MediaQuery.of(context).size.width * 0.219,
+                    bottom: MediaQuery.of(context).size.height * 0.09,
+                    // right: MediaQuery.of(context).size.width * 0.015,
+                    child: InkWell(
+                        onTap: () {
+                          getImage();
+                          print(
+                              "%%%%%%%%%%%%%%% Pressing Camera Button %%%%%%%%%%%%%%%");
+                        },
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 30,
+                          color: Colors.white,
+                        )))
+              ],
+            ),
+          ), //UserProfile Area
+
           Column(
             children: [
               Padding(padding: EdgeInsets.fromLTRB(5, 40, 5, 10)),
@@ -228,7 +270,7 @@ class _Profile2State extends State<Profile2> {
                 ),
               ),
             ],
-          )
+          ) // Other stuf of side Drawer
         ],
       ),
     );
@@ -273,13 +315,14 @@ class _Profile2State extends State<Profile2> {
         if (_checkConnectivity == ConnectivityResult.none) {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internet Error",
+                  ErrorTitle: "No Internet",
                   description:
-                      "Error on the internet Kindly verify that you are able to access the internet.",
+                      "Maybe you don't have a internet connection. Please check and try again.",
                   retryButton: () {
                     deleteaccountdetails();
                   },
@@ -289,13 +332,14 @@ class _Profile2State extends State<Profile2> {
         } else {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Low Internet Connection",
+                  ErrorTitle: "Poor Connection",
                   description:
-                      " Poor internet connection. Please try submitting your application again.",
+                      "Maybe you have a poor internet connection. Please try again.",
                   retryButton: () {
                     deleteaccountdetails();
                   },
@@ -318,5 +362,110 @@ class _Profile2State extends State<Profile2> {
     setState(() {
       UserName = jsonData['UserName'].toString();
     });
+  }
+
+  getImage() async {
+    print(
+        "%%%%%%%%%%%%%%%% Entering in getImage Method %%%%%%%%%%%%%%%%%%%%%%");
+
+    if (await Permission.videos.isGranted) {
+      final XFile? pickedFile = await pickImage();
+      final Directory getApplicationDirectory = await applicationDirectory();
+      final String FileName =
+          await getFileName(pickedFile!.path.split(".").last);
+      final String GetFilePath = await SaveFileToApplicationDirectory(
+          getApplicationDirectory, FileName, pickedFile);
+      SharedPreferences profileImagePath =
+          await SharedPreferences.getInstance();
+
+      setState(() {
+        if (profileImagePath.containsKey("profileImage") &&
+            profileImagePath.getString("profileImage")!.isNotEmpty &&
+            File(profileImagePath.getString("profileImage") ?? "")
+                .existsSync()) {
+          print("%%%%%%%%%%%%%%% checking all condition %%%%%%%%%%%%%%%%%%%");
+          // This block chnage the profile Image of user.
+          if (File(profileImagePath.getString("profileImage") ?? "")
+                  .existsSync() &&
+              File(GetFilePath).existsSync()) {
+            print(
+                "%%%%%%%%%%%%%%% deleting old File from application directory %%%%%%%%%%%%%%%%%%%%%%%% ");
+            File(profileImagePath.getString("profileImage") ?? "")
+                .deleteSync(recursive: true); //deleting old profile image.
+            profileImagePath.setString("profileImage",
+                GetFilePath); // setting new file path of profileImage
+            FilePath = profileImagePath.getString("profileImage") ?? "";
+            profileChange.value = true;
+          }
+        } else {
+          FilePath = GetFilePath;
+          profileImagePath.setString("profileImage", GetFilePath);
+          profileChange.value = true;
+        }
+      });
+    } else {
+      // AppSettings.openAppSettings(type: AppSettingsType.settings);
+      _ShowAppSettingDialog();
+    }
+  }
+
+  Future<XFile?> pickImage() async {
+    try {
+      final pickedfile = imagePicker.pickImage(source: ImageSource.gallery);
+      return pickedfile;
+    } catch (e) {
+      print(
+          "%%%%%%%%%%%%%%%%%%%%%% Error during picking Image : ${e.toString()} %%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+    }
+    return null;
+  }
+
+  Future<Directory> applicationDirectory() async {
+    final appDirectory = await getApplicationSupportDirectory();
+    return appDirectory;
+  }
+
+  Future<String> getFileName(String File_extension) async {
+    final FileName =
+        "profile_pic_${DateTime.now().millisecondsSinceEpoch.toString()}.$File_extension";
+
+    return FileName;
+  }
+
+  Future<String> SaveFileToApplicationDirectory(
+      Directory applicationDirectory, String fileName, XFile? xFile) async {
+    // xFile!.r
+    File profilePic = File("${await applicationDirectory.path}/$fileName");
+    profilePic.createSync(recursive: true);
+    final bytes = await xFile!.readAsBytes();
+    profilePic.writeAsBytesSync(bytes, flush: true);
+    return profilePic.path;
+  }
+
+  void _getUserImage() async {
+    SharedPreferences profileImagePath = await SharedPreferences.getInstance();
+
+    if (profileImagePath.containsKey("profileImage") &&
+        profileImagePath.getString("profileImage")!.isNotEmpty &&
+        File(profileImagePath.getString("profileImage") ?? "").existsSync()) {
+      FilePath = profileImagePath.getString("profileImage") ?? "";
+      profileChange.value = true;
+    }
+  }
+
+  void _ShowAppSettingDialog() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        var CloseDialog = context;
+        return CustomAlertForPermission(OpenApp: (){
+          Navigator.pop(CloseDialog,false);
+          Future.delayed(Duration(milliseconds: 10),() {
+            AppSettings.openAppSettings(type: AppSettingsType.apn);
+          },);
+        },);
+      },
+    );
   }
 }

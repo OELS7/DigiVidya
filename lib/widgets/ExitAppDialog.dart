@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 // ignore: must_be_immutable
 class exitAppDialog extends StatefulWidget {
@@ -27,18 +28,25 @@ class _exitAppDialogState extends State<exitAppDialog> {
                   AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
       child: Stack(
         children: [
+          // Container(
+          //   margin: EdgeInsets.symmetric(vertical: 15),
+          //   height: MediaQuery.of(context).size.height * 0.06,
+          //   decoration: BoxDecoration(
+          //       //color: Colors.blue,
+          //       image: DecorationImage(
+          //           image: AssetImage(
+          //               "assets/App popups/Pop_up ICONS/AlertIcon.webp"))),
+          // )
           Positioned(
-              child: Container(
-            margin: EdgeInsets.symmetric(vertical: 15),
-            height: MediaQuery.of(context).size.height * 0.06,
-            decoration: BoxDecoration(
-                //color: Colors.blue,
-                image: DecorationImage(
-                    image: AssetImage(
-                        "assets/App popups/Pop_up ICONS/AlertIcon.webp"))),
-          )),
+              height: MediaQuery.of(context).size.height * 0.11,
+              left: MediaQuery.of(context).size.width * 0.32,
+              child: LottieBuilder.asset(
+                "assets/Animation/SnnE6DJDpc.json",
+                fit: BoxFit.cover,
+                repeat: false,
+              )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.1,
+              top: MediaQuery.of(context).size.height * 0.115,
               left: MediaQuery.of(context).size.width * 0.35,
               right: MediaQuery.of(context).size.width * 0.28,
               child: Text(
@@ -50,7 +58,7 @@ class _exitAppDialogState extends State<exitAppDialog> {
                     fontSize: 20),
               )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.135,
+              top: MediaQuery.of(context).size.height * 0.15,
               left: MediaQuery.of(context).size.width * 0.15,
               right: MediaQuery.of(context).size.width * 0.15,
               child: Text(
@@ -65,7 +73,7 @@ class _exitAppDialogState extends State<exitAppDialog> {
                     fontSize: 18),
               )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.229,
+              top: MediaQuery.of(context).size.height * 0.239,
               left: MediaQuery.of(context).size.width * 0.1,
               right: MediaQuery.of(context).size.width * 0.1,
               child: Row(

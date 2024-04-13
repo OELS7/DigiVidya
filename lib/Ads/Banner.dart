@@ -22,10 +22,7 @@ class _banneradState extends State<bannerad> {
   bool _isAdloades = false;
   bool _isFullScreenAddLoad = false;
 
-  int section = 0,
-      topic = 0,
-      topicCount = 0,
-      subTopic = 0;
+  int section = 0, topic = 0, topicCount = 0, subTopic = 0;
   late InterstitialAd _interstitialAd;
   var pagecontext;
 
@@ -70,9 +67,9 @@ class _banneradState extends State<bannerad> {
         adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: _onAdloaded,
           onAdFailedToLoad: (Error) {
-                     setState(() {
-            _isFullScreenAddLoad = true;
-          });
+            setState(() {
+              _isFullScreenAddLoad = true;
+            });
           },
         ));
     return;
@@ -104,9 +101,9 @@ class _banneradState extends State<bannerad> {
       },
       //On failed show error
       onAdFailedToShowFullScreenContent: (ad, error) {
-                  setState(() {
-            _isFullScreenAddLoad = true;
-          });
+        setState(() {
+          _isFullScreenAddLoad = true;
+        });
       },
     );
   }
@@ -121,9 +118,14 @@ class _banneradState extends State<bannerad> {
     topicCount = arguments['topicCount'];
 
     pagecontext = context;
-    return Scaffold(
-        body: SafeArea(
-            child: Stack(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        
+      },
+        child: Scaffold(
+            body: SafeArea(
+                child: Stack(
       children: [
         Container(
           decoration: BoxDecoration(
@@ -133,7 +135,7 @@ class _banneradState extends State<bannerad> {
           width: MediaQuery.of(context).size.width * 1,
         ),
         Positioned(
-          top: MediaQuery.of(context).size.height*0.63 ,
+            top: MediaQuery.of(context).size.height * 0.63,
             bottom: MediaQuery.of(context).size.height * 0.139,
             left: MediaQuery.of(context).size.width * 0.1,
             right: MediaQuery.of(context).size.width * 0.1,
@@ -171,7 +173,7 @@ class _banneradState extends State<bannerad> {
               child: Container(
                 height: MediaQuery.of(context).size.height / 15,
                 width: MediaQuery.of(context).size.width * 0.3,
-                padding: EdgeInsets.symmetric(horizontal: 10,vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.white),
                     borderRadius: BorderRadius.only(
@@ -230,13 +232,13 @@ class _banneradState extends State<bannerad> {
             right: MediaQuery.of(context).size.width * 0.02,
             child: _isAdloades
                 ? Container(
-                    height: _bannerAd.size.height.toDouble()* 0.8,
+                    height: _bannerAd.size.height.toDouble() * 0.8,
                     width: _bannerAd.size.width.toDouble(),
                     child: AdWidget(ad: _bannerAd),
                   )
                 : SizedBox())
       ],
-    )));
+    ))));
   }
 
   //Function for send image

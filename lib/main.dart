@@ -113,7 +113,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: UpgradeAlert(
-          upgrader: Upgrader(durationUntilAlertAgain: Duration(hours: 2)),
+          upgrader: Upgrader(durationUntilAlertAgain: Duration(minutes: 1)),
           child: Splash(),
           showIgnore: false,
           canDismissDialog: false),

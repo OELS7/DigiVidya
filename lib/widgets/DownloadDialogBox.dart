@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 // ignore: must_be_immutable
 class downloadDialogBox extends StatelessWidget {
@@ -21,26 +22,39 @@ class downloadDialogBox extends StatelessWidget {
       builder: (context, value, child) {
         return Container(
           margin: EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: MediaQuery.of(context).size.height * 0.3),
+              horizontal: MediaQuery.of(context).size.height * 0.02,
+              vertical: MediaQuery.of(context).size.height * 0.28),
           decoration: BoxDecoration(
+              // color: Colors.green,
               image: DecorationImage(
                   image: AssetImage(
                       "assets/App popups/Pop_up ICONS/downloadPopUp.webp"))),
           child: Stack(
             children: [
+              // Container(
+              //   margin: EdgeInsets.symmetric(horizontal: 120, vertical: 35),
+              //   height: MediaQuery.of(context).size.height * 0.066,
+              //   decoration: BoxDecoration(
+              //       //color: Colors.blue,
+              //       image: DecorationImage(
+              //           image: AssetImage(
+              //               "assets/App popups/Pop_up ICONS/DownloadIcon.webp"))),
+              // )
               Positioned(
-                  child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 120, vertical: 35),
-                height: MediaQuery.of(context).size.height * 0.066,
-                decoration: BoxDecoration(
-                    //color: Colors.blue,
-                    image: DecorationImage(
-                        image: AssetImage(
-                            "assets/App popups/Pop_up ICONS/DownloadIcon.webp"))),
-              )),
+                top: MediaQuery.of(context).size.height * 0.002,
+                  left: MediaQuery.of(context).size.width * 0.301,
+                  // bottom: MediaQuery.of(context).size.height * 0.39,
+                  height: MediaQuery.of(context).size.height * 0.09,
+                 
+                  child: LottieBuilder.asset(
+                    "assets/Animation/download.json",
+                    fit: BoxFit.cover,
+                    repeat: true,
+                    height: 100,
+                    width:  100,
+                  )),
               Positioned(
-                  top: MediaQuery.of(context).size.height * 0.13,
+                  top: MediaQuery.of(context).size.height * 0.15,
                   left: MediaQuery.of(context).size.width * 0.2,
                   right: MediaQuery.of(context).size.width * 0.180,
                   child: Text(
@@ -53,7 +67,7 @@ class downloadDialogBox extends StatelessWidget {
                         fontFamily: "Fontmain"),
                   )),
               Positioned(
-                top: MediaQuery.of(context).size.height * 0.2,
+                top: MediaQuery.of(context).size.height * 0.225,
                 left: MediaQuery.of(context).size.width * 0.08,
                 right: MediaQuery.of(context).size.width * 0.08,
                 child: Column(
@@ -63,7 +77,7 @@ class downloadDialogBox extends StatelessWidget {
                     LinearProgressIndicator(
                       minHeight: 10,
                       value: value,
-                      color: Colors.blue.shade900,
+                      color: const Color.fromRGBO(33, 117, 187, 1)
                     ),
                     Text(
                       "${(value * 100).round()}%",

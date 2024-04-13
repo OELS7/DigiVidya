@@ -6,10 +6,12 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:digividya/widgets/InternalServerError.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
+import 'package:digividya/widgets/Lock_Cards.dart';
 import 'package:digividya/widgets/commingSoonAlertBox.dart';
 import 'package:digividya/widgets/exitAppDialog.dart';
 import 'package:digividya/widgets/resumeAndPlayDialog.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'package:path/path.dart' as path;
 import 'package:digividya/BgService/bgAudioPlayer.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +41,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
   String sectionTitle = "",
       sectionDescription = "",
       sectionCardImage = "",
-      image = "";
+      image = "",
+      UserName = "";
   List<dynamic> sectionDetail = [];
   List<String> cardsAudioFilePath = [];
   List<dynamic> deviceAudioFileName = [];
@@ -96,7 +99,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                   valueListenable: progressOfSection,
                   builder: (context, value, child) {
                     if (value is bool) {
-                     // var tem_var = value;
+                      // var tem_var = value;
                       if (value) {
                         return topics();
                       } else {
@@ -163,23 +166,30 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
 
               setState(() {});
 
-              if (sectionDetail[i]['topic_count'] != 0) {
-                Navigator.of(context).pushReplacementNamed('/TopicPage',
-                    arguments: {
-                      'section': sectionId,
-                      'topic_count': sectionDetail[i]['topic_count']
-                    });
-              } else {
-                showDialog(
-                  barrierDismissible: false,
-                  context: context,
-                  builder: (context) {
-                    var comingSoonContext = context;
-                    return commingSoonAlertbox(
-                        comingSoonDialogContext: comingSoonContext);
-                  },
-                );
-              }
+              (UserName == "Guest" && i != 0)
+                  ? showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (context) {
+                        var LockCardContext = context;
+                        return lockcard(LockCardDialogContext: LockCardContext);
+                      },
+                    )
+                  : (sectionDetail[i]['topic_count'] != 0)
+                      ? Navigator.of(context).pushReplacementNamed('/TopicPage',
+                          arguments: {
+                              'section': sectionId,
+                              'topic_count': sectionDetail[i]['topic_count']
+                            })
+                      : showDialog(
+                          barrierDismissible: false,
+                          context: context,
+                          builder: (context) {
+                            var comingSoonContext = context;
+                            return commingSoonAlertbox(
+                                comingSoonDialogContext: comingSoonContext);
+                          },
+                        );
             },
             child: Card(
               shadowColor: Colors.black,
@@ -201,12 +211,17 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                   ),
                   Positioned(
                       top: MediaQuery.of(context).size.height * 0.2,
-                      left: MediaQuery.of(context).size.width * 0.235,
+                      //left: MediaQuery.of(context).size.width * 0.19,
+                      right: MediaQuery.of(context).size.width * 0.232,
+                      height: MediaQuery.of(context).size.height * 0.03,
+                      width: MediaQuery.of(context).size.width * 0.45,
                       child: Visibility(
                           visible: _getCompletedSectionBoolValue[i],
-                          child: Image.asset(
-                            "assets/images/completed-tick-icon 22-01.png",
-                            width: MediaQuery.of(context).size.width * 0.5,
+                          child: LottieBuilder.asset(
+                            "assets/Animation/9kASTq22vM.json",
+                            alignment: Alignment.center,
+                            fit: BoxFit.cover,
+                            repeat: false,
                           ))),
                   Positioned(
                       top: MediaQuery.of(context).size.height * 0.43,
@@ -308,16 +323,30 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
                           strokeWidth: 5.0,
                           backgroundColor: Colors.white,
                           color: Color.fromRGBO(0, 208, 255, 1),
-                          value: !_sectionProgress[i].isNaN ? _sectionProgress[i] : 0.0,
+                          value: !_sectionProgress[i].isNaN
+                              ? _sectionProgress[i]
+                              : 0.0,
                         ),
                       )),
                   Positioned(
                       top: MediaQuery.of(context).size.height * 0.053,
                       left: MediaQuery.of(context).size.width * 0.77,
                       child: Text(
-                        "${ (!_sectionProgress[i].isNaN ? (_sectionProgress[i]*100).round() : 0)} %",
+                        "${(!_sectionProgress[i].isNaN ? (_sectionProgress[i] * 100).round() : 0)} %",
                         style: TextStyle(color: Colors.white),
-                      ))
+                      )),
+                  (UserName == "Guest")
+                      ? (i != 0)
+                          ? Container(
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: AssetImage(
+                                        "assets/images/LockCardImage.webp",
+                                      ),
+                                      fit: BoxFit.fill)),
+                            )
+                          : SizedBox()
+                      : SizedBox()
                 ],
               ),
             )),
@@ -425,6 +454,7 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
       var jsonData = jsonDecode(jsonFile.readAsStringSync());
       //print(jsonData['User_Id'] jsonData['User_Id']);
       try {
+        UserName = jsonData['UserName'].toString();
         var userData = {'user_id': jsonData['User_Id'].toString()};
         var response = await http.post(Uri.parse(url), body: userData);
 
@@ -480,13 +510,20 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
         } else {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
-              var dialogContext = context;
-              return InternetErrorDialog(
-                internetErrorDialogContext: dialogContext,
-                message:
-                    "Poor internet connection. Please try again.",
-              );
+              var internalServerErrorContext = context;
+              return internalServerError(
+                  internalServerErrorContext: internalServerErrorContext,
+                  ErrorTitle: "Poor Connection",
+                  description:
+                      " Maybe you have a poor internet connection. Please try again.",
+                  retryButton: () {
+                    getSectionDetails().then((_) {
+                      Navigator.of(context).pop(internalServerErrorContext);
+                    });
+                  },
+                  ButtonText: "try again");
             },
           );
         }
@@ -496,13 +533,14 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
         if (_checkConnectivity == ConnectivityResult.none) {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Internet Error",
+                  ErrorTitle: "No Internet",
                   description:
-                      " Looks like you might be offline. Please check your internet connection and try again.",
+                      "Maybe you don't have internet connection. Please check and try again.",
                   retryButton: () {
                     Future.delayed(
                       Duration(milliseconds: 50),
@@ -517,13 +555,14 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
         } else {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var internalServerErrorContext = context;
               return internalServerError(
                   internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Low Internet Connection",
+                  ErrorTitle: "Poor Connection",
                   description:
-                      " poor internet connection . Please try again.",
+                      " Maybe you have a poor internet connection. Please try again.",
                   retryButton: () {
                     getSectionDetails().then((_) {
                       Navigator.of(context).pop(internalServerErrorContext);
@@ -802,8 +841,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
       _getCompletedSectionBoolValue.add(false);
     }
 
-    // print(
-        // "%%%%%%%%%%%%%%%%%%%%%%%%%%%% ${_sectionProgress} , ${_getCompletedSectionBoolValue} %%%%%%%%%%%%%%%%%%%%%%%");
+    print(
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%% ${_sectionProgress} , ${_getCompletedSectionBoolValue} %%%%%%%%%%%%%%%%%%%%%%%");
   }
 
   _getSectionCompletedDetails() async {
@@ -830,8 +869,8 @@ class _sectionPageState extends State<sectionPage> with WidgetsBindingObserver {
             Map<String, dynamic> CompletedSectionId =
                 jsonResponse['count_of_IDs'];
 
-            // print(
-                // "%%%%%%%%%%%%%%%% Section Completed count with IDS : $CompletedSectionId %%%%%%%%%%%%%%%%%%%%%%%%%%");
+            print(
+                "%%%%%%%%%%%%%%%% Section Completed count with IDS : $CompletedSectionId %%%%%%%%%%%%%%%%%%%%%%%%%%");
 
             // This block store the the progress of each cards bool value to show or hide the completed icon on cards.
             sectionIds.forEach((element) {

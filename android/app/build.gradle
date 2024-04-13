@@ -15,7 +15,7 @@ if (localPropertiesFile.exists()) {
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
     // Change version code when you have to upload bundle on playstore.
-    flutterVersionCode = '23'
+    flutterVersionCode = '25'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')

@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 // ignore: must_be_immutable
 class internalServerError extends StatefulWidget {
@@ -37,14 +39,17 @@ class _internalServerErrorState extends State<internalServerError> {
       required this.reTryButton,
       required this.ButtonText});
 
+  //   decoration: BoxDecoration(
+  // image: DecorationImage(
+  //     image: AssetImage(
+  //         "assets/App popups/Pop_up ICONS/InternetError.webp")))
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 1,
-      width: MediaQuery.of(context).size.width * 1,
       margin: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width * 0.02,
-          vertical: MediaQuery.of(context).size.height * 0.2),
+          horizontal: 15, vertical: MediaQuery.of(context).size.height * 0.25),
+      height: MediaQuery.of(context).size.height * 0.5,
       decoration: BoxDecoration(
           image: DecorationImage(
               image:
@@ -52,17 +57,22 @@ class _internalServerErrorState extends State<internalServerError> {
       child: Stack(
         children: [
           Positioned(
+              left: MediaQuery.of(context).size.width * 0.25,
+              bottom: MediaQuery.of(context).size.height *0.36,
               child: Container(
             margin: EdgeInsets.only(
                 top: MediaQuery.of(context).size.height * 0.104),
             height: MediaQuery.of(context).size.height * 0.08,
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage(
-                        "assets/App popups/Pop_up ICONS/InternetError.webp"))),
+            child: LottieBuilder.asset(
+              "assets/Animation/Animation - 1711601885547.json",
+              height: 140,
+              width: 140,
+              fit: BoxFit.contain,
+              repeat: false,
+            ),
           )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.2,
+              top: MediaQuery.of(context).size.height * 0.159,
               left: MediaQuery.of(context).size.width * 0.1,
               right: MediaQuery.of(context).size.width * 0.1,
               child: Container(
@@ -77,7 +87,7 @@ class _internalServerErrorState extends State<internalServerError> {
                 ),
               )),
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.235,
+            top: MediaQuery.of(context).size.height * 0.195,
             left: MediaQuery.of(context).size.width * 0.1,
             right: MediaQuery.of(context).size.width * 0.1,
             child: Container(
@@ -93,7 +103,7 @@ class _internalServerErrorState extends State<internalServerError> {
                 )),
           ),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.36,
+              top: MediaQuery.of(context).size.height * 0.29,
               left: MediaQuery.of(context).size.width * 0.3,
               right: MediaQuery.of(context).size.width * 0.3,
               child: ElevatedButton(

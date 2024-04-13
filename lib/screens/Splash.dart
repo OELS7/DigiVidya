@@ -76,13 +76,14 @@ class _SplashState extends State<Splash> {
         // If not get device ID show dialog
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) {
             var internetErrorContext = context;
             return internalServerError(
                         internalServerErrorContext: internetErrorContext,
-                        ErrorTitle: "Low Internet Connection",
+                        ErrorTitle: "Poor Connection",
                         description:
-                            "Poor internet connection. Please try again.",
+                            "Maybe you have a poor internet connection. Please try again.",
                         ButtonText: "ok",
                         retryButton: () {
                           Future.delayed(Duration(milliseconds: 80),(){
@@ -109,6 +110,7 @@ class _SplashState extends State<Splash> {
       // For check internet connectivity ,
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           var internetErrorContext = context;
           return InternetErrorDialog(
@@ -159,11 +161,14 @@ class _SplashState extends State<Splash> {
                     var internetErrorDialog = context;
                     return internalServerError(
                         internalServerErrorContext: internetErrorDialog,
-                        ErrorTitle: "Internet Error",
+                        ErrorTitle: "Poor Connection",
                         description:
-                            "Looks like you might be offline. Please check your internet connection and try again.",
+                            "Maybe you have a poor internet connection. Please try again.",
                         ButtonText: "ok",
                         retryButton: () {
+                          Future.delayed(Duration(milliseconds: 30),() {
+                            _goToNextPage();
+                          },);
                           Navigator.of(internetErrorDialog).pop();
                         });
                   },

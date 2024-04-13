@@ -126,6 +126,7 @@
 import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:digividya/screens/free_time.dart';
+import 'package:digividya/widgets/ExitAppDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -179,35 +180,27 @@ class _vediopageState extends State<vediopage> {
 
     return Scaffold(
         body: SafeArea(
-            child: WillPopScope(
-                onWillPop: _onBackPressed,
+            child: PopScope(
+              canPop: false,
+              onPopInvoked: (didPop) {
+                _onBackPressed();
+              },
+                
                 child: Chewie(controller: _chewieController))));
   }
 
   /// ExitDialog Box
   ///
   /// This Function show the Dialog Box to get the confirmation from the user to exit the page. if the User click on yes application get close or if user click on No the user stay on this page.
-  Future<bool> _onBackPressed() async {
-    return (await showDialog(
+   _onBackPressed() async {
+  showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-                  title: Text("Leave page"),
-                  content: Text("Are you want to leave this page"),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        exit(0);
-                      },
-                      child: Text("Yes"),
-                    ),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text("No"))
-                  ],
-                ))) ??
-        false;
+            barrierDismissible: false,
+            builder: (context) {
+              var dialogBox = context;
+              return exitAppDialog(dialogcontect: dialogBox);
+            },
+          );
   }
 
   @override

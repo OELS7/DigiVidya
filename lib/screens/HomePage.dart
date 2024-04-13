@@ -95,6 +95,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
         } else {
           showDialog(
             context: context,
+            barrierDismissible: false,
             builder: (context) {
               var dialogBox = context;
               return exitAppDialog(dialogcontect: dialogBox);
@@ -136,8 +137,8 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
         ),
         body: SafeArea(
           child: Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height*1,
+              width: MediaQuery.of(context).size.width*1,
               child: selectedWidget(selectedIndex)),
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -163,6 +164,7 @@ class _homePageState extends State<homePage> with WidgetsBindingObserver {
   selectedWidget(int selectedIndex) {
     List<Widget> widgets = [fragmentFrame(), ChotiMadat(), Invite()];
     return IndexedStack(
+      
       index: selectedIndex,
       children: widgets,
     );

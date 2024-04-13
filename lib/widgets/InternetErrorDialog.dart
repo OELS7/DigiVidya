@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 // ignore: must_be_immutable
 class InternetErrorDialog extends StatefulWidget {
@@ -34,22 +35,33 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                   AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
       child: Stack(
         children: [
+          // Container(
+          //       margin: EdgeInsets.symmetric(vertical: 30),
+          //       height: MediaQuery.of(context).size.height * 0.08,
+          //       width: MediaQuery.of(context).size.width * 0.2,
+          //       decoration: BoxDecoration(
+          //           //color: Colors.blue,
+          //           image: DecorationImage(
+          //               image: AssetImage(
+          //                   "assets/App popups/Pop_up ICONS/InternetError.webp"),
+          //               fit: BoxFit.fill)),
+          //     )
           Positioned(
-              left: MediaQuery.of(context).size.width * 0.36,
-              right: MediaQuery.of(context).size.width * 0.36,
-              child: Container(
-                margin: EdgeInsets.symmetric(vertical: 30),
-                height: MediaQuery.of(context).size.height * 0.08,
-                width: MediaQuery.of(context).size.width * 0.2,
-                decoration: BoxDecoration(
-                    //color: Colors.blue,
-                    image: DecorationImage(
-                        image: AssetImage(
-                            "assets/App popups/Pop_up ICONS/InternetError.webp"),
-                        fit: BoxFit.fill)),
+              top: MediaQuery.of(context).size.height * 0.055,
+              left: MediaQuery.of(context).size.width * 0.32,
+              //bottom: MediaQuery.of(context).size.width * 0.73,
+              height: MediaQuery.of(context).size.height * 0.08,
+              width: MediaQuery.of(context).size.width * 0.28,
+              
+              child: LottieBuilder.asset(
+                "assets/Animation/internet_error.json",
+                height: 140,
+                width: 140,
+                fit: BoxFit.contain,
+                repeat: false,
               )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.13,
+              top: MediaQuery.of(context).size.height * 0.15,
               left: MediaQuery.of(context).size.width * 0.30,
               right: MediaQuery.of(context).size.width * 0.20,
               child: Text(
@@ -61,7 +73,7 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                     fontSize: 20),
               )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.17,
+              top: MediaQuery.of(context).size.height * 0.19,
               left: MediaQuery.of(context).size.width * 0.12,
               right: MediaQuery.of(context).size.width * 0.12,
               child: Text(
@@ -76,7 +88,7 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                     fontSize: 17),
               )),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.29,
+              top: MediaQuery.of(context).size.height * 0.31,
               left: MediaQuery.of(context).size.width * 0.1,
               right: MediaQuery.of(context).size.width * 0.1,
               child: Row(
@@ -94,7 +106,7 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                     },
                     child: Text(
                       "OK",
-                      style: TextStyle(fontSize: 18, fontFamily: "Fontmain"),
+                      style: TextStyle(fontSize: 18, fontFamily: "Fontmain",color: Colors.black),
                     ),
                     style: ElevatedButton.styleFrom(
                         side: BorderSide(color: Colors.red, width: 3),
