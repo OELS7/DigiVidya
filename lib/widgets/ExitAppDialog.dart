@@ -1,42 +1,46 @@
+// Import necessary Dart and Flutter packages
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+// Ignore the must_be_immutable lint rule for this widget
 // ignore: must_be_immutable
 class exitAppDialog extends StatefulWidget {
+  // Variable to hold the context of the dialog
   var dialogcontect;
+
+  // Constructor for the exitAppDialog widget
   exitAppDialog({super.key, required this.dialogcontect});
 
   @override
+  // Create the state for the exitAppDialog widget
   State<exitAppDialog> createState() => _exitAppDialogState(dialogcontect);
 }
 
 class _exitAppDialogState extends State<exitAppDialog> {
+  // Variable to hold the context of the dialog
   var dialogcontect;
+
+  // Constructor for the state of the exitAppDialog widget
   _exitAppDialogState(this.dialogcontect);
 
   @override
+  // Build the widget tree
   Widget build(BuildContext context) {
+    // Return a container with a specific layout
     return Container(
+      // Set margin for the container
       margin: EdgeInsets.symmetric(
           horizontal: 20, vertical: MediaQuery.of(context).size.height * 0.3),
+      // Set background decoration with an image
       decoration: BoxDecoration(
-          // color: Colors.blue,
           image: DecorationImage(
-              image:
-                  AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
+              image: AssetImage(
+                  "assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
+      // Use a Stack to position child widgets
       child: Stack(
         children: [
-          // Container(
-          //   margin: EdgeInsets.symmetric(vertical: 15),
-          //   height: MediaQuery.of(context).size.height * 0.06,
-          //   decoration: BoxDecoration(
-          //       //color: Colors.blue,
-          //       image: DecorationImage(
-          //           image: AssetImage(
-          //               "assets/App popups/Pop_up ICONS/AlertIcon.webp"))),
-          // )
+          // Position the Lottie animation within the stack
           Positioned(
               height: MediaQuery.of(context).size.height * 0.11,
               left: MediaQuery.of(context).size.width * 0.32,
@@ -45,6 +49,7 @@ class _exitAppDialogState extends State<exitAppDialog> {
                 fit: BoxFit.cover,
                 repeat: false,
               )),
+          // Position the "Exit App" text within the stack
           Positioned(
               top: MediaQuery.of(context).size.height * 0.115,
               left: MediaQuery.of(context).size.width * 0.35,
@@ -57,12 +62,13 @@ class _exitAppDialogState extends State<exitAppDialog> {
                     fontFamily: "Fontmain",
                     fontSize: 20),
               )),
+          // Position the question text within the stack
           Positioned(
               top: MediaQuery.of(context).size.height * 0.15,
               left: MediaQuery.of(context).size.width * 0.15,
               right: MediaQuery.of(context).size.width * 0.15,
               child: Text(
-                "Are you sure you want to leave the application ?",
+                "Are you sure you want to leave the application?",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     wordSpacing: 0.5,
@@ -72,6 +78,7 @@ class _exitAppDialogState extends State<exitAppDialog> {
                     height: 1.5,
                     fontSize: 18),
               )),
+          // Position the buttons within the stack
           Positioned(
               top: MediaQuery.of(context).size.height * 0.239,
               left: MediaQuery.of(context).size.width * 0.1,
@@ -79,15 +86,17 @@ class _exitAppDialogState extends State<exitAppDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  // "Yes" button
                   ElevatedButton(
                     onPressed: () {
+                      // Delay for 600 milliseconds before exiting the app
                       Future.delayed(
                         Duration(milliseconds: 600),
                         () {
-                          exit(0);
+                          exit(0); // Exit the app
                         },
                       );
-                      Navigator.pop(dialogcontect);
+                      Navigator.pop(dialogcontect); // Close the dialog
                     },
                     child: Text(
                       "Yes",
@@ -103,9 +112,10 @@ class _exitAppDialogState extends State<exitAppDialog> {
                         fixedSize: Size(MediaQuery.of(context).size.width * 0.3,
                             MediaQuery.of(context).size.height * 0.055)),
                   ),
+                  // "No" button
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(dialogcontect, false);
+                      Navigator.pop(dialogcontect, false); // Close the dialog without exiting the app
                     },
                     child: Text(
                       "No",

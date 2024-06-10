@@ -1,58 +1,55 @@
+// Import necessary packages
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
+// Ignore the must_be_immutable lint rule for this widget
 // ignore: must_be_immutable
 class InternetErrorDialog extends StatefulWidget {
+  // Variables to hold context and error message
   var internetErrorDialogContext;
   String message;
+
+  // Constructor for the InternetErrorDialog widget
   InternetErrorDialog(
-      {super.key,
-      required this.internetErrorDialogContext,
-      required this.message});
+      {super.key, required this.internetErrorDialogContext, required this.message});
 
   @override
+  // Create the state for the InternetErrorDialog widget
   State<InternetErrorDialog> createState() => _InternetErrorDialogState(
       internetErrorDialogContext: internetErrorDialogContext, message: message);
 }
 
 class _InternetErrorDialogState extends State<InternetErrorDialog> {
+  // Variables to hold context and error message
   var internetErrorDialogContext;
   String message;
+
+  // Constructor for the state of the InternetErrorDialog widget
   _InternetErrorDialogState(
       {required this.internetErrorDialogContext, required this.message});
 
   @override
+  // Build the widget tree
   Widget build(BuildContext context) {
+    // Return a container with specific layout
     return Container(
       margin: EdgeInsets.symmetric(
           horizontal: 15, vertical: MediaQuery.of(context).size.height * 0.25),
       height: MediaQuery.of(context).size.height * 0.5,
+      // Add background decoration with an image
       decoration: BoxDecoration(
-          // color: Colors.white,
           image: DecorationImage(
-              image:
-                  AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
+              image: AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
+      // Use a Stack to position child widgets
       child: Stack(
         children: [
-          // Container(
-          //       margin: EdgeInsets.symmetric(vertical: 30),
-          //       height: MediaQuery.of(context).size.height * 0.08,
-          //       width: MediaQuery.of(context).size.width * 0.2,
-          //       decoration: BoxDecoration(
-          //           //color: Colors.blue,
-          //           image: DecorationImage(
-          //               image: AssetImage(
-          //                   "assets/App popups/Pop_up ICONS/InternetError.webp"),
-          //               fit: BoxFit.fill)),
-          //     )
+          // Position the internet error animation within the stack
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.055,
+              top: MediaQuery.of(context).size.height * 0.065,
               left: MediaQuery.of(context).size.width * 0.32,
-              //bottom: MediaQuery.of(context).size.width * 0.73,
               height: MediaQuery.of(context).size.height * 0.08,
               width: MediaQuery.of(context).size.width * 0.28,
-              
               child: LottieBuilder.asset(
                 "assets/Animation/internet_error.json",
                 height: 140,
@@ -60,8 +57,9 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                 fit: BoxFit.contain,
                 repeat: false,
               )),
+          // Position the error title within the stack
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.15,
+              top: MediaQuery.of(context).size.height * 0.17,
               left: MediaQuery.of(context).size.width * 0.30,
               right: MediaQuery.of(context).size.width * 0.20,
               child: Text(
@@ -72,8 +70,9 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                     fontFamily: "Fontmain",
                     fontSize: 20),
               )),
+          // Position the error message within the stack
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.19,
+              top: MediaQuery.of(context).size.height * 0.21,
               left: MediaQuery.of(context).size.width * 0.12,
               right: MediaQuery.of(context).size.width * 0.12,
               child: Text(
@@ -87,8 +86,9 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                     height: 1.5,
                     fontSize: 17),
               )),
+          // Position the OK button within the stack
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.31,
+              top: MediaQuery.of(context).size.height * 0.29,
               left: MediaQuery.of(context).size.width * 0.1,
               right: MediaQuery.of(context).size.width * 0.1,
               child: Row(
@@ -106,7 +106,7 @@ class _InternetErrorDialogState extends State<InternetErrorDialog> {
                     },
                     child: Text(
                       "OK",
-                      style: TextStyle(fontSize: 18, fontFamily: "Fontmain",color: Colors.black),
+                      style: TextStyle(fontSize: 18, fontFamily: "Fontmain"),
                     ),
                     style: ElevatedButton.styleFrom(
                         side: BorderSide(color: Colors.red, width: 3),

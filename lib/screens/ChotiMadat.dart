@@ -8,28 +8,47 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+// Define a StatefulWidget class named ChotiMadat
 class ChotiMadat extends StatefulWidget {
+  // Constructor for ChotiMadat
   const ChotiMadat({super.key});
 
+  // Override createState to create the state for ChotiMadat
   @override
   State<ChotiMadat> createState() => _ChotiMadatState();
 }
 
+// Define the state class for ChotiMadat
 class _ChotiMadatState extends State<ChotiMadat> {
+  // List to store chat messages
   List<dynamic> _messages = [];
+
+  // TextEditingController for handling input field
   final TextEditingController _editingController = TextEditingController();
+
+  // ScrollController for handling scrolling in chat
   final ScrollController _scrollController = ScrollController();
+
+  // Instance of chatModel
   chatModel _chatmodel = chatModel();
+
+  // Timer for periodic chat refresh
   late Timer _timer;
+
+  // Map to store automated responses
   Map<String, String> automatedResponse = {"": ""};
 
+  // Initialize the state
   @override
   void initState() {
     super.initState();
+    // Start the timer for refreshing chat
     _timer = refreshchat();
+    // Fetch initial data and get chats
     _featchData().then((_) => getChats());
   }
 
+  // Build the widget
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +56,7 @@ class _ChotiMadatState extends State<ChotiMadat> {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(children: [
+          // Expanded widget to hold chat messages
           Expanded(
             child: Container(
               height: MediaQuery.of(context).size.height * 0.8,
@@ -44,18 +64,15 @@ class _ChotiMadatState extends State<ChotiMadat> {
               child: RefreshIndicator(
                 onRefresh: () async {
                   _messages.clear();
-
                   _featchData().then((_) => getChats());
                 },
                 color: Colors.blue,
-                //create list for message
                 child: ListView.builder(
                   itemCount: _messages.length,
                   shrinkWrap: true,
                   controller: _scrollController,
                   addAutomaticKeepAlives: true,
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   addRepaintBoundaries: true,
                   physics: AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.all(1),
@@ -69,7 +86,7 @@ class _ChotiMadatState extends State<ChotiMadat> {
               ),
             ),
           ),
-          //container for type message
+          // Container for typing message
           Container(
             height: MediaQuery.of(context).size.height * 0.08,
             margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
@@ -134,25 +151,21 @@ class _ChotiMadatState extends State<ChotiMadat> {
     );
   }
 
-  //Method to fetch queries and response
+  // Method to fetch user queries and responses
   Future<void> _featchData() async {
+    // Get the application support directory
     String dirPath = (await getApplicationSupportDirectory()).path;
     File jsonFile = File("$dirPath/appInfo.json");
     var jsonData = jsonDecode(jsonFile.readAsStringSync());
     var userData = {"user_id": jsonData['User_Id'].toString()};
 
-    //API call for user queries and response
-    // String url =
-        // "http://192.168.1.19/prachi/DigiVidyaAPI/api/viewQueriesOfUser";
+    // API call to fetch user queries and responses
     String url = "https://digividya.in/DigiVidyaAPI/api/viewQueriesOfUser";
-
     var response = await http.post(Uri.parse(url), body: userData);
     if (response.statusCode == 200) {
       Map<String, dynamic> jsonResponse =
           jsonDecode(response.body.toString().replaceAll("\n", " "));
       if (jsonResponse.isNotEmpty) {
-        //print(jsonResponse['Queries']);
-
         _chatmodel.setchatHistory(chatHistorymessage: jsonResponse['Queries']);
       } else {
         _timer.cancel();
@@ -160,6 +173,7 @@ class _ChotiMadatState extends State<ChotiMadat> {
     } else {}
   }
 
+  // Dispose method to clean up resources
   @override
   void dispose() {
     super.dispose();
@@ -167,7 +181,7 @@ class _ChotiMadatState extends State<ChotiMadat> {
     _scrollController.dispose();
   }
 
-  //Method to store user queries
+  // Method to send user queries
   void _sendQuery({required String query}) async {
     String dirPath = (await getApplicationSupportDirectory()).path;
     File jsonFile = File("$dirPath/appInfo.json");
@@ -182,11 +196,9 @@ class _ChotiMadatState extends State<ChotiMadat> {
       setState(() {
         userId = jsonData['User_Id'];
       });
-      //API call for store user queries
-      // String url =
-          // "http://192.168.1.19/prachi/DigiVidyaAPI/api/insertQueryOfUser";
-      String url = "https://digividya.in/DigiVidyaAPI/api/insertQueryOfUser";
 
+      // API call to store user queries
+      String url = "https://digividya.in/DigiVidyaAPI/api/insertQueryOfUser";
       Map<String, dynamic> userData = {
         "user_id": userId.toString(),
         "user_query": query,
@@ -194,23 +206,24 @@ class _ChotiMadatState extends State<ChotiMadat> {
       };
 
       var response = await http.post(Uri.parse(url), body: userData);
-
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonResponse =
             jsonDecode(response.body.toString().replaceAll("\n", " "));
         if (jsonResponse.isNotEmpty && jsonResponse['status']) {
-          print("query inserted successfull..");
+          print("query inserted successfully..");
         }
       } else {}
     }
   }
 
+  // Method to get chat messages
   void getChats() {
     setState(() {
       _messages = _chatmodel.getMessageFormat();
     });
   }
 
+  // Widget to display a message block
   Widget messageBlock(messag) {
     List<String> listKeys = messag['message'].keys.toList();
     List<dynamic> message = messag['message'].values.toList();
@@ -258,11 +271,10 @@ class _ChotiMadatState extends State<ChotiMadat> {
     );
   }
 
-  //For refresh chats
+  // Method to refresh chat periodically
   refreshchat() {
     return Timer.periodic(Duration(seconds: 10), (timer) {
       _messages.clear();
-
       _featchData().then((value) => getChats());
     });
   }

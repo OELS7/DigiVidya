@@ -1,8 +1,10 @@
-import 'dart:math';
-import 'package:digividya/screens/Free_Time.dart';
-import 'package:digividya/screens/Register.dart';
-import 'package:flutter/material.dart';
+// Import necessary Dart and Flutter packages
+import 'dart:math'; // Import dart:math for generating random numbers
+import 'package:digividya/screens/Free_Time.dart'; // Import Free_Time screen
+import 'package:digividya/screens/Register.dart'; // Import Register screen
+import 'package:flutter/material.dart'; // Import Flutter material package
 
+// Define the loginType widget as a StatefulWidget
 class loginType extends StatefulWidget {
   const loginType({super.key});
 
@@ -10,123 +12,126 @@ class loginType extends StatefulWidget {
   State<loginType> createState() => _loginTypeState();
 }
 
+// Define the state class for loginType
 class _loginTypeState extends State<loginType> {
+  // Declare variables for device ID and mobile number
   String device_id = "";
   String MobileNo = "";
+
   @override
   void initState() {
-    // TODO: implement initState
+    // Initialize the state
     super.initState();
-    device_id = generateDevicId();
-    MobileNo = generateMobileNo();
-    print("%%%%%%%%%%%%%%%%%%%%%% Generated Mobile Number : $MobileNo %%%%%%%%%%%%%%%%%%%%%");
-    
+    device_id = generateDevicId(); // Generate random device ID
+    MobileNo = generateMobileNo(); // Generate random mobile number
+    print("%%%%%%%%%%%%%%%%%%%%%% Generated Mobile Number : $MobileNo %%%%%%%%%%%%%%%%%%%%%"); // Print mobile number for debugging
   }
 
-  //Function to generate random device ID
+  // Function to generate random device ID
   String generateDevicId() {
-    String stringPattern =
-        "+-*=?AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789!@#%^&*()";
-    Random random = Random();
+    String stringPattern = "+-*=?AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789!@#%^&*()"; // Define pattern for random string
+    Random random = Random(); // Create a Random object
     return String.fromCharCodes(Iterable.generate(
-      50,
-      (_) => stringPattern.codeUnitAt(random.nextInt(stringPattern.length)),
+      50, // Generate a string of length 50
+      (_) => stringPattern.codeUnitAt(random.nextInt(stringPattern.length)), // Pick random character from pattern
     ));
   }
 
   @override
   Widget build(BuildContext context) {
+    // Return a Scaffold widget
     return Scaffold(
       body: SafeArea(
-          child: Stack(
+          child: Stack( // Use a Stack to layer widgets
         children: [
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                  image: AssetImage(
-                      'assets/images/Registration & Pay Now UI_ 23 Jan Updated-04-04.png'),
-                  fit: BoxFit.fill),
+                  image: AssetImage('assets/images/Registration & Pay Now UI_ 23 Jan Updated-04-04.png'), // Set background image
+                  fit: BoxFit.fill), // Fit the image to fill the container
             ),
           ),
           Positioned(
-              top: MediaQuery.of(context).size.height * 0.65,
-              left: MediaQuery.of(context).size.width * 0.14,
-              right: MediaQuery.of(context).size.width * 0.14,
+              top: MediaQuery.of(context).size.height * 0.65, // Position the container from the top
+              left: MediaQuery.of(context).size.width * 0.14, // Position the container from the left
+              right: MediaQuery.of(context).size.width * 0.14, // Position the container from the right
               child: Center(
                 child: Container(
-                  height: MediaQuery.of(context).size.height * 0.25,
-                  width: MediaQuery.of(context).size.width * 1,
-                  
+                  height: MediaQuery.of(context).size.height * 0.25, // Set container height to 25% of screen height
+                  width: MediaQuery.of(context).size.width * 1, // Set container width to full screen width
                   child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                      children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => Register(),
-                      ));
-                    },
-                    child: Container(
-                      height: MediaQuery.of(context).size.height * 0.09,
-                      width: MediaQuery.of(context).size.width * 0.59,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.white,),
-                      child: Center(
-                          child: Text(
-                        "Register",
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontFamily: "Fontmain"),
-                      )),
-                    ),
+                    mainAxisAlignment: MainAxisAlignment.spaceAround, // Distribute space evenly around children
+                    children: [
+                      GestureDetector(
+                        // Define action for Register button tap
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => Register(), // Navigate to Register screen
+                          ));
+                        },
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.09, // Set button height
+                          width: MediaQuery.of(context).size.width * 0.59, // Set button width
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30), // Round the corners
+                              color: Colors.white), // Set button color
+                          child: Center(
+                              child: Text(
+                            "Register", // Set button text
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontFamily: "Fontmain"),
+                          )),
+                        ),
+                      ),
+                      GestureDetector(
+                        // Define action for Guest Mode button tap
+                        onTap: () {
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                                  builder: (context) => freetime(), // Navigate to freetime screen
+                                  settings: RouteSettings(arguments: {
+                                    "userName": "Guest", // Pass userName as "Guest"
+                                    "mobileNo": MobileNo, // Pass generated mobile number
+                                    "city": "Thane", // Pass city as "Thane"
+                                    "device_id": device_id, // Pass generated device ID
+                                    "language": 'Marathi' // Pass language as "Marathi"
+                                  })));
+                        },
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.09, // Set button height
+                          width: MediaQuery.of(context).size.width * 0.59, // Set button width
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30), // Round the corners
+                              color: Colors.white), // Set button color
+                          child: Center(
+                              child: Text(
+                            "Guest Mode", // Set button text
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontFamily: "Fontmain"),
+                          )),
+                        ),
+                      ),
+                    ],
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context)
-                          .pushReplacement(MaterialPageRoute(
-                              builder: (context) => freetime(),
-                              settings: RouteSettings(arguments: {
-                                "userName": "Guest",
-                                "mobileNo": MobileNo,
-                                "city": "Thane",
-                                "device_id": device_id,
-                                "language": 'Marathi'
-                              })));
-                    },
-                    child: Container(
-                      height: MediaQuery.of(context).size.height * 0.09,
-                      width: MediaQuery.of(context).size.width * 0.59,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.white),
-                      child: Center(
-                          child: Text(
-                        "Guest Mode",
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontFamily: "Fontmain"),
-                      )),
-                    ),
-                  ),
-                                      ],
-                                    ),
                 ),
               )),
-             // Positioned(child: Container( decoration: BoxDecoration(image: DecorationImage(image: AssetImage("assets/app_log/DigiVidyaLogo.webp"))),)),
+          // Positioned(child: Container( decoration: BoxDecoration(image: DecorationImage(image: AssetImage("assets/app_log/DigiVidyaLogo.webp"))),)),
         ],
       )),
     );
   }
-  
+
+  // Function to generate random mobile number
   String generateMobileNo() {
-    Random random = Random();
-    String  mobilenumber ="";
-    for(int mobNumber=0 ; mobNumber<10 ; mobNumber++){
-       mobilenumber+=random.nextInt(10).toString();
+    Random random = Random(); // Create a Random object
+    String mobilenumber = ""; // Initialize an empty string for the mobile number
+    for (int mobNumber = 0; mobNumber < 10; mobNumber++) { // Loop 10 times to generate a 10-digit number
+      mobilenumber += random.nextInt(10).toString(); // Append a random digit to the mobile number
     }
-    return mobilenumber;
+    return mobilenumber; // Return the generated mobile number
   }
 }

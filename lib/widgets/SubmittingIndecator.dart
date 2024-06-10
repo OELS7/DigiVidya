@@ -13,32 +13,38 @@ class _SubmittingfIndecatorState extends State<SubmittingfIndecator> {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(
-          top: MediaQuery.of(context).size.height * 0.35,
-          bottom: MediaQuery.of(context).size.height * 0.35,
-          left: MediaQuery.of(context).size.width * 0.05,
-          right: MediaQuery.of(context).size.width * 0.05),
+          top: MediaQuery.of(context).size.height * 0.35,// Margin from the top of the screen
+          bottom: MediaQuery.of(context).size.height * 0.35,// Margin from the bottom of the screen
+          left: MediaQuery.of(context).size.width * 0.05,// Margin from the left of the screen
+          right: MediaQuery.of(context).size.width * 0.05  // Margin from the right of the screen
+          ),
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white,// Background color of the container
           borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30))),
+            // Defines border radius for rounded corners
+              topLeft: Radius.circular(30),// Top-left corner radius
+              topRight: Radius.circular(30),// Top-right corner radius
+              bottomLeft: Radius.circular(30),// Bottom-left corner radius
+              bottomRight: Radius.circular(30) // Bottom-right corner radius
+              )),
       child: Column(
         children: [
+          // Displaying animation using Lottie
           LottieBuilder.asset(
+            // Asset path for the animation
             "assets/Animation/Animation - 1710389401962.json",
-            height: 150,
-            width: 250,
+            height: 150,// Height of the animation
+            width: 250,// Width of the animation
           ),
           Center(
             child: Text(
-              "Submitting Request",
+              "Submitting Request",// Text displayed in the center
               style: TextStyle(
-                  fontSize: 25,
-                  color: Colors.black,
-                  decoration: TextDecoration.none,
-                  fontFamily: "Fontmain"),
+                  fontSize: 25,// Font size of the text
+                  color: Colors.black,// Text color
+                  decoration: TextDecoration.none,// No text decoration
+                  fontFamily: "Fontmain" // Font family of the text
+                  ),
             ),
           )
         ],

@@ -1,242 +1,148 @@
-// import 'dart:io';
-// import 'package:chewie/chewie.dart';
-// import 'package:digividya/screens/free_time.dart';
-// import 'package:flutter/material.dart';
-// import 'package:video_player/video_player.dart';
-
-// // ignore: must_be_immutable
-// class vediopage extends StatefulWidget {
-//   String filePath;
-//   vediopage({super.key, required this.filePath});
-
-//   @override
-//   State<vediopage> createState() => _vediopageState(filePath);
-// }
-
-// class _vediopageState extends State<vediopage> {
-//   late VideoPlayerController _playerController;
-//   late ChewieController _chewieController;
-//   String videoFilePath;
-//   String userName = "",
-//       mobilenumber = "",
-//       city = "",
-//       device_id = "",
-//       language = "";
-
-//   _vediopageState(this.videoFilePath);
-
-//   @override
-//   void initState() {
-//     _playerController = VideoPlayerController.file(File(videoFilePath));
-//     _chewieController = ChewieController(
-//         videoPlayerController: _playerController,
-//         autoInitialize: true,
-//         allowFullScreen: true,
-//         showControlsOnInitialize: true,
-//         autoPlay: true,
-//         materialProgressColors: ChewieProgressColors(playedColor: Colors.blue),
-//         aspectRatio: 763 / 1640);
-
-//     _playerController.addListener(_videoListner);
-
-//     super.initState();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     var arguments = (ModalRoute.of(context)!.settings.arguments ??
-//         <String, String>{}) as Map;
-//     userName = arguments['userName'];
-//     mobilenumber = arguments['mobileNamuber'];
-//     city = arguments['city'];
-//     device_id = arguments['deviceId'];
-//     language = arguments['language'];
-//     return Scaffold(
-//         body: SafeArea(
-//             child: WillPopScope(
-//                 onWillPop: _onBackPressed,
-//                 child: Chewie(controller: _chewieController))));
-//   }
-
-//   /// ExitDialog Box
-//   ///
-//   /// This Function show the Dialog Box to get the confirmation from the user to exit the page. if the User click on yes application get close or if user click on No the user stay on this page.
-//   Future<bool> _onBackPressed() async {
-//     return (await showDialog(
-//             context: context,
-//             builder: (context) => AlertDialog(
-//                   title: Text("Leave page"),
-//                   content: Text("Are you want to leave this page"),
-//                   actions: <Widget>[
-//                     TextButton(
-//                       onPressed: () {
-//                         exit(0);
-//                       },
-//                       child: Text("Yes"),
-//                     ),
-//                     TextButton(
-//                         onPressed: () {
-//                           Navigator.of(context).pop();
-//                         },
-//                         child: Text("No"))
-//                   ],
-//                 ))) ??
-//         false;
-//   }
-
-//   @override
-//   void dispose() {
-//     super.dispose();
-//     _playerController.dispose();
-//     _chewieController.dispose();
-//   }
-
-//   /// Video Listener
-//   ///
-//   /// This method track the progress of video and opent the next screen which is free time where user selecte the convient time.
-//   void _videoListner() {
-//     Duration totalDuration = _playerController.value.duration;
-//     Duration position = _playerController.value.position;
-
-//     if (totalDuration == position) {
-//       File(videoFilePath).deleteSync(recursive: true);
-//       _playerController.removeListener(_videoListner);
-//       //initilize after 300 miliseconds
-//       Future.delayed(
-//         Duration(milliseconds: 300),
-//         () {
-//           //navigate to covenient time screen
-//           Navigator.pushReplacement(
-//               context,
-//               MaterialPageRoute(
-//                   builder: (context) => freetime(),
-//                   settings: RouteSettings(arguments: {
-//                     //taking all this information of user
-//                     'userName': userName,
-//                     'mobileNo': mobilenumber,
-//                     'city': city,
-//                     'device_id': device_id,
-//                     'language': language
-//                   })));
-//         },
-//       );
-//     }
-//   }
-// }
-import 'dart:io';
+// Import necessary packages
 import 'package:chewie/chewie.dart';
 import 'package:digividya/screens/free_time.dart';
 import 'package:digividya/widgets/ExitAppDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+// Define a stateful widget class named vediopage
 // ignore: must_be_immutable
 class vediopage extends StatefulWidget {
-  // String filePath;
-    String userName = "",
-      mobilenumber = "",
-      city = "",
-      device_id = "",
-      language = "";
-  vediopage({super.key,required this.userName,required this.mobilenumber,required this.language,required this.city ,required this.device_id});
-
-  @override
-  State<vediopage> createState() => _vediopageState(userName: userName,mobilenumber: mobilenumber,city: city,device_id: device_id,language: language);
-}
-
-class _vediopageState extends State<vediopage> {
-  late VideoPlayerController _playerController;
-  late ChewieController _chewieController;
+  // Define required fields for user information
   String userName = "",
       mobilenumber = "",
       city = "",
       device_id = "",
       language = "";
 
-  _vediopageState({required this.userName,required this.mobilenumber,required this.language,required this.city,required this.device_id});
+  // Constructor to initialize the vediopage widget with required parameters
+  vediopage({super.key, required this.userName, required this.mobilenumber, required this.language, required this.city, required this.device_id});
 
+  // Create the state for vediopage
+  @override
+  State<vediopage> createState() => _vediopageState(userName: userName, mobilenumber: mobilenumber, city: city, device_id: device_id, language: language);
+}
+
+// Define the state class for vediopage
+class _vediopageState extends State<vediopage> {
+  // Declare controllers for video player and Chewie
+  late VideoPlayerController _playerController;
+  late ChewieController _chewieController;
+
+  // Define required fields for user information
+  String userName = "",
+      mobilenumber = "",
+      city = "",
+      device_id = "",
+      language = "";
+
+  // Constructor to initialize the state with required parameters
+  _vediopageState({required this.userName, required this.mobilenumber, required this.language, required this.city, required this.device_id});
+
+  // Override the initState method to initialize controllers
   @override
   void initState() {
-    //.contentUri(Uri.file(videoFilePath))
-      _playerController = VideoPlayerController.asset('assets/AppIntroVideos/$language/$language.mp4');
-      _chewieController = ChewieController(
-          videoPlayerController: _playerController,
-          autoInitialize: true,
-          allowFullScreen: true,
-          showControlsOnInitialize: true,
-          autoPlay: true,
-          materialProgressColors:
-              ChewieProgressColors(playedColor: Colors.blue),
-          aspectRatio: 763 / 1640);
+    // Initialize the video player controller with the asset video file
+    _playerController = VideoPlayerController.asset('assets/AppIntroVideos/$language/$language.mp4');
     
+    // Initialize the Chewie controller with the video player controller
+    _chewieController = ChewieController(
+      videoPlayerController: _playerController,
+      autoInitialize: true,
+      allowFullScreen: true,
+      showControlsOnInitialize: true,
+      autoPlay: true,
+      materialProgressColors: ChewieProgressColors(playedColor: Colors.blue),
+      aspectRatio: 763 / 1640,
+    );
 
+    // Add a listener to track the video progress
     _playerController.addListener(_videoListner);
 
+    // Call the super class initState
     super.initState();
   }
 
+  // Override the build method to define the UI
   @override
   Widget build(BuildContext context) {
-
+    // Return a Scaffold widget to provide a structure for the page
     return Scaffold(
-        body: SafeArea(
-            child: PopScope(
-              canPop: false,
-              onPopInvoked: (didPop) {
-                _onBackPressed();
-              },
-                
-                child: Chewie(controller: _chewieController))));
+      // Use SafeArea to avoid system intrusions
+      body: SafeArea(
+        // Use PopScope to handle back button press
+        child: PopScope(
+          canPop: false,
+          onPopInvoked: (didPop) {
+            _onBackPressed();
+          },
+          // Display the video using Chewie
+          child: Chewie(controller: _chewieController),
+        ),
+      ),
+    );
   }
 
-  /// ExitDialog Box
+  /// Show Exit Dialog Box
   ///
-  /// This Function show the Dialog Box to get the confirmation from the user to exit the page. if the User click on yes application get close or if user click on No the user stay on this page.
-   _onBackPressed() async {
-  showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              var dialogBox = context;
-              return exitAppDialog(dialogcontect: dialogBox);
-            },
-          );
+  /// This Function shows the Dialog Box to get the confirmation from the user to exit the page. 
+  /// If the user clicks on yes, the application closes or if the user clicks on no, the user stays on this page.
+  _onBackPressed() async {
+    // Show a dialog box to confirm exit
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        var dialogBox = context;
+        return exitAppDialog(dialogcontect: dialogBox);
+      },
+    );
   }
 
+  // Override the dispose method to clean up controllers
   @override
   void dispose() {
+    // Call the super class dispose
     super.dispose();
+    // Dispose the video player controller
     _playerController.dispose();
+    // Dispose the Chewie controller
     _chewieController.dispose();
   }
 
   /// Video Listener
   ///
-  /// This method track the progress of video and opent the next screen which is free time where user selecte the convient time.
+  /// This method tracks the progress of the video and opens the next screen which is free time where the user selects the convenient time.
   void _videoListner() {
+    // Get the total duration of the video
     Duration totalDuration = _playerController.value.duration;
+    // Get the current position of the video
     Duration position = _playerController.value.position;
 
+    // Check if the video has finished playing
     if (totalDuration == position) {
-      // File(videoFilePath).deleteSync(recursive: true);
+      // Remove the listener to stop tracking
       _playerController.removeListener(_videoListner);
-      //initilize after 300 miliseconds
+
+      // Delay for 300 milliseconds before navigating to the next screen
       Future.delayed(
         Duration(milliseconds: 300),
         () {
-          //navigate to covenient time screen
+          // Navigate to the free time screen
           Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => freetime(),
-                  settings: RouteSettings(arguments: {
-                    //taking all this information of user
-                    'userName': userName,
-                    'mobileNo': mobilenumber,
-                    'city': city,
-                    'device_id': device_id,
-                    'language': language
-                  })));
+            context,
+            MaterialPageRoute(
+              builder: (context) => freetime(),
+              settings: RouteSettings(arguments: {
+                // Pass the user information to the next screen
+                'userName': userName,
+                'mobileNo': mobilenumber,
+                'city': city,
+                'device_id': device_id,
+                'language': language,
+              }),
+            ),
+          );
         },
       );
     }

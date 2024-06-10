@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:digividya/BgService/bgAudioPlayer.dart';
-import 'package:digividya/widgets/InternalServerError.dart';
+import 'package:digividya/widgets/InternalserverError.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
 import 'package:digividya/widgets/Lock_Cards.dart';
 import 'package:digividya/widgets/commingSoonAlertBox.dart';
@@ -15,6 +15,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
 // ignore: must_be_immutable
 
@@ -65,123 +67,154 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
   List<String> topicView = [];
   Map<String, dynamic> completedSubtopicList = {};
   List<bool> hideAndshow_CompletedIcon = [];
+  ScreenshotController _screenshotController = ScreenshotController();
   // List<String> topicLikes = [];
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _checkConnectivity();
+@override
+void initState() {
+  // Calling parent class initState method
+  super.initState();
+  // Adding observer to monitor app lifecycle
+  WidgetsBinding.instance.addObserver(this);
+  // Checking connectivity when the widget is initialized
+  _checkConnectivity();
 
-    _fixedExtentScrollController.addListener(
-      () => onScroll(),
-    );
-  }
+  // Adding listener to the scroll controller
+  _fixedExtentScrollController.addListener(() => onScroll());
+}
 
-  @override
-  Widget build(BuildContext context) {
-    final argument =
-        (ModalRoute.of(context)?.settings.arguments ?? <String, int>{}) as Map;
 
-    sectionID = argument['section'];
-    topicCount = argument['topic_count'];
+@override
+Widget build(BuildContext context) {
+  // Extracting arguments from the route settings
+  final argument = (ModalRoute.of(context)?.settings.arguments ?? <String, int>{}) as Map;
 
-    pageContext = context;
+  // Parsing sectionID and topicCount from the arguments
+  sectionID = (argument['section'] is String)
+      ? int.parse(argument['section'].toString())
+      : argument['section'];
+  topicCount = (argument['topic_count'] is String)
+      ? int.parse(argument['topic_count'].toString())
+      : argument['topic_count'];
 
-    (TopicProgress.isEmpty && hideAndshow_CompletedIcon.isEmpty)
-        ? _getTemBoolValue()
-        : () {};
+  // Storing the current context
+  pageContext = context;
 
-    return PopScope(
-      canPop: false,
-      child: Scaffold(
-          appBar: AppBar(
-            leading: Row(
-              children: [
-                BackButton(
-                  onPressed: () {
-                    onBackPress();
-                  },
-                ),
-                Text("Back")
-              ],
+  // Checking if TopicProgress and hideAndshow_CompletedIcon lists are empty
+  // If they are empty, calling _getTemBoolValue() method
+  (TopicProgress.isEmpty && hideAndshow_CompletedIcon.isEmpty)
+      ? _getTemBoolValue()
+      : () {};
+
+  return PopScope(
+    // Preventing popping from the navigation stack
+    canPop: false,
+    child: Scaffold(
+      appBar: AppBar(
+        leading: Row(
+          children: [
+            // Adding a custom back button and "Back" text to the app bar
+            BackButton(
+              onPressed: () {
+                onBackPress();
+              },
             ),
-            leadingWidth: MediaQuery.of(context).size.width * 1,
-          ),
-          body: SafeArea(
-              child: ValueListenableBuilder(
-            valueListenable: dataFatched,
-            builder: (context, value, child) {
-              if (value is bool) {
-                if (value) {
-                  return ValueListenableBuilder(
-                    valueListenable: progressOfTopic,
-                    builder: (context, value, child) {
-                      if (value is bool) {
-                        if (value) {
-                          return subTopic(sectionID, topicCount);
-                        } else {
-                          return subTopic(sectionID, topicCount);
-                        }
-                      } else {
-                        return subTopic(sectionID, topicCount);
-                      }
-                    },
-                  );
-                } else {
-                  return Center(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          width: MediaQuery.of(context).size.width * 0.115,
-                          // color: Colors.blue,
-                          child: CircularProgressIndicator(
-                            color: Colors.blue,
-                          ),
-                        ),
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.05,
-                        ),
-                        Container(
-                          child: Text(
-                            "Please wait while loading..",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: "mainFont",
-                                fontSize: 15,
-                                decoration: TextDecoration.none),
-                          ),
-                        )
-                      ],
-                    ),
-                  );
-                }
+            Text("Back")
+          ],
+        ),
+        leadingWidth: MediaQuery.of(context).size.width * 1,
+      ),
+      body: SafeArea(
+        child: ValueListenableBuilder(
+          valueListenable: dataFatched,
+          builder: (context, value, child) {
+            // Checking if dataFetched is of type bool
+            if (value is bool) {
+              if (value) {
+                // Returning the subTopic widget wrapped in Screenshot widget
+                return ValueListenableBuilder(
+                  valueListenable: progressOfTopic,
+                  builder: (context, value, child) {
+                    if (value is bool) {
+                      return Screenshot(
+                        child: subTopic(sectionID, topicCount),
+                        controller: _screenshotController,
+                      );
+                    } else {
+                      return Screenshot(
+                        child: subTopic(sectionID, topicCount),
+                        controller: _screenshotController,
+                      );
+                    }
+                  },
+                );
               } else {
-                return Container(
-                  height: MediaQuery.of(context).size.height * 0.5,
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  child: Center(
-                    child: CircularProgressIndicator(),
+                // Showing loading indicator if data is not yet fetched
+                return Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: MediaQuery.of(context).size.height * 0.05,
+                        width: MediaQuery.of(context).size.width * 0.115,
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ),
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.05,
+                      ),
+                      Container(
+                        child: Text(
+                          "Please wait while loading..",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontFamily: "mainFont",
+                            fontSize: 15,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }
-            },
-          ))),
-    );
-  }
+            } else {
+              // Showing loading indicator if dataFetched is not yet of type bool
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.5,
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+          },
+        ),
+      ),
+    ),
+  );
+}
 
-  subTopic(int sectionNumber, int topic) {
+
+  // Define a widget named subTopic that takes sectionNumber and topic as parameters
+Widget subTopic(int sectionNumber, int topic) {
+    // Initialize a list to hold the topic cards
     List<Widget> topicCards = [];
+    // Loop through the number of topics to create each topic card
     for (int i = 0; i < topic; i++) {
+      // Add a GestureDetector widget to the list for each topic
       topicCards.add(GestureDetector(
+        // Define the onTap behavior for the GestureDetector
         onTap: () async {
+          // Print a message when the start button is pressed
           print("Start button pressesd");
+          // Stop the audio if the subtopic count is not zero
           (topicDetails[i]['subtopic_count'] != 0) ? player.stopAudio() : {};
+          // Check if the user is a guest and the topic is not the first one
           (UserName == "Guest" && i != 0)
+              // Show a dialog for locked cards
               ? showDialog(
                   barrierDismissible: false,
                   context: context,
@@ -190,6 +223,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                     return lockcard(LockCardDialogContext: LockCardContext);
                   },
                 )
+              // If the subtopic count is not zero, navigate to the subTopicPage
               : (topicDetails[i]['subtopic_count'] != 0)
                   ? Navigator.of(context)
                       .pushReplacementNamed('/subTopicPage', arguments: {
@@ -198,6 +232,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                       'topicCount': topicCount,
                       'subTopicCount': subTopicCount
                     })
+                  // Show a coming soon dialog if there are no subtopics
                   : showDialog(
                       barrierDismissible: false,
                       context: context,
@@ -208,16 +243,22 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                       },
                     );
         },
+        // Define the child widget of GestureDetector as a Card
         child: Card(
-            //color: Colors.blue,
+            // Set the shadow color of the card
             shadowColor: Colors.black,
+            // Set the margin of the card
             margin: const EdgeInsets.symmetric(horizontal: 15.0),
+            // Set the elevation of the card
             elevation: 25,
+            // Set the shape of the card with rounded corners
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(58),
             ),
+            // Use a Stack widget to overlay multiple children
             child: Stack(
               children: [
+                // Container for the background image
                 Container(
                   height: MediaQuery.of(context).size.height,
                   width: MediaQuery.of(context).size.width,
@@ -227,9 +268,9 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                           image: MemoryImage(imageByteData[i]),
                           fit: BoxFit.fill)),
                 ),
+                // Positioned widget for the completed icon
                 Positioned(
                     top: MediaQuery.of(context).size.height * 0.2,
-                    //left: MediaQuery.of(context).size.width * 0.19,
                     right: MediaQuery.of(context).size.width * 0.232,
                     height: MediaQuery.of(context).size.height * 0.03,
                     width: MediaQuery.of(context).size.width * 0.45,
@@ -241,6 +282,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                           fit: BoxFit.cover,
                           repeat: false,
                         ))),
+                // Positioned widget for the topic title and other details
                 Positioned(
                     top: MediaQuery.of(context).size.height * 0.43,
                     left: 0.0,
@@ -250,6 +292,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          // Padding widget for the topic title
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 50,
@@ -264,11 +307,13 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          // Padding widget for the like and view icons
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 2),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
+                                // Row widget for the like icon and count
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
@@ -281,7 +326,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                                     Text("${topicLike[i]}")
                                   ],
                                 ),
-                                // LinearProgressIndicator(),
+                                // Row widget for the view icon and count
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
@@ -294,17 +339,46 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                                     Text("${topicView[i]}")
                                   ],
                                 ),
+                                // IconButton widget for sharing the topic
+                                IconButton(
+                                    onPressed: () async {
+                                      // Define the path for the topic image
+                                      File TopicImage = File(
+                                          "${(await getApplicationSupportDirectory()).path}/Section${sectionID}/Topic${topic_id}/topic${topic_id}.png");
+                                      // Define the user data for sharing
+                                      final UserData = {
+                                        "section": sectionID.toString(),
+                                        "topic": topic_id.toString(),
+                                        "topicCount": topicCount.toString(),
+                                        "subTopicCount":
+                                            subTopicCount.toString()
+                                      };
+                                      // Create the URI for sharing
+                                      final uri = Uri.https(
+                                          "digividya.in", "/subtopicpage.php", UserData);
+                                      // Check if the topic image exists
+                                      if(!TopicImage.existsSync()){
+                                        // Capture the screenshot and save the image
+                                        _screenshotController.capture().then((value) async{
+                                          TopicImage.createSync(recursive: true);
+                                          await TopicImage.writeAsBytes(value!).then((value) {
+                                            ShareTopic(TopicImage.path , uri.toString());
+                                          });
+                                        });
+                                      }
+                                    },
+                                    // Set the icon for the share button
+                                    icon: Icon(Icons.share))
                               ],
                             ),
                           ),
+                          // Container for the start button
                           Container(
                             height: MediaQuery.of(context).size.height * 0.06,
                             width: MediaQuery.of(context).size.width * 0.45,
                             margin: EdgeInsets.only(
-                                top:
-                                    MediaQuery.of(context).size.height * 0.0135,
-                                bottom:
-                                    MediaQuery.of(context).size.height * 0.005),
+                                top: MediaQuery.of(context).size.height * 0.0135,
+                                bottom: MediaQuery.of(context).size.height * 0.005),
                             decoration: BoxDecoration(
                                 color: Colors.blue,
                                 gradient: LinearGradient(
@@ -330,6 +404,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         ],
                       ),
                     )),
+                // Positioned widget for the circular progress indicator
                 Positioned(
                     top: MediaQuery.of(context).size.height * 0.038,
                     left: MediaQuery.of(context).size.width * 0.75,
@@ -343,6 +418,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                         value: !TopicProgress[i].isNaN ? TopicProgress[i] : 0.0,
                       ),
                     )),
+                // Positioned widget for the progress percentage text
                 Positioned(
                     top: MediaQuery.of(context).size.height * 0.053,
                     left: MediaQuery.of(context).size.width * 0.77,
@@ -350,6 +426,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
                       "${!TopicProgress[i].isNaN ? (TopicProgress[i] * 100).round() : 0} %",
                       style: TextStyle(color: Colors.white),
                     )),
+                // Conditional rendering for guest user lock card
                 (UserName == "Guest")
                     ? (i != 0)
                         ? Container(
@@ -366,6 +443,7 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
             )),
       ));
     }
+    // Return a ListWheelScrollView to display the topic cards
     return ListWheelScrollView(
         physics: const FixedExtentScrollPhysics(),
         magnification: 1.0,
@@ -374,210 +452,298 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
         children: topicCards);
   }
 
-  onScroll() {
-    if ((_fixedExtentScrollController.position.userScrollDirection ==
-        ScrollDirection.reverse)) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          topic_id = topicIds[_fixedExtentScrollController.selectedItem];
 
-          // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
-          //     ['DT_NAME'];
+// Define the onScroll function
+void onScroll() {
+  // Check if the user is scrolling in the reverse direction (upward)
+  if ((_fixedExtentScrollController.position.userScrollDirection == ScrollDirection.reverse)) {
+    // Schedule a callback to be executed in the next frame
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      // Update the state of the widget
+      setState(() {
+        // Update the topic_id based on the selected item in the scroll controller
+        topic_id = topicIds[_fixedExtentScrollController.selectedItem];
 
-          // subTopicCount = int.parse(
-          //     subTopicCountList[_fixedExtentScrollController.selectedItem]);
+        // The following lines are commented out, but they would update various UI elements based on the selected item
+        // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]['DT_NAME'];
+        // subTopicCount = int.parse(subTopicCountList[_fixedExtentScrollController.selectedItem]);
+        // Likes = topicLikes['${topicIds[_fixedExtentScrollController.selectedItem]}'];
+        // Views = topicView['${topicIds[_fixedExtentScrollController.selectedItem]}'];
 
-          // Likes = topicLikes[
-          //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
-          // Views = topicView[
-          //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
-          player.playNextTrack(
-              nextTrackIndex: (_fixedExtentScrollController.selectedItem));
-        });
+        // Play the next track in the audio player based on the selected item
+        player.playNextTrack(nextTrackIndex: (_fixedExtentScrollController.selectedItem));
       });
-      print("upward scrolling");
-    } else {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          topic_id = topicIds[_fixedExtentScrollController.selectedItem];
+    });
+    // Print a message indicating upward scrolling
+    print("upward scrolling");
+  } else {
+    // Schedule a callback to be executed in the next frame
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      // Update the state of the widget
+      setState(() {
+        // Update the topic_id based on the selected item in the scroll controller
+        topic_id = topicIds[_fixedExtentScrollController.selectedItem];
 
-          // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]
-          //     ['DT_NAME'];
+        // The following lines are commented out, but they would update various UI elements based on the selected item
+        // topicTile = topicDetails[_fixedExtentScrollController.selectedItem]['DT_NAME'];
+        // subTopicCount = int.parse(subTopicCountList[_fixedExtentScrollController.selectedItem]);
+        // Likes = topicLikes['${topicIds[_fixedExtentScrollController.selectedItem]}'];
+        // Views = topicView['${topicIds[_fixedExtentScrollController.selectedItem]}'];
 
-          // subTopicCount = int.parse(
-          //     subTopicCountList[_fixedExtentScrollController.selectedItem]);
-          // Likes = topicLikes[
-          //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
-          // Views = topicView[
-          //     '${topicIds[_fixedExtentScrollController.selectedItem]}'];
-
-          player.playPreviousTrack(
-              previousTrackIndex: _fixedExtentScrollController.selectedItem);
-        });
-        // player.rpeatAudio();
+        // Play the previous track in the audio player based on the selected item
+        player.playPreviousTrack(previousTrackIndex: _fixedExtentScrollController.selectedItem);
       });
-      print("revers scrolling");
-    }
+      // Optionally, repeat the audio track
+      // player.repeatAudio();
+    });
+    // Print a message indicating reverse scrolling
+    print("reverse scrolling");
+  }
+}
+
+
+// Override the didChangeAppLifecycleState method
+@override
+void didChangeAppLifecycleState(AppLifecycleState state) {
+  // Call the superclass implementation
+  super.didChangeAppLifecycleState(state);
+
+  // Check if the app lifecycle state is paused
+  if (state == AppLifecycleState.paused) {
+    // Stop the audio player
+    player.stopAudio();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // TODO: implement didChangeAppLifecycleState
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused) {
-      player.stopAudio();
-    }
-
-    if (state == AppLifecycleState.detached) {
-      player.stopAudio();
-    }
+  // Check if the app lifecycle state is detached
+  if (state == AppLifecycleState.detached) {
+    // Stop the audio player
+    player.stopAudio();
   }
+}
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
 
-    topicDetails.clear();
-    topicsCardsAudio.clear();
-    deviceAudioFileName.clear();
-    topicIds.clear();
-    updatedAudioFileName.clear();
-    listFileNameFromServer.clear();
-    imageByteData.clear();
-    topicTitle.clear();
-    topicLike.clear();
-    topicsCardsImage.clear();
-    topicCardsAudio.clear();
-    topicView.clear();
+// Override the dispose method
+@override
+void dispose() {
+  // Call the superclass implementation of dispose
+  super.dispose();
 
-    player.disposeAudio();
+  // Clear the topic details list
+  topicDetails.clear();
 
-    WidgetsBinding.instance.removeObserver(this);
+  // Clear the topics cards audio list
+  topicsCardsAudio.clear();
 
-    _fixedExtentScrollController.dispose();
+  // Clear the device audio file name list
+  deviceAudioFileName.clear();
 
-    super.dispose();
-  }
+  // Clear the topic IDs list
+  topicIds.clear();
 
-  getAllTopicDetails() async {
-    String dirPath = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dirPath/appInfo.json");
-    // String url = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchSecTopics";
-    String url = "https://digividya.in/DigiVidyaAPI/api/fetchSecTopics";
+  // Clear the updated audio file name list
+  updatedAudioFileName.clear();
 
-    if (jsonFile.existsSync()) {
-      try {
-        var jsonData = jsonDecode(jsonFile.readAsStringSync());
-        UserName = jsonData['UserName'].toString();
-        Map<String, dynamic> userData = {'section_id': sectionID.toString()};
-        var response = await http.post(Uri.parse(url), body: userData);
+  // Clear the list of file names from the server
+  listFileNameFromServer.clear();
 
-        if (response.statusCode == 200) {
-          Map<String, dynamic> jsonRespons =
-              jsonDecode(response.body.toString().replaceAll("\n", " "));
+  // Clear the image byte data list
+  imageByteData.clear();
 
-          setState(() {
-            topicCount = jsonRespons['topic_count'];
-            topicDetails = jsonRespons['topics'];
-            topicIds = jsonRespons['topic_ids'];
-            topic_id = topicIds[0];
-            topicsCardsImage = jsonRespons['topic_img'];
-            topicCardsAudio = jsonRespons['topic_aud'];
-            cardImage = topicsCardsImage['${topicIds[0]}'];
+  // Clear the topic title list
+  topicTitle.clear();
 
-            topicsCardsImage.forEach((key, value) {
-              imageByteData.add(Base64Decoder().convert(value));
-            });
+  // Clear the topic like list
+  topicLike.clear();
 
-            topicDetails.forEach((element) {
-              topicTitle.add(element['DT_NAME']);
-            });
+  // Clear the topics cards image map
+  topicsCardsImage.clear();
 
-            topicDetails.forEach((element) {
-              topicLike.add(element['likes_counts'].toString());
-              topicView.add(element['views_count'].toString());
-              subTopicCountList.add(element['subtopic_count'].toString());
-            });
-            subTopicCount = int.parse(subTopicCountList[0]);
+  // Clear the topic cards audio map
+  topicCardsAudio.clear();
+
+  // Clear the topic view list
+  topicView.clear();
+
+  // Dispose of the audio player
+  player.disposeAudio();
+
+  // Remove the observer from the WidgetsBinding instance
+  WidgetsBinding.instance.removeObserver(this);
+
+  // Dispose of the fixed extent scroll controller
+  _fixedExtentScrollController.dispose();
+}
+
+
+// Function to get all topic details asynchronously
+getAllTopicDetails() async {
+  // Get the path to the application support directory
+  String dirPath = (await getApplicationSupportDirectory()).path;
+
+  // Create a File object for the JSON file
+  File jsonFile = File("$dirPath/appInfo.json");
+
+  // URL to fetch section topics
+  String url = "https://digividya.in/DigiVidyaAPI/api/fetchSecTopics";
+
+  // Check if the JSON file exists
+  if (jsonFile.existsSync()) {
+    try {
+      // Read and decode the JSON data from the file
+      var jsonData = jsonDecode(jsonFile.readAsStringSync());
+
+      // Get the user name from the JSON data
+      UserName = jsonData['UserName'].toString();
+
+      // Create a map with the section ID as user data
+      Map<String, dynamic> userData = {'section_id': sectionID.toString()};
+
+      // Send a POST request to the URL with the user data
+      var response = await http.post(Uri.parse(url), body: userData);
+
+      // Check if the response status code is 200 (OK)
+      if (response.statusCode == 200) {
+        // Decode the response body and remove new line characters
+        Map<String, dynamic> jsonRespons =
+            jsonDecode(response.body.toString().replaceAll("\n", " "));
+
+        // Update the state with the fetched data
+        setState(() {
+          // Get the topic count from the response
+          topicCount = jsonRespons['topic_count'];
+
+          // Get the topic details from the response
+          topicDetails = jsonRespons['topics'];
+
+          // Get the topic IDs from the response
+          topicIds = jsonRespons['topic_ids'];
+
+          // Set the current topic ID to the first topic ID
+          topic_id = topicIds[0];
+
+          // Get the topic images from the response
+          topicsCardsImage = jsonRespons['topic_img'];
+
+          // Get the topic audio files from the response
+          topicCardsAudio = jsonRespons['topic_aud'];
+
+          // Set the card image to the image of the first topic
+          cardImage = topicsCardsImage['${topicIds[0]}'];
+
+          // Decode the topic images and add them to the image byte data list
+          topicsCardsImage.forEach((key, value) {
+            imageByteData.add(Base64Decoder().convert(value));
           });
 
-          var jsonData = jsonDecode(jsonFile.readAsStringSync());
+          // Add the topic titles to the topic title list
+          topicDetails.forEach((element) {
+            topicTitle.add(element['DT_NAME']);
+          });
 
-          jsonData['topic_id'] = topic_id;
+          // Add the topic likes and views to their respective lists
+          topicDetails.forEach((element) {
+            topicLike.add(element['likes_counts'].toString());
+            topicView.add(element['views_count'].toString());
 
-          jsonFile.writeAsStringSync(jsonEncode(jsonData));
+            // Add the subtopic counts to the subtopic count list
+            subTopicCountList.add(element['subtopic_count'].toString());
+          });
 
-          print(jsonFile.readAsStringSync());
-          _getCompletedSubtopicList();
+          // Set the subtopic count to the count of the first topic
+          subTopicCount = int.parse(subTopicCountList[0]);
+        });
 
-          dataFatched.value = true;
+        // Update the JSON data with the current topic ID
+        jsonData['topic_id'] = topic_id;
 
-          print("This is jsonData: $jsonRespons");
-        } else {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              var dialogBoxContext = context;
-              return InternetErrorDialog(
-                internetErrorDialogContext: dialogBoxContext,
-                message:
-                    "Low internet connection . Please check your internet.",
-              );
-            },
-          );
-        }
-      } on http.ClientException catch (e) {
-        print("Exception From ${e.message}");
-        final _checkConnectivity = await _connectivity.checkConnectivity();
-        if (_checkConnectivity == ConnectivityResult.none) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              var internalServerErrorContext = context;
-              return internalServerError(
-                  internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "No Internet",
-                  description:
-                      "Maybe you don't have a internet connection. Please check and try again.",
-                  retryButton: () {
-                    Future.delayed(Duration(milliseconds: 50), () {
-                      getAllTopicDetails();
-                    });
-                    Navigator.of(internalServerErrorContext).pop(false);
-                  },
-                  ButtonText: "reload");
-            },
-          );
-        } else {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              var internalServerErrorContext = context;
-              return internalServerError(
-                  internalServerErrorContext: internalServerErrorContext,
-                  ErrorTitle: "Poor Connection",
-                  description:
-                      "Maybe you have a poor internet connection. Please try again.",
-                  retryButton: () {
-                    Future.delayed(
-                      Duration(milliseconds: 50),
-                      () {
-                        getAllTopicDetails();
-                      },
-                    );
-                    Navigator.of(internalServerErrorContext).pop(false);
-                  },
-                  ButtonText: "try again");
-            },
-          );
-        }
+        // Write the updated JSON data back to the file
+        jsonFile.writeAsStringSync(jsonEncode(jsonData));
+
+        // Print the contents of the JSON file
+        print(jsonFile.readAsStringSync());
+
+        // Get the list of completed subtopics
+        _getCompletedSubtopicList();
+
+        // Set the data fetched flag to true
+        dataFatched.value = true;
+
+        // Print the response data
+        print("This is jsonData: $jsonRespons");
+      } else {
+        // Show an internet error dialog if the response status code is not 200
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            var dialogBoxContext = context;
+            return InternetErrorDialog(
+              internetErrorDialogContext: dialogBoxContext,
+              message:
+                  "Low internet connection . Please check your internet.",
+            );
+          },
+        );
       }
-    } else {}
-    return;
+    } on http.ClientException catch (e) {
+      // Handle HTTP client exceptions
+      print("Exception From ${e.message}");
+
+      // Check the connectivity status
+      final _checkConnectivity = await _connectivity.checkConnectivity();
+      if (_checkConnectivity == ConnectivityResult.none) {
+        // Show a no internet dialog if there is no internet connection
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            var InternalserverErrorContext = context;
+            return InternalserverError(
+                InternalserverErrorContext: InternalserverErrorContext,
+                ErrorTitle: "No Internet",
+                 Description:
+                    "Maybe you don't have an internet connection. Please check and try again.",
+                retryButton: () {
+                  Future.delayed(Duration(milliseconds: 50), () {
+                    getAllTopicDetails();
+                  });
+                  Navigator.of(InternalserverErrorContext).pop(false);
+                },
+                ButtonText: "reload");
+          },
+        );
+      } else {
+        // Show a poor connection dialog if the internet connection is poor
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            var InternalserverErrorContext = context;
+            return InternalserverError(
+                InternalserverErrorContext: InternalserverErrorContext,
+                ErrorTitle: "Poor Connection",
+                 Description:
+                    "Maybe you have a poor internet connection. Please try again.",
+                retryButton: () {
+                  Future.delayed(
+                    Duration(milliseconds: 50),
+                    () {
+                      getAllTopicDetails();
+                    },
+                  );
+                  Navigator.of(InternalserverErrorContext).pop(false);
+                },
+                ButtonText: "try again");
+          },
+        );
+      }
+    }
+  } else {
+    // Handle the case where the JSON file does not exist
   }
+  return;
+}
+
 
   // generateCardsAudio() async {
   //   String dirPath = (await getApplicationSupportDirectory()).path;
@@ -660,183 +826,239 @@ class _topicPageState extends State<topicPage> with WidgetsBindingObserver {
   //   return;
   // }
 
-  Future<bool> onBackPress() async {
-    return Future.delayed(
-      Duration.zero,
-      () {
-        Future.delayed(
-          Duration(milliseconds: 300),
-          () {
-            Navigator.pushReplacementNamed(context, "/");
-          },
-        );
-        return false;
-      },
-    );
-  }
-
-  void _checkConnectivity() async {
-    final _checkConnectivity = await _connectivity.checkConnectivity();
-    if (_checkConnectivity == ConnectivityResult.none) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          var internetErrorContext = context;
-          return InternetErrorDialog(
-            internetErrorDialogContext: internetErrorContext,
-            message: "Low internet connection . Please check your internet.",
-          );
+// Function to handle back press with asynchronous operation
+Future<bool> onBackPress() async {
+  // Return a Future that completes immediately with a delay
+  return Future.delayed(
+    Duration.zero, // No initial delay
+    () {
+      // After the initial delay, set another delay of 300 milliseconds
+      Future.delayed(
+        Duration(milliseconds: 300),
+        () {
+          // After the 300 milliseconds delay, navigate to the home screen
+          Navigator.of(context).pushReplacementNamed("/");
         },
       );
-    } else {
-      getAllTopicDetails().then((_) {
-        getUpdatedAudioFile().then((_) {
-          playlist = ConcatenatingAudioSource(
-              useLazyPreparation: true,
-              children: List.generate(topicCount,
-                  (index) => AudioSource.file(topicsCardsAudio[index])));
-          player = bgAudioPlayer(concatenatingAudioSource: playlist);
+      // Return false to indicate the back press is handled
+      return false;
+    },
+  );
+}
 
-          player.initAudioPlayer();
-        });
+
+// Function to check connectivity and fetch topic details
+void _checkConnectivity() async {
+  // Check the current connectivity status
+  final _checkConnectivity = await _connectivity.checkConnectivity();
+  
+  // If there is no internet connection
+  if (_checkConnectivity == ConnectivityResult.none) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        var internetErrorContext = context;
+        return InternetErrorDialog(
+          internetErrorDialogContext: internetErrorContext,
+          message: "Low internet connection. Please check your internet.",
+        );
+      },
+    );
+  } 
+  // If there is internet connection
+  else {
+    // Fetch topic details and updated audio files asynchronously
+    getAllTopicDetails().then((_) {
+      getUpdatedAudioFile().then((_) {
+        // Create playlist and initialize audio player
+        playlist = ConcatenatingAudioSource(
+            useLazyPreparation: true,
+            children: List.generate(topicCount,
+                (index) => AudioSource.file(topicsCardsAudio[index])));
+        player = bgAudioPlayer(concatenatingAudioSource: playlist);
+        player.initAudioPlayer();
       });
-    }
+    });
+  }
+}
+
+
+// Function to fetch and update audio files
+getUpdatedAudioFile() async {
+  // Get the directory path
+  String directory = (await getApplicationSupportDirectory()).path;
+
+  // Initialize lists to store directories and file names
+  List<Directory> listofFileDirectory = [];
+  List<String> fileName = [];
+
+  // Extract file names from server paths
+  for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
+    listFileNameFromServer.add(topicDetails[audioTracks]['DT_AUD_PATH']
+        .split("/")
+        .last
+        .split(".mp3")
+        .first);
   }
 
-  getUpdatedAudioFile() async {
-    String directory = (await getApplicationSupportDirectory()).path;
+  // Iterate through each audio track
+  for (int tAudioTrack = 0; tAudioTrack < topicCount; tAudioTrack++) {
+    // Get the file path for the current audio track
+    File topicAudioFile = File(
+        "$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack + 1}/${listFileNameFromServer[tAudioTrack]}.mp3");
 
-    List<Directory> listofFileDirectory = [];
-    List<String> fileName = [];
+    // If the file doesn't exist, create it
+    if (!topicAudioFile.existsSync()) {
+      topicAudioFile.createSync(recursive: true);
 
-    for (var audioTracks = 0; audioTracks < topicCount; audioTracks++) {
-      listFileNameFromServer.add(topicDetails[audioTracks]['DT_AUD_PATH']
-          .split("/")
-          .last
-          .split(".mp3")
-          .first);
-    }
+      // Read and decode the audio content, then write it to the audio file
+      await topicAudioFile.writeAsBytes(
+          List<int>.from(Base64Decoder()
+              .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),
+          flush: true);
 
-    for (int tAudioTrack = 0; tAudioTrack < topicCount; tAudioTrack++) {
-      File topicAudioFile = File(
-          "$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack + 1}/${listFileNameFromServer}.mp3");
+      // Store the path of each audio file for creating playlist and playback
+      topicsCardsAudio.add(topicAudioFile.path);
+    } else {
+      // Clear the list of file directories
+      listofFileDirectory.clear();
 
-      if (!topicAudioFile.existsSync()) {
-        topicAudioFile.createSync(recursive: true);
+      // Clear the list of file names
+      fileName.clear();
 
-        //reading and decode the audio content and write to the audio file
+      // Iterate through directories to get file names
+      Directory("$directory/DigiVidya/Section_$section_Id/AudioFile/")
+          .listSync(followLinks: true)
+          .forEach(
+        (element) {
+          if (element is Directory) {
+            listofFileDirectory.add(element);
+          }
+        },
+      );
+
+      // Get the file names from each directory
+      for (Directory audioDirectory in listofFileDirectory) {
+        try {
+          Directory("${audioDirectory.path}/").listSync().forEach((element) {
+            fileName
+                .add(path.basename(element.path).toString().split('.').first);
+          });
+        } catch (e) {}
+      }
+
+      // Check if the file names from server match the existing file names
+      if (listFileNameFromServer[tAudioTrack] != fileName[tAudioTrack]) {
+        // Rename the audio file
+        topicAudioFile.renameSync(
+            "$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack + 1}/${listFileNameFromServer[tAudioTrack]}.mp3");
+
+        // Read and decode the audio content, then write it to the audio file
         await topicAudioFile.writeAsBytes(
             List<int>.from(Base64Decoder()
                 .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),
             flush: true);
 
-        // Storing the path of each audio file for creating playList and Play
+        // Store the path of each audio file for creating playlist and playback
         topicsCardsAudio.add(topicAudioFile.path);
       } else {
-        Directory("$directory/DigiVidya/Section_$section_Id/AudioFile/")
-            .listSync(followLinks: true)
-            .forEach(
-          (element) {
-            // print("%%%%%%%%%%%%%%%% $element %%%%%%%%%%%%%%%%%");
-            if (element is Directory) {
-              listofFileDirectory.add(element);
-            }
-          },
-        );
-
-        for (Directory audioDirectory in listofFileDirectory) {
-          try {
-            Directory("${audioDirectory.path}/").listSync().forEach((element) {
-              fileName
-                  .add(path.basename(element.path).toString().split('.').first);
-            });
-          } catch (e) {}
-        }
-
-        if (listFileNameFromServer[tAudioTrack] != fileName[tAudioTrack]) {
-          topicAudioFile.renameSync(
-              "$directory/DigiVidya/Section_$section_Id/AudioFile/Topic_${tAudioTrack + 1}/${listFileNameFromServer[tAudioTrack]}.mp3");
-
-          //reading and decode the audio content and write to the audio file
-          await topicAudioFile.writeAsBytes(
-              List<int>.from(Base64Decoder()
-                  .convert(topicCardsAudio['${topicIds[tAudioTrack]}'])),
-              flush: true);
-
-          // Storing the path of each audio file for creating playList and Play
-          topicsCardsAudio.add(topicAudioFile.path);
-        } else {
-          // Storing the path of each audio file for creating playList and Play
-          topicsCardsAudio.add(topicAudioFile.path);
-        }
-
-        print(
-            "%%%%%%%%%%%%%%%%%%%%%%%%%% $fileName %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        // Store the path of each audio file for creating playlist and playback
+        topicsCardsAudio.add(topicAudioFile.path);
       }
+
+      print(
+          "%%%%%%%%%%%%%%%%%%%%%%%%%% $fileName %%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
     }
   }
+}
 
-  void _getCompletedSubtopicList() async {
-    String dirpath = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dirpath/appInfo.json");
 
-    String url = "https://digividya.in/DigiVidyaAPI/api/completedTopics";
+// Function to retrieve completed subtopic list
+void _getCompletedSubtopicList() async {
+  // Get the directory path
+  String dirpath = (await getApplicationSupportDirectory()).path;
+  // Create a file object
+  File jsonFile = File("$dirpath/appInfo.json");
+  // Set the URL for the API endpoint
+  String url = "https://digividya.in/DigiVidyaAPI/api/completedTopics";
 
-    if (jsonFile.existsSync()) {
-      try {
-        var jsonData = jsonDecode(jsonFile.readAsStringSync());
-        var userId = jsonData['User_Id'];
+  // Check if the JSON file exists
+  if (jsonFile.existsSync()) {
+    try {
+      // Decode JSON data from the file
+      var jsonData = jsonDecode(jsonFile.readAsStringSync());
+      // Extract user ID from JSON data
+      var userId = jsonData['User_Id'];
 
-        var userData = {
-          "user_id": userId.toString(),
-          "section_id": sectionID.toString()
-        };
-        var response = await http.post(Uri.parse(url), body: userData);
+      // Prepare user data to send in the request body
+      var userData = {
+        "user_id": userId.toString(),
+        "section_id": sectionID.toString()
+      };
+      // Send a POST request to the API endpoint
+      var response = await http.post(Uri.parse(url), body: userData);
 
-        if (response.statusCode == 200) {
-          Map<String, dynamic> jsonResponse =
-              jsonDecode(response.body.toString().replaceAll("\n", " "));
-          if (jsonResponse.isNotEmpty) {
-            completedSubtopicList = jsonResponse['count_of_IDs'];
+      // Check if the response is successful
+      if (response.statusCode == 200) {
+        // Decode the JSON response
+        Map<String, dynamic> jsonResponse =
+            jsonDecode(response.body.toString().replaceAll("\n", " "));
+        // Check if the response is not empty
+        if (jsonResponse.isNotEmpty) {
+          // Update the completed subtopic list
+          completedSubtopicList = jsonResponse['count_of_IDs'];
 
-            // This block store the bool value of the completed icon to show or hide icon in hideAndShow_CompletedIcon List.
-            topicIds.forEach((element) {
-              int indexOfItem = topicIds.indexOf(element);
-              int pointer = 0;
-              if (completedSubtopicList.containsKey(element.toString()) &&
-                  (completedSubtopicList[element.toString()] ==
-                      int.parse(subTopicCountList[pointer]))) {
-                hideAndshow_CompletedIcon[indexOfItem] = true;
-                pointer++;
-              }
-            });
-
-            // This block store the progress of each card in TopicProgres List
-            for (int itemProgress = 0;
-                itemProgress < topicCount;
-                itemProgress++) {
-              TopicProgress[itemProgress] =
-                  completedSubtopicList[topicIds[itemProgress].toString()] /
-                      int.parse(subTopicCountList[itemProgress]);
+          // Update the list to show or hide completed icons
+          topicIds.forEach((element) {
+            int indexOfItem = topicIds.indexOf(element);
+            int pointer = 0;
+            if (completedSubtopicList.containsKey(element.toString()) &&
+                (completedSubtopicList[element.toString()] ==
+                    int.parse(subTopicCountList[pointer]))) {
+              hideAndshow_CompletedIcon[indexOfItem] = true;
+              pointer++;
             }
+          });
 
-            print(
-                "%%%%%%%%%%%%%%%%%%% Topic Progress : ${TopicProgress} %%%%%%%%%%%%%%%%%%%%%");
-
-            progressOfTopic.value = true;
+          // Update the progress of each card
+          for (int itemProgress = 0;
+              itemProgress < topicCount;
+              itemProgress++) {
+            TopicProgress[itemProgress] =
+                completedSubtopicList[topicIds[itemProgress].toString()] /
+                    int.parse(subTopicCountList[itemProgress]);
           }
-          // print(
-          //     "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% $completedSubtopicList %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-        } else {}
-      } catch (e) {}
-    }
-  }
 
-  void _getTemBoolValue() {
-    for (int completedItem = 0; completedItem < topicCount; completedItem++) {
-      hideAndshow_CompletedIcon.add(false);
-      TopicProgress.add(0.0);
-    }
+          // Print the topic progress
+          print(
+              "%%%%%%%%%%%%%%%%%%% Topic Progress : ${TopicProgress} %%%%%%%%%%%%%%%%%%%%%");
+
+          // Update the progress value
+          progressOfTopic.value = true;
+        }
+      }
+    } catch (e) {}
   }
+}
+
+
+// Function to initialize temporary boolean values
+void _getTemBoolValue() {
+  for (int completedItem = 0; completedItem < topicCount; completedItem++) {
+    hideAndshow_CompletedIcon.add(false);
+    TopicProgress.add(0.0);
+  }
+}
+
+// Function to share topic
+void ShareTopic(String path, String uri) async {
+  // Share the file and the URI
+  // ignore: deprecated_member_use
+  await Share.shareFiles([path], text: uri).then((_) {
+    // Delete the shared file after sharing
+    File(path).deleteSync(recursive: true);
+  });
+}
+
 }
