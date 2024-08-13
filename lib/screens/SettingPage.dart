@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:digividya/Services/getDirectory.dart';
 import 'package:http/http.dart' as http;
 import 'package:restart_app/restart_app.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 class settingPage extends StatefulWidget {
   const settingPage({super.key});
@@ -104,7 +104,7 @@ Stack(
 // Function to change the language setting of the app
 Future<bool> Changelanguage() async {
   // Get the directory path for storing application data
-  String dirpath = (await getApplicationSupportDirectory()).path;
+  String dirpath = await getDirectory().getdirectory();
   // Create a File object for the JSON file storing user information
   File jsonFile = File("$dirpath/appInfo.json");
   // Define the URL for the API endpoint to update user language

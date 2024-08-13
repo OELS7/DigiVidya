@@ -1,4 +1,4 @@
-import 'dart:math';
+
 import 'package:digividya/screens/Language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,16 +27,17 @@ String deviceId = "";
 
 @override
 void initState() {
-  super.initState();
-
-  // Generate and store the device ID when the widget initializes
-  deviceId = generateDevicId();
-  print("The Device Id : $deviceId amd length : ${deviceId.length}");
+  super.initState(); 
 }
 
 // Override the build method to create the widget tree
 @override
 Widget build(BuildContext context) {
+      // Retrieve the arguments passed to the route and cast them to a Map
+    var arguments = (ModalRoute.of(context)!.settings.arguments ??
+        <String, String>{}) as Map;
+        deviceId = arguments["DeviceId"].toString().isEmpty ? "" :arguments["DeviceId"].toString();
+         print("The Device Id : $deviceId amd length : ${deviceId.length}");
   return Scaffold(
     // Scaffold widget to provide a framework for implementing the Material Design layout structure
     body: Container(
@@ -202,7 +203,7 @@ Widget build(BuildContext context) {
                             'Username': namecontroller.text,
                             'mobileNo': mobilecontroller.text,
                             'city': citycontroller.text,
-                            'deviceId': deviceId
+                            'DeviceId': deviceId
                           }),
                         ),
                       );
@@ -237,21 +238,6 @@ Widget build(BuildContext context) {
       ),
     ),
   );
-}
-
-
-// Function to generate random device ID
-String generateDevicId() {
-  // Define a string pattern containing characters for generating the device ID
-  String stringPattern =
-      "+-*=?AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789!@#%^&*()";
-  // Create a Random object
-  Random random = Random();
-  // Generate a random string from the string pattern
-  return String.fromCharCodes(Iterable.generate(
-    50,
-    (_) => stringPattern.codeUnitAt(random.nextInt(stringPattern.length)),
-  ));
 }
 
 }

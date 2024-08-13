@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:digividya/BgService/bgAudioPlayer.dart';
+import 'package:digividya/Services/getDirectory.dart';
 import 'package:digividya/widgets/InternalserverError.dart';
 import 'package:digividya/widgets/InternetErrorDialog.dart';
 import 'package:digividya/widgets/Lock_Cards.dart';
@@ -17,6 +19,7 @@ import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class supTopicPage extends StatefulWidget {
   const supTopicPage({super.key});
@@ -107,6 +110,8 @@ class _supTopicPageState extends State<supTopicPage>
 
   @override
   Widget build(BuildContext context) {
+        // Enable wakelock to keep the screen on
+    WakelockPlus.enable();
     // Extract arguments passed to this route
     final argument =
         (ModalRoute.of(context)?.settings.arguments ?? <String, int>{}) as Map;
@@ -280,9 +285,7 @@ class _supTopicPageState extends State<supTopicPage>
                 )
               // If there are content URLs, play the content.
               : (contentUrls.length != 0)
-                  ?
-                      _PlayContent(contentList: contentUrls, FileName: FileName)
-                    
+                  ? _PlayContent(contentList: contentUrls, FileName: FileName)
 
                   // Otherwise, show a "coming soon" dialog.
                   : showDialog(
@@ -297,7 +300,7 @@ class _supTopicPageState extends State<supTopicPage>
         },
         child: Card(
           // color: Colors.blue,
-          margin: const EdgeInsets.symmetric(horizontal: 15.0),
+          margin: EdgeInsets.symmetric(horizontal: 15.0),
           shadowColor: Colors.black,
           elevation: 25,
           shape: RoundedRectangleBorder(
@@ -346,16 +349,24 @@ class _supTopicPageState extends State<supTopicPage>
                               )))
                       : SizedBox(),
               Positioned(
-                  top: MediaQuery.of(context).size.height * 0.43,
-                  left: 0.0,
-                  right: 0.0,
+                  top: _getScreenSize(MediaQuery.of(context).size.width),
+                  height: _getScreenHeight(
+                    MediaQuery.of(context).size.height,
+                    MediaQuery.of(context)
+                        .size
+                        .width),
+                  width: MediaQuery.of(context).size.width * 0.95,
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 50),
+                        Container(
+                          margin: EdgeInsets.only(
+                              top: MediaQuery.of(context).size.height * 0.08),
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.04),
                           child: Text(
                             subTopicTitle[i],
                             style: TextStyle(
@@ -367,7 +378,9 @@ class _supTopicPageState extends State<supTopicPage>
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          padding: EdgeInsets.symmetric(
+                              vertical:
+                                  MediaQuery.of(context).size.width * 0.01),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
@@ -560,7 +573,7 @@ class _supTopicPageState extends State<supTopicPage>
 
   getSubTopicDetails() async {
     // Get the path to the application support directory
-    String dirPath = (await getApplicationSupportDirectory()).path;
+    String dirPath = await getDirectory().getdirectory();
     // Create a File object for the appInfo.json file
     File jsonFile = File("$dirPath/appInfo.json");
 
@@ -910,7 +923,7 @@ class _supTopicPageState extends State<supTopicPage>
       {required List<dynamic> contentList,
       required List<String> FileName}) async {
     // Get the application support directory path
-    String dir = (await getApplicationSupportDirectory()).path;
+    String dir = await getDirectory().getdirectory();
 
     // Check the file extension of the first item in the content list
     switch (contentList[0].toString().split("/").last.split(".").last) {
@@ -921,14 +934,14 @@ class _supTopicPageState extends State<supTopicPage>
 
         // Create a File object for the video file
         File videoFile = File(
-            "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Video/${FileName[0]}");
+            "$dir/DigiVidya/Section_${sectionId}/VideoFiles/Topic_${topicId}/subTopic_${subTopicId}/Video/${FileName[0]}");
 
         // Check if the video file exists
         if (videoFile.existsSync()) {
           // If the video file exists, navigate to the video page
           Navigator.pushReplacementNamed(context, '/vidoePage', arguments: {
             "filePath":
-                "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Video/${FileName[0]}",
+                "$dir/DigiVidya/Section_${sectionId}/VideoFiles/Topic_${topicId}/subTopic_${subTopicId}/Video/${FileName[0]}",
             "minutes": 0,
             "seconds": 0,
             "section": sectionId,
@@ -942,7 +955,8 @@ class _supTopicPageState extends State<supTopicPage>
           });
         } else {
           // If the video file does not exist, update the JSON file and download the video
-          String dirPath = (await getApplicationSupportDirectory()).path;
+          String dirPath = await getDirectory().getdirectory();
+
           File JsonFile = File("$dirPath/appInfo.json");
           var jsonData = jsonDecode(JsonFile.readAsStringSync());
           jsonData['subTopic_Id'] = subTopicId;
@@ -973,13 +987,13 @@ class _supTopicPageState extends State<supTopicPage>
 
         // Create a Directory object for the assessment directory
         Directory AssessmrntDirectory = Directory(
-            "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/");
+            "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/");
 
         // Check if the assessment directory exists
         if (AssessmrntDirectory.existsSync()) {
           // Create a File object for the assessment HTML file
           File assessmentHtmlFile = File(
-              "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
+              "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
 
           // Check if the assessment HTML file exists
           if (assessmentHtmlFile.existsSync()) {
@@ -1001,7 +1015,7 @@ class _supTopicPageState extends State<supTopicPage>
             Navigator.pushReplacementNamed(context, '/assessmentPage',
                 arguments: {
                   "htmlFilePath":
-                      "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story.html",
+                      "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story.html",
                   "section": sectionNumber,
                   "topic": topicNumber,
                   "topicCount": topicCount,
@@ -1015,12 +1029,13 @@ class _supTopicPageState extends State<supTopicPage>
         } else {
           // Create a File object for the assessment ZIP file
           File AssessmentZipFile = File(
-              "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0]}");
+              "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0]}");
 
           // Check if the assessment ZIP file does not exist
           if (!AssessmentZipFile.existsSync()) {
             // Update the JSON file and download the ZIP file
-            String dirPath = (await getApplicationSupportDirectory()).path;
+            String dirPath = await getDirectory().getdirectory();
+
             File JsonFile = File("$dirPath/appInfo.json");
             var jsonData = jsonDecode(JsonFile.readAsStringSync());
             jsonData['subTopic_Id'] = subTopicId;
@@ -1048,7 +1063,7 @@ class _supTopicPageState extends State<supTopicPage>
             ZipFile.extractToDirectory(
               zipFile: AssessmentZipFile,
               destinationDir: Directory(
-                  "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"),
+                  "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"),
               onExtracting: (zipEntry, progress) {
                 print(zipEntry.name); // Print the name of the zip entry
                 print(progress.round() * 100); // Print the extraction progress
@@ -1058,7 +1073,7 @@ class _supTopicPageState extends State<supTopicPage>
             ).then((_) {
               // After extraction, check if the assessment HTML file exists
               File assessmentHtmlFile = File(
-                  "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
+                  "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
 
               // Navigate to the appropriate assessment page based on the existence of the HTML file
               if (assessmentHtmlFile.existsSync()) {
@@ -1078,7 +1093,7 @@ class _supTopicPageState extends State<supTopicPage>
                 Navigator.pushReplacementNamed(context, '/assessmentPage',
                     arguments: {
                       "htmlFilePath":
-                          "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story.html",
+                          "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story.html",
                       "section": sectionNumber,
                       "topic": topicNumber,
                       "topicCount": topicCount,
@@ -1102,7 +1117,7 @@ class _supTopicPageState extends State<supTopicPage>
 // Define the _playSpecificFile function
   void _playSpecificFile({required String ContentFileAddress}) async {
     // Get the application support directory path
-    String dir = (await getApplicationSupportDirectory()).path;
+    String dir = await getDirectory().getdirectory();
 
     // Check if the content file has an MP4 extension
     if (ContentFileAddress.split(".").last == "mp4") {
@@ -1144,11 +1159,11 @@ class _supTopicPageState extends State<supTopicPage>
         ZipFile.extractToDirectory(
                 zipFile: File(ContentFileAddress),
                 destinationDir: Directory(
-                    "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"))
+                    "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/"))
             .then((_) {
           // Create a File object for the assessment HTML file
           File assessmentHtmlFile = File(
-              "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
+              "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story_html5.html");
 
           // Check if the assessment HTML file exists
           if (assessmentHtmlFile.existsSync()) {
@@ -1170,7 +1185,7 @@ class _supTopicPageState extends State<supTopicPage>
             Navigator.pushReplacementNamed(context, '/assessmentPage',
                 arguments: {
                   "htmlFilePath":
-                      "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story.html",
+                      "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/${FileName[0].split(".").first.toString()}/story.html",
                   "section": sectionNumber,
                   "topic": topicNumber,
                   "topicCount": topicCount,
@@ -1213,7 +1228,7 @@ class _supTopicPageState extends State<supTopicPage>
 // Define an asynchronous method to get updated content file names
   _getUpdatedContentFileName() async {
     // Get the application support directory path
-    String directory = (await getApplicationSupportDirectory()).path;
+    String directory = await getDirectory().getdirectory();
     // Initialize a list to store directories of audio files
     List<Directory> listofFileDirectory = [];
     // Initialize a list to store file names
@@ -1233,7 +1248,7 @@ class _supTopicPageState extends State<supTopicPage>
     for (var audioTracks = 0; audioTracks < subTopicCount; audioTracks++) {
       // Create a File object for the subTopic audio file
       File sTopicAudioFile = File(
-          "$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks + 1}/${audioFileName[audioTracks]}.mp3");
+          "$directory/DigiVidya/Section_${sectionId}/AudioFile/Topic_$topicId/SubTopic_${audioTracks + 1}/${audioFileName[audioTracks]}.mp3");
 
       // Check if the audio file does not exist
       if (!sTopicAudioFile.existsSync()) {
@@ -1250,7 +1265,7 @@ class _supTopicPageState extends State<supTopicPage>
       } else {
         // List the directories in the specified path
         Directory(
-                "$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/")
+                "$directory/DigiVidya/Section_${sectionId}/AudioFile/Topic_$topicId/")
             .listSync(followLinks: true)
             .forEach((element) {
           if (element is Directory) {
@@ -1283,7 +1298,7 @@ class _supTopicPageState extends State<supTopicPage>
         if (audioFileName[audioTracks] != fileName[audioTracks]) {
           // Rename the audio file
           sTopicAudioFile.renameSync(
-              "$directory/DigiVidya/Section_$sectionId/AudioFile/Topic_$topicId/SubTopic_${audioTracks + 1}/${audioFileName[audioTracks]}.mp3");
+              "$directory/DigiVidya/Section_${sectionId}/AudioFile/Topic_$topicId/SubTopic_${audioTracks + 1}/${audioFileName[audioTracks]}.mp3");
 
           // Write the audio data to the file
           await sTopicAudioFile.writeAsBytes(
@@ -1309,7 +1324,8 @@ class _supTopicPageState extends State<supTopicPage>
 // Define an asynchronous method to handle the completion of a subtopic
   _completedSubTopic() async {
     // Get the application support directory path
-    String dirpath = (await getApplicationSupportDirectory()).path;
+    String dirpath = await getDirectory().getdirectory();
+
     // Create a File object for the appInfo.json file
     File jsonFile = File("$dirpath/appInfo.json");
 
@@ -1388,21 +1404,102 @@ class _supTopicPageState extends State<supTopicPage>
   }
 
   getFileNames() async {
-    String dir = (await getApplicationSupportDirectory()).path.toString();
+    String dir = await getDirectory().getdirectory();
+
     print(Directory(
-            "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/")
+            "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/")
         .listSync());
 
     if (Directory(
-            "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/")
+            "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/")
         .existsSync()) {
       Directory(
-              "$dir/Section_${sectionId}/Topic_${topicId}/subTopic_${subTopicId}/Assessment/")
+              "$dir/DigiVidya/Section_${sectionId}/AssignmentFiles/Topic_${topicId}/subTopic_${subTopicId}/Assessment/")
           .listSync()
           .forEach((element) {
-            AssignmentFileName.add(element.path.split("/").last.toString());
-          });
+        AssignmentFileName.add(element.path.split("/").last.toString());
+      });
     }
     return;
+  }
+
+    // Here we set the width of the position widget 
+    // For Title and other details
+  _getScreenSize(double width) {
+    double ScreenSize = 0.29;
+    double ScreenHeight = MediaQuery.of(context).size.height;
+
+    if ((width <= 768 && width > 425)) {
+      debugPrint("%%%%%%%%%% For Large Screen Size Like Tablet %%%%%%%%%%%%");
+      if(ScreenHeight < 1000){
+        ScreenSize = 0.25;
+      }else{
+        ScreenSize = 0.19;
+      }
+    }
+
+    if (width <= 425 && width > 375) {
+      if(MediaQuery.sizeOf(context).height > 800){
+        ScreenSize = 0.28;
+      }else{
+        ScreenSize = 0.25;
+      }
+      debugPrint("%%%%%%%%%%% For Large Screen Size Like Redmi %%%%%%%%%%%%%%");
+    }
+
+    if (width <= 375 && width > 320) {
+      debugPrint("%%%%%%%%%% For Medium Screen Size Like Xiaomi");
+    
+      if (ScreenHeight < 700) {
+        ScreenSize = 0.40;
+      } else {
+        ScreenSize = 0.34;
+      }
+    }
+
+    if (width <= 320) {
+      debugPrint("%%%%%%%%%% For Small Screen Size Like Vivo %%%%%%%%%%%");
+    }
+
+    return MediaQuery.of(context).size.height * ScreenSize;
+  }
+    // Here we set the height oft the position widget 
+    // For Title and other details
+    _getScreenHeight(double height, double width) {
+    double ScreenHeight = 0.0;
+
+    if ((width <= 768 && width > 425)) {
+      debugPrint("%%%%%%%%%% For Large Screen Size Like Tablet %%%%%%%%%%%%");
+      if(height < 1000){
+        ScreenHeight = 0.3;
+      }else{
+        ScreenHeight = 0.19;
+      }
+    }
+
+    if (width <= 425 && width > 375) {
+      if(height > 800){
+        ScreenHeight = 0.35;
+      }else{
+        ScreenHeight = 0.25;
+      }
+      debugPrint("%%%%%%%%%%% For Large Screen Size Like Redmi %%%%%%%%%%%%%%");
+    }
+
+    if (width <= 375 && width > 320) {
+      debugPrint("%%%%%%%%%% For Medium Screen Size Like Xiaomi");
+      //ScreenSize = 0.29;
+      if (height < 700) {
+        ScreenHeight = 0.38;
+      } else { 
+        ScreenHeight = 0.35;
+      }
+    }
+
+    if (width <= 320) {
+      debugPrint("%%%%%%%%%% For Small Screen Size Like Vivo %%%%%%%%%%%");
+    }
+
+    return MediaQuery.of(context).size.height * ScreenHeight;
   }
 }

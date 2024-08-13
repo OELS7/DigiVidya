@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:digividya/Services/getDirectory.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -165,8 +167,8 @@ class _banneradState extends State<bannerad> {
                     ""; // Variable to store user preferred language
                 String whatsAppInviteImage =
                     ""; // Variable to store WhatsApp invite image path
-                var dirPath = (await getApplicationSupportDirectory())
-                    .path; // Get application support directory path
+                var dirPath = await getDirectory().getdirectory(); // Get application support directory path
+
                 File jsonFile =
                     File("$dirPath/appInfo.json"); // Create a file instance
                 var JsonData = jsonDecode(jsonFile
@@ -329,8 +331,8 @@ class _banneradState extends State<bannerad> {
   _loadPreferedInviteImage() async {
     String userPrefredLanguage =
         ""; // Variable to store the user's preferred language
-    var dirPath = (await getApplicationSupportDirectory())
-        .path; // Get the path of the application support directory
+    var dirPath = await getDirectory().getdirectory(); // Get the path of the application support directory
+
     File jsonFile = File(
         "$dirPath/appInfo.json"); // Create a File object for the JSON file containing user preferences
     var JsonData = jsonDecode(jsonFile

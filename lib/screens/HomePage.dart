@@ -8,6 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:digividya/BgService/bgAudioPlayer.dart';
+import 'package:digividya/Services/getDirectory.dart';
 import 'package:digividya/screens/ChotiMadat.dart';
 import 'package:digividya/screens/Invite.dart';
 import 'package:digividya/screens/Profile2.dart';
@@ -101,20 +102,6 @@ void initState() {
   // Check the connectivity status
   _Checconnectivity();
 }
-
-
-  // @override
-  // Future<bool> didPopRoute() {
-  //   // TODO: implement didPopRoute
-  //   return Future.delayed(
-  //     Duration.zero,
-  //     () {
-  //       // print("**************** Page pop **********");
-  //       return false;
-  //     },
-  //   );
-  // }
-
 // Override method to build the widget
 @override
 Widget build(BuildContext context) {
@@ -413,14 +400,6 @@ void dispose() {
                           image: AssetImage(
                               'assets/images/AppreciateToFriend-Modal.webp'))),
                 ),
-                // Container(
-                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
-                //   child: Text(
-                //       " You can also appreciate your friends for better digital skills.",
-                //       style: TextStyle(
-                //           color: const Color.fromRGBO(1, 118, 211, 1),
-                //           fontSize: 20)),
-                // ),
                 Container(
                   height: 55,
                   width: 185,
@@ -587,14 +566,6 @@ void dispose() {
                           image: AssetImage(
                               'assets/images/AppreciateToFriend-Modal.webp'))),
                 ),
-                // Container(
-                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
-                //   child: Text(
-                //       " You can also appreciate your friends for better digital skills.",
-                //       style: TextStyle(
-                //           color: const Color.fromRGBO(1, 118, 211, 1),
-                //           fontSize: 20)),
-                // ),
                 Container(
                   height: 55,
                   width: 185,
@@ -738,12 +709,7 @@ void dispose() {
                           image: AssetImage(
                               'assets/images/AppreciateByFriend-Modal.webp'))),
                 ),
-                // Container(
-                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
-                //   child: Text(" Your friends appreciate you.",
-                //       style: TextStyle(
-                //           color: Color.fromRGBO(3, 45, 96, 1), fontSize: 20)),
-                // ),
+               
                 Container(
                   height: 55,
                   width: 185,
@@ -853,12 +819,6 @@ void dispose() {
                           image: AssetImage(
                               'assets/images/AppreciateByFriend-Modal.webp'))),
                 ),
-                // Container(
-                //   padding: EdgeInsets.fromLTRB(35, 0, 25, 0),
-                //   child: Text(" Your friends appreciate you.",
-                //       style: TextStyle(
-                //           color: Color.fromRGBO(3, 45, 96, 1), fontSize: 20)),
-                // ),
                 Container(
                   height: 55,
                   width: 185,
@@ -919,7 +879,7 @@ Future<bool> _OnBackButtonPress() {
 // Function to send appreciation to your friend
 _sendAppreciationToFriend() async {
   // Get the directory path
-  String dirPath = (await getApplicationSupportDirectory()).path;
+  String dirPath = await getDirectory().getdirectory();;
   // Create a file object
   File jsonFile = File("$dirPath/appInfo.json");
   // Read JSON data from the file
@@ -1006,7 +966,7 @@ Future<void> _processContact(Contact contact) async {
 
 Future<List<String>> getFriendsNumberFromServer() async {
   List<String> friendsNumber = [];
-  String dirPath = (await getApplicationSupportDirectory()).path;
+  String dirPath =  await getDirectory().getdirectory();
   File jsonFile = File("$dirPath/appInfo.json");
   DateTime date = DateTime.now();
   FormatedDate = DateFormat('dd-MM-yyyy').format(date);
@@ -1045,7 +1005,7 @@ Future<List<String>> getFriendsNumberFromServer() async {
 void _getMyAppreciationList() async {
   // API URL for fetching user appreciation list
   String getappreciationList_Url = "https://digividya.in/DigiVidyaAPI/api/fetchMyAppreciation";
-  String dirPath = (await getApplicationSupportDirectory()).path;
+  String dirPath = await getDirectory().getdirectory();
   File JsonFile = File("$dirPath/appInfo.json");
   var jsonData = jsonDecode(JsonFile.readAsStringSync());
   String userId = jsonData['User_Id'].toString();

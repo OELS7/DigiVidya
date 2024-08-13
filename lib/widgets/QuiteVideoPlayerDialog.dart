@@ -11,16 +11,16 @@ class quiteVideoPlayerDialog extends StatefulWidget {
   quiteVideoPlayerDialog(
       {
       // Call the superclass constructor with optional key parameter
-      super.key, 
+      super.key,
       // Required parameter: callback function for the 'Yes' button
-      required this.yesButton, 
+      required this.yesButton,
       // Required parameter: callback function for the 'No' button
       required this.noButton});
 
   // Override the createState method to create an instance of the state class
   @override
   State<quiteVideoPlayerDialog> createState() =>
-   // Return an instance of the state class _quiteVideoPlayerDialogState
+      // Return an instance of the state class _quiteVideoPlayerDialogState
       _quiteVideoPlayerDialogState(yesButton, noButton);
 }
 
@@ -35,8 +35,12 @@ class _quiteVideoPlayerDialogState extends State<quiteVideoPlayerDialog> {
   Widget build(BuildContext context) {
     // Container widget to hold the dialog content
     return Container(
-       // Margin for the container
-      margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.3,bottom: MediaQuery.of(context).size.width* 0.55,left: MediaQuery.of(context).size.width*0.05,right: MediaQuery.of(context).size.width*0.05),
+      // Margin for the container
+      margin: EdgeInsets.only(
+          top: MediaQuery.of(context).size.height * 0.3,
+          bottom: MediaQuery.of(context).size.width * 0.55,
+          left: MediaQuery.of(context).size.width * 0.05,
+          right: MediaQuery.of(context).size.width * 0.05),
       // Decoration for the container
       decoration: BoxDecoration(
           //color: Colors.blue,
@@ -45,47 +49,36 @@ class _quiteVideoPlayerDialogState extends State<quiteVideoPlayerDialog> {
               image:
                   AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
       // Child widget stack to overlay multiple children
-      child: Stack(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-           // Positioned widget for the exit animation
-          Positioned(
-            top: MediaQuery.of(context).size.height* 0,
-            left: MediaQuery.of(context).size.width * 0.32,
-           height: MediaQuery.of(context).size.height / 9,
-          width: MediaQuery.of(context).size.width / 10,
-              child: LottieBuilder.asset(
-                 // Animation asset for exit video animation
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.09,
+            child: LottieBuilder.asset(
+              // Animation asset for exit video animation
               "assets/Animation/Animation - 1711711975948_exit_video.json",
               repeat: false,
               fit: BoxFit.cover,
-              height: 140,width: 140,
-            )),
-          // Positioned widget for the dialog message
-          Positioned(
-              top: MediaQuery.of(context).size.height * 0.150,
-              left: MediaQuery.of(context).size.width * 0.15,
-              right: MediaQuery.of(context).size.width * 0.15,
-              child: Container(
-                // Dialog message text
-                child: Text(
-                  
-                  "Are you sure you want to close the video ?",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontFamily: "Fontmain",
-                      fontSize: 19,
-                      decoration: TextDecoration.none),
-                ),
+              height: 80, width: 80,
+            ),
+          ),
+           SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.02,),
+          SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.085,
+              width: MediaQuery.sizeOf(context).width * 0.75,
+              child: Text(
+                "Are you sure you want to close the video ?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: "Fontmain",
+                    fontSize: 19,
+                    decoration: TextDecoration.none),
               )),
-          // Positioned widget for the "Yes" and "No" buttons
-          Positioned(
-              top: MediaQuery.of(context).size.height * 0.254,
-              left: MediaQuery.of(context).size.width * 0.06,
-              right: MediaQuery.of(context).size.width * 0.06,
-              child: Container(
-                width: MediaQuery.of(context).size.width * 1,
-                child: Row(
+
+              SizedBox(height: MediaQuery.sizeOf(context).height * 0.07,child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -129,8 +122,7 @@ class _quiteVideoPlayerDialogState extends State<quiteVideoPlayerDialog> {
                               )),
                     )
                   ],
-                ),
-              )),
+                ),),
         ],
       ),
     );

@@ -46,27 +46,24 @@ class _exitAssessmentState extends State<exitAssessment> {
                 image: AssetImage(
                     "assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
         // Use a Stack to position child widgets
-        child: Stack(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Position the assessment image within the stack
-            Positioned(
-                top: MediaQuery.of(context).size.height * 0,
-                left: MediaQuery.of(context).size.width * 0.318,
-                height: MediaQuery.of(context).size.height * 0.11,
-                width: MediaQuery.of(context).size.width * 0.02,
-                child: LottieBuilder.asset(
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.08,
+              child:  LottieBuilder.asset(
                   "assets/Animation/Animation - 1711711975948_exit_video.json",
                   repeat: false,
                   fit: BoxFit.cover,
-                  height: 140,
-                  width: 140,
-                )),
-            // Position the alert description within the stack
-            Positioned(
-                top: MediaQuery.of(context).size.height * 0.14,
-                left: MediaQuery.of(context).size.width * 0.15,
-                right: MediaQuery.of(context).size.width * 0.15,
-                child: Text(
+                  height: 60,
+                  width: 60,
+                ),
+            ),
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.02,),
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.09,
+              child:  Text(
                   "Are you sure you want to leave Assignment?",
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -76,13 +73,10 @@ class _exitAssessmentState extends State<exitAssessment> {
                       color: Colors.black,
                       height: 1.5,
                       fontSize: 18),
-                )),
-            // Position the buttons within the stack
-            Positioned(
-                top: MediaQuery.of(context).size.height * 0.24,
-                left: MediaQuery.of(context).size.width * 0.1,
-                right: MediaQuery.of(context).size.width * 0.1,
-                child: Row(
+                ),
+            ),
+
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.07,child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     // "Yes" button
@@ -122,7 +116,7 @@ class _exitAssessmentState extends State<exitAssessment> {
                               MediaQuery.of(context).size.height * 0.055)),
                     )
                   ],
-                ))
+                ),)
           ],
         ),
       ),

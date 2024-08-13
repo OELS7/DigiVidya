@@ -7,15 +7,15 @@ import 'package:lottie/lottie.dart';
 class downloadDialogBox extends StatelessWidget {
   // Define a string variable to hold the dialog title
   String dialogTitle = "";
-  
+
   // Define a ValueNotifier to track download progress
   ValueNotifier<double> progress;
 
   // Constructor for the downloadDialogBox widget
   downloadDialogBox({
     super.key,
-    required this.dialogTitle,  // Initialize dialogTitle
-    required this.progress,     // Initialize progress
+    required this.dialogTitle, // Initialize dialogTitle
+    required this.progress, // Initialize progress
   });
 
   @override
@@ -37,26 +37,20 @@ class downloadDialogBox extends StatelessWidget {
                   image: AssetImage(
                       "assets/App popups/Pop_up ICONS/downloadPopUp.webp"))),
           // Use a Stack to position child widgets
-          child: Stack(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Position the Lottie animation within the stack
-              Positioned(
-                top: MediaQuery.of(context).size.height * 0.002,
-                left: MediaQuery.of(context).size.width * 0.301,
-                height: MediaQuery.of(context).size.height * 0.09,
-                child: LottieBuilder.asset(
+               LottieBuilder.asset(
                   "assets/Animation/download.json",
                   fit: BoxFit.cover,
                   repeat: true,
                   height: 100,
                   width: 100,
                 ),
-              ),
-              // Position the "Downloading..." text within the stack
-              Positioned(
-                  top: MediaQuery.of(context).size.height * 0.15,
-                  left: MediaQuery.of(context).size.width * 0.2,
-                  right: MediaQuery.of(context).size.width * 0.180,
+              
+              SizedBox(
+                  height: MediaQuery.sizeOf(context).height * 0.03,
                   child: Text(
                     "Downloading...",
                     textAlign: TextAlign.center,
@@ -66,20 +60,23 @@ class downloadDialogBox extends StatelessWidget {
                         fontSize: 25,
                         fontFamily: "Fontmain"),
                   )),
-              // Position the progress indicator and percentage text within the stack
-              Positioned(
-                top: MediaQuery.of(context).size.height * 0.225,
-                left: MediaQuery.of(context).size.width * 0.08,
-                right: MediaQuery.of(context).size.width * 0.08,
+              SizedBox(
+                height: MediaQuery.sizeOf(context).height * 0.1,
+                width: MediaQuery.sizeOf(context).width * 0.7,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    SizedBox(
+                      height: MediaQuery.sizeOf(context).height * 0.04,
+                    ),
                     // Linear progress indicator
                     LinearProgressIndicator(
-                      minHeight: 10,
-                      value: value,
-                      color: const Color.fromRGBO(33, 117, 187, 1)
+                        minHeight: 10,
+                        value: value,
+                        color: const Color.fromRGBO(33, 117, 187, 1)),
+                    SizedBox(
+                      height: MediaQuery.sizeOf(context).height * 0.01,
                     ),
                     // Text showing the download percentage
                     Text(
@@ -92,7 +89,7 @@ class downloadDialogBox extends StatelessWidget {
                     )
                   ],
                 ),
-              )
+              ),
             ],
           ),
         );

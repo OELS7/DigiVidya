@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:digividya/widgets/LikeDialog.dart';
+import 'package:digividya/widgets/downloadError.dart';
+import 'package:digividya/widgets/downloadFailed.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
 import 'package:chewie/chewie.dart';
@@ -12,6 +15,9 @@ import 'package:digividya/widgets/QuiteVideoPlayerDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
+
+int ZipFileSize = 0;
 
 // Define a StatefulWidget class named videoWidget
 // ignore: must_be_immutable
@@ -65,13 +71,16 @@ class videoWidget extends StatefulWidget {
 
 // Define a private state class for videoWidget
 class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
+  Connectivity _connectivity = Connectivity();
   // Declare a late-initialized variable for the VideoPlayerController
   late VideoPlayerController videoPlayerController;
   // Declare a late-initialized variable for the ChewieController
   late ChewieController _chewieController;
 
+  late bool _isDownloadCompleted;
+
   // Declare a string variable to store the video file name
-  String VideoFile = "";
+  String VideoFile;
   // Declare integer variables to store the video duration in minutes and seconds
   int minutes;
   int seconds;
@@ -92,6 +101,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   List<String> deviceFilePath = [];
   // Declare a ValueNotifier to track the state of the heart button, initially set to false
   ValueNotifier<bool> heartButtonPressed = ValueNotifier<bool>(false);
+  ValueNotifier<double> progress = ValueNotifier<double>(0.0);
   // Declare a variable to store the page context
   var pageContext;
 
@@ -119,9 +129,12 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     // Call the method to get device file names
     _getDeviceFileName();
 
+    // Start downloading the next content file if there is more than one content URL and it's not the last content
+    _checkForDownloading();
+
     //widget.VideoFile
     // Initialize the VideoPlayerController with the provided file
-    videoPlayerController = VideoPlayerController.file(File(widget.VideoFile));
+    videoPlayerController = VideoPlayerController.file(File(VideoFile));
 
     // Initialize the ChewieController with settings for video playback
     _chewieController = ChewieController(
@@ -143,15 +156,12 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // Enable wakelock to keep the screen on
+    WakelockPlus.enable();
     // Assign the context of the current page to pageContext
     pageContext = context;
 
     getDirectory();
-
-    // Start downloading the next content file if there is more than one content URL and it's not the last content
-    (contentUrls.length == 1 || itemPointer == contentUrls.length - 1)
-        ? ""
-        : _startDownload(FileUrl: contentUrls[itemPointer + 1]);
 
     // Return a Scaffold widget wrapped in a PopScope
     return PopScope(
@@ -396,7 +406,8 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
     }
   }
 
-  _startDownload({required String FileUrl}) async {
+  Future<bool> _startDownload({required String FileUrl}) async {
+    bool downloadSuccessFull = false;
     // Check if the URL is for an mp4 file
     if (FileUrl.toString().split("/").last.split(".").last == "mp4") {
       // for .mp4 Extension "http://192.168.1.19/prachi/DigiVidyaAPI/public/$fileUrl"
@@ -425,21 +436,14 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
           if (message is String) {
             // Check if the message is not empty and does not indicate download failure
             if (message.isNotEmpty && (message.toString() != "download fail")) {
-              print("$message % Downloaded");
+              //print("$message % Downloaded");
+              progress.value = double.parse(message);
+              if (double.parse(message) == 1.0) {
+                setState(() {
+                  downloadSuccessFull = true;
+                });
+              }
             } else {
-              // Show an error dialog for low internet connection
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) {
-                  var dialogContext = context;
-                  return InternetErrorDialog(
-                    internetErrorDialogContext: dialogContext,
-                    message:
-                        "Low internet connection . Please check your internet connection .",
-                  );
-                },
-              );
               print("Download Fail");
             }
           }
@@ -483,7 +487,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
             if (File(deviceFilePath[itemPointer].toString()).existsSync()) {
               // Delete the existing file and proceed with the following actions
               File(deviceFilePath[itemPointer].toString())
-                  .delete()
+                  .delete(recursive: true)
                   .then((_) async {
                 // Print a message indicating that the old assignment file is deleted
                 print(
@@ -509,22 +513,28 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
                         message.toString() != "download fail") {
                       // Print messages indicating the progress of the assessment file download
 
-                      debugPrint('downloadPercentage: ${message}');
+                      // debugPrint('downloadPercentage: ${message}');
+                      progress.value = double.parse(message);
+                      if (double.parse(message) == 1.0) {
+                        setState(() {
+                          downloadSuccessFull = true;
+                        });
+                      }
                     } else {
-                      // Show a dialog for internet error if the download fails
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) {
-                          var dialogContext = context;
-                          // Return an InternetErrorDialog with the appropriate message
-                          return InternetErrorDialog(
-                            internetErrorDialogContext: dialogContext,
-                            message:
-                                "Low internet connection. Please check your internet.",
-                          );
-                        },
-                      );
+                      // // Show a dialog for internet error if the download fails
+                      // showDialog(
+                      //   context: context,
+                      //   barrierDismissible: false,
+                      //   builder: (context) {
+                      //     var dialogContext = context;
+                      //     // Return an InternetErrorDialog with the appropriate message
+                      //     return InternetErrorDialog(
+                      //       internetErrorDialogContext: dialogContext,
+                      //       message:
+                      //           "Low internet connection. Please check your internet.",
+                      //     );
+                      //   },
+                      // );
 
                       // Print a message indicating download failure
                       print("Download Fail");
@@ -554,22 +564,29 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
                     message.toString() != "download fail") {
                   // Print messages indicating the progress of the assessment file download
 
-                  debugPrint('downloadPercentage: ${message}');
+                  //debugPrint('downloadPercentage: ${message}');
+                  progress.value = double.parse(message);
+                  if (double.parse(message) == 1.0) {
+                    setState(() {
+                      downloadSuccessFull = true;
+                    });
+                  }
                 } else {
+                  //progress.value = message as double;
                   // Show a dialog for internet error if the download fails
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) {
-                      var dialogContext = context;
-                      // Return an InternetErrorDialog with the appropriate message
-                      return InternetErrorDialog(
-                        internetErrorDialogContext: dialogContext,
-                        message:
-                            "Low internet connection. Please check your internet.",
-                      );
-                    },
-                  );
+                  // showDialog(
+                  //   context: context,
+                  //   barrierDismissible: false,
+                  //   builder: (context) {
+                  //     var dialogContext = context;
+                  //     // Return an InternetErrorDialog with the appropriate message
+                  //     return InternetErrorDialog(
+                  //       internetErrorDialogContext: dialogContext,
+                  //       message:
+                  //           "Low internet connection. Please check your internet.",
+                  //     );
+                  //   },
+                  // );
 
                   // Print a message indicating download failure
                   print("Download Fail");
@@ -597,22 +614,28 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
               if (message.isNotEmpty && message.toString() != "download fail") {
                 // Print messages indicating the progress of the assessment file download
 
-                debugPrint('downloadPercentage: ${message}');
+                // debugPrint('downloadPercentage: ${message}');
+                progress.value = double.parse(message);
+                if (double.parse(message) == 1.0) {
+                  setState(() {
+                    downloadSuccessFull = true;
+                  });
+                }
               } else {
                 // Show a dialog for internet error if the download fails
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) {
-                    var dialogContext = context;
-                    // Return an InternetErrorDialog with the appropriate message
-                    return InternetErrorDialog(
-                      internetErrorDialogContext: dialogContext,
-                      message:
-                          "Low internet connection. Please check your internet.",
-                    );
-                  },
-                );
+                // showDialog(
+                //   context: context,
+                //   barrierDismissible: false,
+                //   builder: (context) {
+                //     var dialogContext = context;
+                //     // Return an InternetErrorDialog with the appropriate message
+                //     return InternetErrorDialog(
+                //       internetErrorDialogContext: dialogContext,
+                //       message:
+                //           "Low internet connection. Please check your internet.",
+                //     );
+                //   },
+                // );
 
                 // Print a message indicating download failure
                 print("Download Fail");
@@ -622,7 +645,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         }
       }
     }
-    return;
+    return downloadSuccessFull;
   }
 
   // Override the dispose method to release resources when the widget is disposed
@@ -851,6 +874,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
   }
 
   void _videoListener() async {
+    final _checkConnectivity = await _connectivity.checkConnectivity();
     // Get the total duration of the video
     Duration _totalDuration = videoPlayerController.value.duration;
     // Get the current position of the video progress indicator
@@ -861,43 +885,114 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         _currentPositionOfProgressIndicator >= _totalDuration) {
       // Check if the current item is not the last one in the contentUrls list
       if (itemPointer != contentUrls.length - 1) {
+        debugPrint("%%%%%%%%%%%%% item Pointer If block %%%%%%%%%%%%");
         // Check if the current video file exists
         if (File(widget.VideoFile).existsSync()) {
+          debugPrint("%%%%%%%%%%% video deletion if block %%%%%%%%%%");
           // Delete the current video file
-          await File(widget.VideoFile).delete(recursive: true).then((_) {
-            _chewieController.exitFullScreen();
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            // Play the next content
-            _playContent(
-                contentUrls: contentUrls,
-                fileName: FileName,
-                itemPointer: (itemPointer));
+          File(widget.VideoFile).deleteSync(recursive: true);
+          await File(
+                  "$directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}")
+              .exists()
+              .then((value) async {
+            if ((value)) {
+              _chewieController.exitFullScreen();
+              debugPrint("ZipFile Exist");
+              await File(
+                      "$directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}")
+                  .length()
+                  .then((value) async {
+                debugPrint("%%%%%%%%%%% Checking file size %%%%%%%%%%%%");
+                debugPrint(
+                    "%%%%%%%%%%% Device file size ${value} and servers zip file size ${ZipFileSize}");
+                await _getZipFileSize(FileUrl: contentUrls[itemPointer + 1])
+                    .then((zipfileSize) {
+                  if (value == zipfileSize) {
+                    debugPrint("%%%%%%%%%%%%% Playing Assignment %%%%%%%%%%%%");
+                    _playContent(
+                        contentUrls: contentUrls,
+                        fileName: FileName,
+                        itemPointer: (itemPointer));
+                  } else {
+                    debugPrint("%%%%%%%%% File size not match %%%%%%%%%%");
+                    File("$directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}")
+                        .delete(recursive: true)
+                        .then((value) {
+                      if (_checkConnectivity != ConnectivityResult.none) {
+                        debugPrint(
+                            "%%%%%%%%%%%%%% Accessing Internet %%%%%%%%%%%%");
+                        if (_isDownloadCompleted) {
+                          debugPrint(
+                              "%%%%%%%%%%%%%% playing content %%%%%%%%%%%");
+                          _playContent(
+                              contentUrls: contentUrls,
+                              fileName: FileName,
+                              itemPointer: (itemPointer));
+                        } else {
+                          debugPrint(
+                              "%%%%%%%%%%%%%%%%%%%%%% Downloading Assignment File %%%%%%%%%%%%%%%%");
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              debugPrint(
+                                  "%%%%%%%%%%% Starts Download %%%%%%%%%%");
+                              _startDownload(
+                                  FileUrl: contentUrls[itemPointer + 1]);
+                              var downloadErrorContext = context;
+                              return downloadProgress(
+                                progress: progress,
+                                downloadErrorContext: downloadErrorContext,
+                              );
+                            },
+                          ).then((value) {
+                            debugPrint(
+                                "Playing Assignment from 'Downloading Assignment File'");
+                            _playContent(
+                                contentUrls: contentUrls,
+                                fileName: FileName,
+                                itemPointer: (itemPointer));
+                          });
+                          ;
+                        }
+                      } else {
+                        debugPrint(
+                            "%%%%%%%%%%%%%%% No Internet Access %%%%%%%%%%%%");
+                        _showInternetDownloadFailed(
+                            File(
+                                "$directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}"),
+                            _checkConnectivity);
+                      }
+                    });
+                  }
+                });
+                
+              });
+            } else {
+              _chewieController.exitFullScreen();
+              showDialog(
+                context: context,
+                builder: (context) {
+                  // _startDownload(FileUrl: contentUrls[itemPointer + 1]);
+                  var downloadErrorContext = context;
+                  return downloadProgress(
+                    progress: progress,
+                    downloadErrorContext: downloadErrorContext,
+                  );
+                },
+              ).then((value) {
+                debugPrint("%%%%%%%%%%%% File Not Exist Vala %%%%%%%%%%%%");
+                _playContent(
+                    contentUrls: contentUrls,
+                    fileName: FileName,
+                    itemPointer: (itemPointer));
+              });
+            }
           });
-          // Exit full screen mode
-
-          print(
-              "From If Block the $FileName ,Content :$contentUrls , itemPointer : $itemPointer");
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        } else {
-          // Exit full screen mode
-          _chewieController.exitFullScreen();
-          print(
-              "From else Block the $FileName ,Content :$contentUrls , itemPointer : $itemPointer");
-
-          // Play the next content
-          _playContent(
-              contentUrls: contentUrls,
-              fileName: FileName,
-              itemPointer: (itemPointer));
+          debugPrint(
+              "%%%%%%%%%%%% Checking Assignment Zip file Exists %%%%%%%%%%%%%%");
         }
       } else {
-        print(
-            "Exit to Video Page >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
-        print(
-            "=>=>=>=>=>=>=>=>=>=>=>=>=> From File Exit =>=>=>=>=>=>=>=>=>=>=>=>=>");
+        debugPrint("%%%%%%%%%%%% itempointer else block %%%%%%%%%%%%%");
 
         // Delete the current video file
         File(widget.VideoFile).deleteSync(recursive: true);
@@ -905,8 +1000,7 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         _chewieController.exitFullScreen();
         // Remove the video listener
         videoPlayerController.removeListener(_videoListener);
-        print(
-            "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
         // Show the like dialog
         _showLikeDialog();
       }
@@ -962,9 +1056,128 @@ class _videoWidgetState extends State<videoWidget> with WidgetsBindingObserver {
         });
       }
     } else {
-      setState(() async {
-        directory = (await getApplicationSupportDirectory()).path;
-      });
+      directory = (await getApplicationSupportDirectory()).path;
+    }
+  }
+
+  _isAssignmentFileExist() {
+    return File(
+            "$directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topicNumber}/subTopic_${subTopicNumber}/Assessment/${FileName[itemPointer + 1]}")
+        .existsSync();
+  }
+
+  /// Fetches the size of a zip file from the specified URL.
+  ///
+  /// This method attempts to retrieve the size of the zip file located at the
+  /// provided URL using a HEAD request. HEAD requests fetch only the headers
+  /// of a response, avoiding downloading the entire file for faster response.
+  ///
+  /// If the request is successful (status code 200) and the server provides
+  /// a `Content-Length` header, the size is parsed from the header string and
+  /// returned as an integer.
+  ///
+  /// If the request fails (non-200 status code) or the `Content-Length` header
+  /// is missing, the method returns `null` to indicate that the size couldn't
+  /// be retrieved.
+  ///
+  /// In case of any exceptions, the method logs the error message and also
+  /// returns `null`. You might want to implement more specific error handling
+  /// based on your application's needs.
+  Future<int> _getZipFileSize({required String FileUrl}) async {
+    try {
+      // Parse the file URL into a Uri object
+      final url = Uri.parse(
+          "https://digividya.in/DigiVidyaAPI/laravel/public/$FileUrl");
+      // Send a HEAD request to fetch only the headers
+      final response = await http.head(url);
+      // Check if the request was successful (status code 200)
+      if (response.statusCode == 200) {
+        // Extract the Content-Length header value
+        final contentLenghtString = response.headers['content-length'];
+
+        // Check if the Content-Length header exists
+        if (contentLenghtString != null) {
+          // Parse the content length string into an integer
+          return int.parse(contentLenghtString);
+          // debugPrint("%%%%%%%%%%%%%%%%% ${ZipFileSize} %%%%%%%%%%%%%%%");
+        }
+      }
+      // If not successful or Content-Length missing, return null
+      return 0;
+    } on Exception catch (e) {
+      // Log the error message for debugging
+      debugPrint("The Exception got ${e}");
+      // Return null to indicate failure to retrieve size
+      return 0;
+    }
+  }
+
+  void _showInternetDownloadFailed(
+      File assessmentZipFile, ConnectivityResult checkConnectivity) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        var downloadfailedContext = context;
+        return downloadFailed(
+          retryDownload: () {
+            Future.delayed(
+              Duration(milliseconds: 20),
+              () {
+                assessmentZipFile.delete(recursive: true).then((value) async {
+                  await _startDownload(FileUrl: contentUrls[itemPointer + 1]);
+                });
+              },
+            );
+            Navigator.pop(downloadfailedContext, true);
+          },
+        );
+      },
+    ).then((value) {
+      if ((value is bool) && (value)) {
+        debugPrint("%%%%%%%%% checking network connectivity %%%%%%%%%%");
+        if (_connectivity != ConnectionState.none) {
+          debugPrint(
+              "%%%%%%%%%%% Showing download dialog box and navigating to Assessment page %%%%%%%%%%%%");
+          _chewieController.exitFullScreen();
+          showDialog(
+            context: context,
+            builder: (context) {
+              var downloadErrorContext = context;
+              return downloadProgress(
+                progress: progress,
+                downloadErrorContext: downloadErrorContext,
+              );
+            },
+          ).then((value) {
+            _chewieController.exitFullScreen();
+            _playContent(
+                contentUrls: contentUrls,
+                fileName: FileName,
+                itemPointer: (itemPointer));
+          });
+        } else {
+          _showInternetDownloadFailed(assessmentZipFile, checkConnectivity);
+        }
+      }
+    });
+  }
+
+  void _checkForDownloading() async {
+    if (contentUrls.length == 1 || itemPointer == contentUrls.length - 1) {
+      debugPrint("%%%%%%%%%% nothing to Download %%%%%%%%%%%%");
+    } else {
+      debugPrint(
+          "%%%%%%%%%% checking to downloading needed or not %%%%%%%%%%%%");
+      if (_isAssignmentFileExist()) {
+        debugPrint("%%%%%%%%%%%% File Exit not need to download %%%%%%%%");
+        setState(() {
+          _isDownloadCompleted = true;
+        });
+      } else {
+        _isDownloadCompleted =
+            await _startDownload(FileUrl: contentUrls[itemPointer + 1]);
+      }
+      ;
     }
   }
 }
@@ -997,8 +1210,8 @@ void _downloadContent(Map<String, dynamic> message) {
         downloaded += chunk.length;
         // Send the current download percentage to the main isolate
         sendPort.send("${(downloaded / r.contentLength!)}");
-        print(
-            "%%%%%%%%%%%%%%%%%%% Download Location : $downloadLocation %%%%%%%%%%%%%%%%%%%%%%%");
+        // print(
+        //     "%%%%%%%%%%%%%%%%%%% Download Location : $downloadLocation %%%%%%%%%%%%%%%%%%%%%%%");
       }, onDone: () async {
         // Send the final download percentage to the main isolate
         sendPort.send("${(downloaded / r.contentLength!)}");

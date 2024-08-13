@@ -31,43 +31,35 @@ class _exitAppDialogState extends State<exitAppDialog> {
     return Container(
       // Set margin for the container
       margin: EdgeInsets.symmetric(
-          horizontal: 20, vertical: MediaQuery.of(context).size.height * 0.3),
+          horizontal: 20, vertical: MediaQuery.of(context).size.height * 0.2),
       // Set background decoration with an image
       decoration: BoxDecoration(
           image: DecorationImage(
-              image: AssetImage(
-                  "assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
+              image:
+                  AssetImage("assets/App popups/Pop_up ICONS/AppExitBg.webp"))),
       // Use a Stack to position child widgets
-      child: Stack(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Position the Lottie animation within the stack
-          Positioned(
-              height: MediaQuery.of(context).size.height * 0.11,
-              left: MediaQuery.of(context).size.width * 0.32,
-              child: LottieBuilder.asset(
-                "assets/Animation/SnnE6DJDpc.json",
-                fit: BoxFit.cover,
-                repeat: false,
-              )),
-          // Position the "Exit App" text within the stack
-          Positioned(
-              top: MediaQuery.of(context).size.height * 0.115,
-              left: MediaQuery.of(context).size.width * 0.35,
-              right: MediaQuery.of(context).size.width * 0.28,
-              child: Text(
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.07,
+            child: LottieBuilder.asset(
+              "assets/Animation/SnnE6DJDpc.json",
+              fit: BoxFit.cover,
+              repeat: false,
+            ),
+          ),
+          SizedBox(height: MediaQuery.sizeOf(context).height * 0.01,),
+          SizedBox(height: MediaQuery.sizeOf(context).height * 0.05,child: Text(
                 "Exit App",
                 style: TextStyle(
                     decoration: TextDecoration.none,
                     color: Colors.black,
                     fontFamily: "Fontmain",
                     fontSize: 20),
-              )),
-          // Position the question text within the stack
-          Positioned(
-              top: MediaQuery.of(context).size.height * 0.15,
-              left: MediaQuery.of(context).size.width * 0.15,
-              right: MediaQuery.of(context).size.width * 0.15,
-              child: Text(
+              ),),
+              SizedBox(height: MediaQuery.sizeOf(context).height * 0.07,child: Text(
                 "Are you sure you want to leave the application?",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -77,13 +69,10 @@ class _exitAppDialogState extends State<exitAppDialog> {
                     color: Colors.black,
                     height: 1.5,
                     fontSize: 18),
-              )),
-          // Position the buttons within the stack
-          Positioned(
-              top: MediaQuery.of(context).size.height * 0.239,
-              left: MediaQuery.of(context).size.width * 0.1,
-              right: MediaQuery.of(context).size.width * 0.1,
-              child: Row(
+              ),),
+              SizedBox(
+                height: MediaQuery.sizeOf(context).height * 0.116,
+                child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   // "Yes" button
@@ -132,7 +121,7 @@ class _exitAppDialogState extends State<exitAppDialog> {
                             MediaQuery.of(context).size.height * 0.055)),
                   )
                 ],
-              ))
+              ),)
         ],
       ),
     );

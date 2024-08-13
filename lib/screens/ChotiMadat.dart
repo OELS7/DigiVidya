@@ -3,10 +3,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:digividya/ChatModel/ChatModel.dart';
+import 'package:digividya/Services/getDirectory.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 // Define a StatefulWidget class named ChotiMadat
 class ChotiMadat extends StatefulWidget {
@@ -154,8 +154,11 @@ class _ChotiMadatState extends State<ChotiMadat> {
   // Method to fetch user queries and responses
   Future<void> _featchData() async {
     // Get the application support directory
-    String dirPath = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dirPath/appInfo.json");
+    // String dirPath = (await getApplicationSupportDirectory()).path;
+
+        String dir = await getDirectory().getdirectory();
+
+    File jsonFile = File("$dir/appInfo.json");
     var jsonData = jsonDecode(jsonFile.readAsStringSync());
     var userData = {"user_id": jsonData['User_Id'].toString()};
 
@@ -183,8 +186,10 @@ class _ChotiMadatState extends State<ChotiMadat> {
 
   // Method to send user queries
   void _sendQuery({required String query}) async {
-    String dirPath = (await getApplicationSupportDirectory()).path;
-    File jsonFile = File("$dirPath/appInfo.json");
+    //String dirPath = (await getApplicationSupportDirectory()).path;
+
+        String dir = await getDirectory().getdirectory();
+    File jsonFile = File("$dir/appInfo.json");
     if (jsonFile.existsSync()) {
       int userId = 0;
       var jsonData = jsonDecode(jsonFile.readAsStringSync());

@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:digividya/widgets/LikeDialog.dart';
+import 'package:digividya/widgets/downloadError.dart';
+import 'package:digividya/widgets/downloadFailed.dart';
 import 'package:digividya/widgets/exitAssessment.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:path/path.dart' as path;
@@ -13,6 +16,7 @@ import 'package:digividya/widgets/assessmentDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class assessmentPlayer extends StatefulWidget {
   const assessmentPlayer({super.key});
@@ -48,7 +52,13 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
 // Declare a ValueNotifier to track the state of the heart button press
   ValueNotifier<bool> heartButtonPressed = ValueNotifier<bool>(false);
 
+  ValueNotifier<double> progress = ValueNotifier<double>(0.0);
+
   late String directory;
+
+  bool _isDownloadCompleted = false;
+
+  Connectivity _connectivity = Connectivity();
 
 // Declare a variable to hold the page context
   var pageContext;
@@ -61,11 +71,15 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
     super.initState();
     // Call the _getDeviceFileName method to retrieve the device file names
     _getDiviceFileName();
+
+    _checkForDownloading();
   }
 
 // Override the build method to describe how to display the widget
   @override
   Widget build(BuildContext context) {
+    // Enable wakelock to keep the screen on
+    WakelockPlus.enable();
     // Retrieve arguments passed through the route
     var argument = (ModalRoute.of(context)!.settings.arguments ??
         <String, dynamic>{}) as Map;
@@ -83,11 +97,6 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
     itemPointer = argument['itemPointer'];
     contentUrls = argument['contentUrls'];
     FileName = argument['FileName'];
-
-    // Start downloading the next file if there are more files to download
-    (contentUrls.length == 1 || itemPointer == contentUrls.length - 1)
-        ? ""
-        : _startDownload(fileUrl: contentUrls[itemPointer + 1]);
 
     // Return a Scaffold widget which provides the structure for the page
     return Scaffold(
@@ -164,10 +173,9 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
   }
 
   void _goToNextVideo(BuildContext assessmentDialogBox) async {
-
     AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
 
-    String _directory ="";
+    String _directory = "";
 
     (deviceInfo.version.sdkInt < 33)
         ? (Directory((await getDownloadsDirectory())!.path).existsSync())
@@ -175,14 +183,14 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
             : Directory((await getDownloadsDirectory())!.path)
                 .create(recursive: true)
                 .then((value) {
-                _directory= value.path.toString();
+                _directory = value.path.toString();
               })
         : _directory = (await getApplicationSupportDirectory()).path;
 
     // Check if the current item is not the last one in the list
     if (itemPointer != contentUrls.length - 1) {
       // Get the application support directory path
-     // String DirPath = (await getApplicationSupportDirectory()).path;
+      // String DirPath = (await getApplicationSupportDirectory()).path;
       // Define the path for the assessment directory
       Directory AssessmentDirectory = Directory(
           "$_directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topic}/subTopic_${subTopic}/Assessment/${FileName[itemPointer].split(".zip").first}/");
@@ -199,15 +207,15 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
           switch (fileExtension) {
             case "mp4":
               // Play the specific video file
-              _playSpecificFile(
-                  filePath:
-                      "$_directory/DigiVidya/Section_${section}/VideoFiles/Topic_${topic}/subTopic_${subTopic}/Video/${FileName[itemPointer + 1]}");
+              _CheckFileStatus(
+                  "$_directory/DigiVidya/Section_${section}/VideoFiles/Topic_${topic}/subTopic_${subTopic}/Video/${FileName[itemPointer + 1]}");
+
               break;
             case "zip":
               // Play the specific assessment file
-              _playSpecificFile(
-                  filePath:
-                      "$_directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topic}/subTopic_${subTopic}/Assessment/${FileName[itemPointer + 1]}");
+              _CheckFileStatus(
+                  "$_directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topic}/subTopic_${subTopic}/Assessment/${FileName[itemPointer + 1]}");
+
               break;
             default:
           }
@@ -267,23 +275,23 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
     }
   }
 
-  void _startDownload({required String fileUrl}) async {
+  Future<bool> _startDownload({required String fileUrl}) async {
+    bool downloadFinish = false;
     // Check if the file URL ends with ".mp4" indicating it's a video file
     if (fileUrl.split("/").last.split(".").last == "mp4") {
+      String _directory = "";
 
-                  String _directory = "";
+      AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
 
-    AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
-
-    (deviceInfo.version.sdkInt < 33)
-        ? (Directory((await getDownloadsDirectory())!.path).existsSync())
-            ? _directory = (await getDownloadsDirectory())!.path
-            : Directory((await getDownloadsDirectory())!.path)
-                .create(recursive: true)
-                .then((value) {
-                _directory= value.path.toString();
-              })
-        : _directory = (await getApplicationSupportDirectory()).path;
+      (deviceInfo.version.sdkInt < 33)
+          ? (Directory((await getDownloadsDirectory())!.path).existsSync())
+              ? _directory = (await getDownloadsDirectory())!.path
+              : Directory((await getDownloadsDirectory())!.path)
+                  .create(recursive: true)
+                  .then((value) {
+                  _directory = value.path.toString();
+                })
+          : _directory = (await getApplicationSupportDirectory()).path;
 
       // Define the URL for video download
       String url = "https://digividya.in/DigiVidyaAPI/laravel/public/$fileUrl";
@@ -310,20 +318,12 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
             if (message.isNotEmpty && (message.toString() != "download fail")) {
               print("Video File Downloading");
               print("$message % Downloaded");
-            } else {
-              // Show an internet error dialog if download fails
-              showDialog(
-                context: context,
-                builder: (context) {
-                  var dialogContext = context;
-                  return InternetErrorDialog(
-                    internetErrorDialogContext: dialogContext,
-                    message:
-                        "Low internet connection . Please check your internet.",
-                  );
-                },
-              );
-              print("Download Fail");
+              progress.value = double.parse(message);
+              if (double.parse(message.toString()) == 1.0) {
+                setState(() {
+                  downloadFinish = true;
+                });
+              }
             }
           }
         });
@@ -336,15 +336,15 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
       AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
       String _directory = "";
 
-          (deviceInfo.version.sdkInt < 33)
-        ? (Directory((await getDownloadsDirectory())!.path).existsSync())
-            ? _directory = (await getDownloadsDirectory())!.path
-            : Directory((await getDownloadsDirectory())!.path)
-                .create(recursive: true)
-                .then((value) {
-                _directory= value.path.toString();
-              })
-        : _directory = (await getApplicationSupportDirectory()).path;
+      (deviceInfo.version.sdkInt < 33)
+          ? (Directory((await getDownloadsDirectory())!.path).existsSync())
+              ? _directory = (await getDownloadsDirectory())!.path
+              : Directory((await getDownloadsDirectory())!.path)
+                  .create(recursive: true)
+                  .then((value) {
+                  _directory = value.path.toString();
+                })
+          : _directory = (await getApplicationSupportDirectory()).path;
 
       // Define the path for the assessment zip file
       File AssessmentZipFile = File(
@@ -376,31 +376,19 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
             if (message.isNotEmpty && (message.toString() != "download fail")) {
               print("Assessment Zip File Downloading");
               print("$message % Downloaded");
-            } else {
-              // Show an internet error dialog if download fails
-              showDialog(
-                context: context,
-                builder: (context) {
-                  var dialogContext = context;
-                  return InternetErrorDialog(
-                    internetErrorDialogContext: dialogContext,
-                    message:
-                        "Low internet connection . Please check your internet.",
-                  );
-                },
-              );
-              print("Download Fail");
+              if (double.parse(message.toString()) == 1.0) {
+                setState(() {
+                  downloadFinish = true;
+                });
+              }
             }
           }
         });
-      } else {
-        // Check if the file name doesn't match with the device's file name
-        if (FileName[itemPointer] != deviceFileName[itemPointer]) {
-          // Perform necessary operations if needed
-          // (Code commented out)
-        }
       }
+
     }
+
+    return downloadFinish;
   }
 
   ///This function determines the type of file based on its extension,
@@ -471,7 +459,7 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
           }
         } else {
           // Extract the zip file to the assessment directory
-         // String dir = (await getApplicationSupportDirectory()).path;
+          // String dir = (await getApplicationSupportDirectory()).path;
           Directory AssessmentDirectory = Directory(
               "$directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topic}/subTopic_${subTopic}/Assessment/");
           ZipFile.extractToDirectory(
@@ -753,8 +741,6 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
 
 // Asynchronously get the application support directory path
   _getDiviceFileName() async {
-    String directory = (await getApplicationSupportDirectory()).path;
-
     // Check if the assessment directory exists
     if (Directory(
             "$directory/DigiVidya/Section_${section}/AssignmentFiles/Topic_${topic}/subTopic_${subTopic}/Assessment/")
@@ -779,9 +765,7 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
 
     if (deviceInfo.version.sdkInt < 33) {
       if (Directory((await getDownloadsDirectory())!.path).existsSync()) {
-       
-          directory = (await getDownloadsDirectory())!.path;
-   
+        directory = (await getDownloadsDirectory())!.path;
       } else {
         Directory((await getDownloadsDirectory())!.path)
             .create(recursive: true)
@@ -792,10 +776,165 @@ class _assessmentPlayerState extends State<assessmentPlayer> {
         });
       }
     } else {
-      setState(() async {
-        directory = (await getApplicationSupportDirectory()).path;
-      });
+      directory = (await getApplicationSupportDirectory()).path;
     }
+  }
+
+  void _checkForDownloading() async {
+    // Start downloading the next file if there are more files to download
+    if (contentUrls.length == 1 || itemPointer == contentUrls.length - 1) {
+    } else {
+      if (await _isVideoFileExist()) {
+        setState(() {
+          _isDownloadCompleted = true;
+        });
+      } else {
+        _isDownloadCompleted =
+            await _startDownload(fileUrl: contentUrls[itemPointer + 1]);
+      }
+    }
+  }
+
+  Future<bool> _isVideoFileExist() async {
+    String _directory = "";
+
+    AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
+
+    (deviceInfo.version.sdkInt < 33)
+        ? (Directory((await getDownloadsDirectory())!.path).existsSync())
+            ? _directory = (await getDownloadsDirectory())!.path
+            : Directory((await getDownloadsDirectory())!.path)
+                .create(recursive: true)
+                .then((value) {
+                _directory = value.path.toString();
+              })
+        : _directory = (await getApplicationSupportDirectory()).path;
+    return File(
+            "$_directory/DigiVidya/Section_${section}/VideoFiles/Topic_${topic}/subTopic_${subTopic}/Video/${FileName[itemPointer + 1]}")
+        .existsSync();
+  }
+
+  Future<int> _getZipFileSize({required String FileUrl}) async {
+    try {
+      // Parse the file URL into a Uri object
+      final url = Uri.parse(
+          "https://digividya.in/DigiVidyaAPI/laravel/public/$FileUrl");
+      // Send a HEAD request to fetch only the headers
+      final response = await http.head(url);
+      // Check if the request was successful (status code 200)
+      if (response.statusCode == 200) {
+        // Extract the Content-Length header value
+        final contentLenghtString = response.headers['content-length'];
+
+        // Check if the Content-Length header exists
+        if (contentLenghtString != null) {
+          // Parse the content length string into an integer
+          return int.parse(contentLenghtString);
+          // debugPrint("%%%%%%%%%%%%%%%%% ${ZipFileSize} %%%%%%%%%%%%%%%");
+        }
+      }
+      // If not successful or Content-Length missing, return null
+      return 0;
+    } on Exception catch (e) {
+      // Log the error message for debugging
+      debugPrint("The Exception got ${e}");
+      // Return null to indicate failure to retrieve size
+      return 0;
+    }
+  }
+
+  _CheckFileStatus(String s) async {
+    final _checkConnectivity = await _connectivity.checkConnectivity();
+    await File(s).exists().then((value) async {
+      if (value) {
+        await File(s).length().then((value) async {
+          await _getZipFileSize(FileUrl: contentUrls[itemPointer + 1])
+              .then((filesize) {
+            if (value == filesize) {
+              _playSpecificFile(filePath: s);
+            } else {
+              if (_checkConnectivity != ConnectivityResult.none) {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    _startDownload(fileUrl: contentUrls[itemPointer + 1]);
+                    var downloadErrorContext = context;
+                    return downloadProgress(
+                      progress: progress,
+                      downloadErrorContext: downloadErrorContext,
+                    );
+                  },
+                ).then((value) {
+                  _playSpecificFile(filePath: s);
+                });
+              } else {
+                _showInternetDownloadFailed(File(s),_checkConnectivity);
+              }
+            }
+          });
+        });
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) {
+            // _startDownload(FileUrl: contentUrls[itemPointer + 1]);
+            var downloadErrorContext = context;
+            return downloadProgress(
+              progress: progress,
+              downloadErrorContext: downloadErrorContext,
+            );
+          },
+        ).then((value) {
+          _playSpecificFile(filePath: s);
+        });
+      }
+    });
+  }
+
+  void _showInternetDownloadFailed(
+      File file, ConnectivityResult checkConnectivity) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        var downloadfailedContext = context;
+        return downloadFailed(
+          retryDownload: () {
+            Future.delayed(
+              Duration(milliseconds: 20),
+              () {
+                file.delete(recursive: true).then((value) async {
+                  await _startDownload(fileUrl: contentUrls[itemPointer + 1]);
+                });
+              },
+            );
+            Navigator.pop(downloadfailedContext, true);
+          },
+        );
+      },
+    ).then((value) {
+      if ((value is bool) && (value)) {
+        debugPrint("%%%%%%%%% checking network connectivity %%%%%%%%%%");
+        if (_connectivity != ConnectionState.none) {
+          debugPrint(
+              "%%%%%%%%%%% Showing download dialog box and navigating to Assessment page %%%%%%%%%%%%");
+
+          showDialog(
+            context: context,
+            builder: (context) {
+              var downloadErrorContext = context;
+              return downloadProgress(
+                progress: progress,
+                downloadErrorContext: downloadErrorContext,
+              );
+            },
+          ).then((value) {
+             _playSpecificFile(filePath: file.path.toString());
+          });
+        } else {
+          _showInternetDownloadFailed(file, checkConnectivity);
+        }
+      }
+    });
   }
 }
 

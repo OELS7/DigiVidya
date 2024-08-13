@@ -43,24 +43,25 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                 "assets/App popups/Pop_up ICONS/AppExitBg.webp",
               ),
               fit: BoxFit.fill)),
-      child: Stack(children: [
-        // Position the Lottie animation within the stack
-        Positioned(
-            top: MediaQuery.of(context).size.height * 0.02,
-            height: MediaQuery.of(context).size.height * 0.08,
-            left: MediaQuery.of(context).size.width * 0.33,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
             child: LottieBuilder.asset(
               "assets/Animation/Animation - 1711609519678.json",
               height: 80,
               width: 80,
               fit: BoxFit.cover,
               repeat: true,
-            )),
-        // Position the confirmation text within the stack
-        Positioned(
-            top: MediaQuery.of(context).size.height * 0.16,
-            left: MediaQuery.of(context).size.width * 0.15,
-            right: MediaQuery.of(context).size.width * 0.15,
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.02,
+          ),
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.1,
+            width: MediaQuery.sizeOf(context).width * 0.7,
             child: Text(
               "Are you sure you want to delete your account?",
               textAlign: TextAlign.center,
@@ -71,13 +72,12 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                   color: Colors.red,
                   height: 1.5,
                   fontSize: 18),
-            )),
-        // Position the buttons within the stack
-        Positioned(
-            top: MediaQuery.of(context).size.height * 0.25,
-            left: 0.0,
-            right: 0.0,
-            bottom: MediaQuery.of(context).size.height * 0.04,
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.01,
+          ),
+          SizedBox(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -106,8 +106,10 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                           MediaQuery.of(context).size.height * 0.05)),
                 )
               ],
-            ))
-      ]),
+            ),
+          )
+        ],
+      ),
     );
   }
 }

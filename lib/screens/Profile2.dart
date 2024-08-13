@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:app_settings/app_settings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:digividya/Services/getDirectory.dart';
 import 'package:digividya/screens/AboutUsPage.dart';
 import 'package:digividya/screens/PrivacyPolicy.dart';
 import 'package:digividya/screens/Register.dart';
@@ -34,6 +36,8 @@ class _Profile2State extends State<Profile2> {
   get content => null;
   var userId;
   String FilePath = "";
+  String ServerDeviceId = "";
+  String DeviceId = "";
 // Initialize Connectivity instance
   Connectivity _connectivity = Connectivity();
 // Initialize ValueNotifier for profile change
@@ -47,6 +51,7 @@ class _Profile2State extends State<Profile2> {
     _getUserName();
     // Fetch user image
     _getUserImage();
+    _getDeviceId();
   }
 
   @override
@@ -173,136 +178,138 @@ class _Profile2State extends State<Profile2> {
           ), //UserProfile Area
 
 // Column containing various settings options
-Column(
-  children: [
-    Padding(padding: EdgeInsets.fromLTRB(5, 40, 5, 10)),
-    // Container for "Settings" option
-    Container(
-      margin: EdgeInsets.all(15),
-      height: MediaQuery.of(context).size.height * 0.065,
-      width: MediaQuery.of(context).size.width * 0.69,
-      child: OutlinedButton.icon(
-        icon: Icon(
-          Icons.settings,
-        ),
-        label: Text("Setting"),
-        onPressed: () {
-          // Navigate to the settings page
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => settingPage(),
-          ));
-        },
-        style: ElevatedButton.styleFrom(
-          side: BorderSide(width: 1.0, color: Colors.blue),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32.0),
+          Column(
+            children: [
+              Padding(padding: EdgeInsets.fromLTRB(5, 40, 5, 10)),
+              // Container for "Settings" option
+              Container(
+                margin: EdgeInsets.all(15),
+                height: MediaQuery.of(context).size.height * 0.065,
+                width: MediaQuery.of(context).size.width * 0.69,
+                child: OutlinedButton.icon(
+                  icon: Icon(
+                    Icons.settings,
+                  ),
+                  label: Text("Setting"),
+                  onPressed: () {
+                    // Navigate to the settings page
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => settingPage(),
+                    ));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    side: BorderSide(width: 1.0, color: Colors.blue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32.0),
+                    ),
+                  ),
+                ),
+              ),
+              // Container for "About App" option
+              Container(
+                margin: EdgeInsets.all(15),
+                height: MediaQuery.of(context).size.height * 0.065,
+                width: MediaQuery.of(context).size.width * 0.69,
+                child: OutlinedButton.icon(
+                  icon: Icon(Icons.info),
+                  label: Text("About App"),
+                  onPressed: () {
+                    // Navigate to the About Us page
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => AboutUsPage(),
+                    ));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    side: BorderSide(width: 1.0, color: Colors.blue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32.0),
+                    ),
+                  ),
+                ),
+              ),
+              // Container for "Privacy Policy" option
+              Container(
+                margin: EdgeInsets.all(15),
+                height: MediaQuery.of(context).size.height * 0.065,
+                width: MediaQuery.of(context).size.width * 0.69,
+                child: OutlinedButton.icon(
+                  icon: Icon(Icons.policy),
+                  label: Text("Privacy Policy"),
+                  onPressed: () {
+                    // Navigate to the Privacy Policy page
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => PrivacyPoliicy(),
+                    ));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    side: BorderSide(width: 1.0, color: Colors.blue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32.0),
+                    ),
+                  ),
+                ),
+              ),
+              // Container for "Feedback" option
+              Container(
+                margin: EdgeInsets.all(15),
+                height: MediaQuery.of(context).size.height * 0.065,
+                width: MediaQuery.of(context).size.width * 0.69,
+                child: OutlinedButton.icon(
+                  icon: Icon(Icons.feedback),
+                  label: Text("Feedback"),
+                  onPressed:
+                      openplaystore, // Function to open play store for feedback
+                  style: ElevatedButton.styleFrom(
+                    side: BorderSide(width: 1.0, color: Colors.blue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32.0),
+                    ),
+                  ),
+                ),
+              ),
+              // Container for "Delete Account" option
+              Container(
+                margin: EdgeInsets.all(15),
+                height: MediaQuery.of(context).size.height * 0.065,
+                width: MediaQuery.of(context).size.width * 0.69,
+                child: OutlinedButton.icon(
+                  icon: Icon(Icons.delete),
+                  label: Text("Delete Account"),
+                  onPressed: () {
+                    // Show confirmation dialog before deleting account
+                    showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (ctx) {
+                        return DeleteAccountDialog(
+                          YesButton: () {
+                            // Delay before deleting account
+                            Future.delayed(
+                              Duration(milliseconds: 360),
+                              () {
+                                deleteaccountdetails(); // Function to delete account
+                              },
+                            );
+                            Navigator.pop(ctx);
+                          },
+                          NoButton: () {
+                            Navigator.pop(ctx);
+                          },
+                        );
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    side: BorderSide(width: 1.0, color: Colors.blue),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32.0),
+                    ),
+                  ),
+                ),
+              ),
+
+            ],
           ),
-        ),
-      ),
-    ),
-    // Container for "About App" option
-    Container(
-      margin: EdgeInsets.all(15),
-      height: MediaQuery.of(context).size.height * 0.065,
-      width: MediaQuery.of(context).size.width * 0.69,
-      child: OutlinedButton.icon(
-        icon: Icon(Icons.info),
-        label: Text("About App"),
-        onPressed: () {
-          // Navigate to the About Us page
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => AboutUsPage(),
-          ));
-        },
-        style: ElevatedButton.styleFrom(
-          side: BorderSide(width: 1.0, color: Colors.blue),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32.0),
-          ),
-        ),
-      ),
-    ),
-    // Container for "Privacy Policy" option
-    Container(
-      margin: EdgeInsets.all(15),
-      height: MediaQuery.of(context).size.height * 0.065,
-      width: MediaQuery.of(context).size.width * 0.69,
-      child: OutlinedButton.icon(
-        icon: Icon(Icons.policy),
-        label: Text("Privacy Policy"),
-        onPressed: () {
-          // Navigate to the Privacy Policy page
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => PrivacyPoliicy(),
-          ));
-        },
-        style: ElevatedButton.styleFrom(
-          side: BorderSide(width: 1.0, color: Colors.blue),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32.0),
-          ),
-        ),
-      ),
-    ),
-    // Container for "Feedback" option
-    Container(
-      margin: EdgeInsets.all(15),
-      height: MediaQuery.of(context).size.height * 0.065,
-      width: MediaQuery.of(context).size.width * 0.69,
-      child: OutlinedButton.icon(
-        icon: Icon(Icons.feedback),
-        label: Text("Feedback"),
-        onPressed: openplaystore, // Function to open play store for feedback
-        style: ElevatedButton.styleFrom(
-          side: BorderSide(width: 1.0, color: Colors.blue),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32.0),
-          ),
-        ),
-      ),
-    ),
-    // Container for "Delete Account" option
-    Container(
-      margin: EdgeInsets.all(15),
-      height: MediaQuery.of(context).size.height * 0.065,
-      width: MediaQuery.of(context).size.width * 0.69,
-      child: OutlinedButton.icon(
-        icon: Icon(Icons.delete),
-        label: Text("Delete Account"),
-        onPressed: () {
-          // Show confirmation dialog before deleting account
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (ctx) {
-              return DeleteAccountDialog(
-                YesButton: () {
-                  // Delay before deleting account
-                  Future.delayed(
-                    Duration(milliseconds: 360),
-                    () {
-                      deleteaccountdetails(); // Function to delete account
-                    },
-                  );
-                  Navigator.pop(ctx);
-                },
-                NoButton: () {
-                  Navigator.pop(ctx);
-                },
-              );
-            },
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          side: BorderSide(width: 1.0, color: Colors.blue),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32.0),
-          ),
-        ),
-      ),
-    ),
-  ],
-),
 // Other stuf of side Drawer
         ],
       ),
@@ -310,285 +317,381 @@ Column(
   }
 
 // Function for deleting the user account details
-deleteaccountdetails() async {
-  // Get the directory path for storing application data
-  String dirpath = (await getApplicationSupportDirectory()).path;
+  deleteaccountdetails() async { 
+    // Get the directory path for storing application data
+    String dirpath = await getDirectory().getdirectory();
 
-  // Define the path for the JSON file containing app information
-  File jsonFile = File("$dirpath/appInfo.json");
 
-  // Define the API endpoint for destroying user information
-  String url = "https://digividya.in/DigiVidyaAPI/api/destroyUserInfo";
+    // Define the path for the JSON file containing app information
+    File jsonFile = File("$dirpath/appInfo.json");
 
-  // Check if the JSON file exists
-  if (jsonFile.existsSync()) {
-    try {
-      // Read JSON data from the file
-      var jsonData = jsonDecode(jsonFile.readAsStringSync());
-      userId = jsonData['User_Id'];
+    // Define the API endpoint for destroying user information
+    String url = "https://digividya.in/DigiVidyaAPI/api/destroyUserInfo";
 
-      // Prepare user data for API call
-      var userData = {"user_id": userId.toString()};
-      
-      // Send HTTP POST request to destroy user information
-      var response = await http.post(Uri.parse(url), body: userData);
+    // Check if the JSON file exists
+    if (jsonFile.existsSync()) {
+      try {
+        // Read JSON data from the file
+        var jsonData = jsonDecode(jsonFile.readAsStringSync());
+        userId = jsonData['User_Id'];
 
-      // Check if the request was successful (status code 200)
-      if (response.statusCode == 200) {
-        // Decode the JSON response
-        Map<String, dynamic> jsonResponse =
-            jsonDecode(response.body.toString().replaceAll("\n", " "));
+        // Prepare user data for API call
+        var userData = {"user_id": userId.toString()};
 
-        // Check if the deletion was successful
-        if (jsonResponse['status']) {
-          // Delete the directory containing user data
-          await Directory("${dirpath}").delete(recursive: true).then((_) {
-            // Navigate to the registration page after deletion
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => Register(),
-            ));
-          });
+        // Send HTTP POST request to destroy user information
+        var response = await http.post(Uri.parse(url), body: userData);
+
+        // Check if the request was successful (status code 200)
+        if (response.statusCode == 200) {
+          // Decode the JSON response
+          Map<String, dynamic> jsonResponse =
+              jsonDecode(response.body.toString().replaceAll("\n", " "));
+
+          // Check if the deletion was successful
+          if (jsonResponse['status']) {
+            // Delete the directory containing user data
+            await Directory("${dirpath}").delete(recursive: true).then((_) {
+              // Navigate to the registration page after deletion
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => Register(),
+                settings: RouteSettings(arguments: {"DeviceId" : ""})
+              ));
+            });
+          }
+          print("deleted user is :$jsonResponse");
         }
-        print("deleted user is :$jsonResponse");
-      }
-    } on http.ClientException catch (e) {
-      // Handle HTTP client exceptions
-      print("Error Message From Profile Deletion : ${e.message}");
-      
-      // Check connectivity status
-      final _checkConnectivity = await _connectivity.checkConnectivity();
-      
-      // Show appropriate error dialog based on connectivity status
-      if (_checkConnectivity == ConnectivityResult.none) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) {
-            var InternalserverErrorContext = context;
-            return InternalserverError(
-                InternalserverErrorContext: InternalserverErrorContext,
-                ErrorTitle: "No Internet",
-                 Description:
-                    "Maybe you don't have an internet connection. Please check and try again.",
-                retryButton: () {
-                  deleteaccountdetails();
-                },
-                ButtonText: "reload");
-          },
-        );
-      } else {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) {
-            var InternalserverErrorContext = context;
-            return InternalserverError(
-                InternalserverErrorContext: InternalserverErrorContext,
-                ErrorTitle: "Poor Connection",
-                 Description:
-                    "Maybe you have a poor internet connection. Please try again.",
-                retryButton: () {
-                  deleteaccountdetails();
-                },
-                ButtonText: "try again");
-          },
-        );
-      }
-    }
-  } else {
-    // Print message if JSON file is not found
-    print(
-        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Json File Not Find %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-  }
-}
+      } on http.ClientException catch (e) {
+        // Handle HTTP client exceptions
+        print("Error Message From Profile Deletion : ${e.message}");
 
+        // Check connectivity status
+        final _checkConnectivity = await _connectivity.checkConnectivity();
+
+        // Show appropriate error dialog based on connectivity status
+        if (_checkConnectivity == ConnectivityResult.none) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) {
+              var InternalserverErrorContext = context;
+              return InternalserverError(
+                  InternalserverErrorContext: InternalserverErrorContext,
+                  ErrorTitle: "No Internet",
+                  Description:
+                      "Maybe you don't have an internet connection. Please check and try again.",
+                  retryButton: () {
+                    deleteaccountdetails();
+                  },
+                  ButtonText: "reload");
+            },
+          );
+        } else {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) {
+              var InternalserverErrorContext = context;
+              return InternalserverError(
+                  InternalserverErrorContext: InternalserverErrorContext,
+                  ErrorTitle: "Poor Connection",
+                  Description:
+                      "Maybe you have a poor internet connection. Please try again.",
+                  retryButton: () {
+                    deleteaccountdetails();
+                  },
+                  ButtonText: "try again");
+            },
+          );
+        }
+      }
+    } else {
+      // Print message if JSON file is not found
+      print(
+          "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Json File Not Find %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+    }
+  }
 
 // Function to fetch the username from the JSON data file and update the state to display on the profile drawer
-void _getUserName() async {
-  // Get the directory path for storing application data
-  String dir = (await getApplicationSupportDirectory()).path;
+  void _getUserName() async {
+    // Get the directory path for storing application data
+    String dir = await getDirectory().getdirectory();
 
-  // Define the path for the JSON file containing app information
-  File jsonFile = File("$dir/appInfo.json");
+    // Define the path for the JSON file containing app information
+    File jsonFile = File("$dir/appInfo.json");
 
-  // Read JSON data from the file
-  var jsonData = jsonDecode(jsonFile.readAsStringSync());
+    // Read JSON data from the file
+    var jsonData = jsonDecode(jsonFile.readAsStringSync());
 
-  // Update the state with the fetched username
-  setState(() {
-    UserName = jsonData['UserName'].toString();
-  });
-}
-
+    // Update the state with the fetched username
+    setState(() {
+      UserName = jsonData['UserName'].toString();
+    });
+  }
 
 // Function to get the user image
-getImage() async {
-  // Print statement to indicate entering the getImage method
-  print("%%%%%%%%%%%%%%%% Entering in getImage Method %%%%%%%%%%%%%%%%%%%%%%");
+  getImage() async {
+    // Print statement to indicate entering the getImage method
+    print(
+        "%%%%%%%%%%%%%%%% Entering in getImage Method %%%%%%%%%%%%%%%%%%%%%%");
 
-  // Check if permission to access videos is granted
-  if (await Permission.videos.isGranted) {
-    // Pick an image using the image picker
-    final XFile? pickedFile = await pickImage();
+    // Check if permission to access videos is granted
+    if (await Permission.videos.isGranted ||
+        await Permission.storage.isGranted) {
+      // Pick an image using the image picker
+      final XFile? pickedFile = await pickImage();
 
-    // Get the application directory
-    final Directory getApplicationDirectory = await applicationDirectory();
+      // Get the application directory
+      final Directory getApplicationDirectory = Directory(await getDirectory().getdirectory());
 
-    // Get the file name and extension
-    final String FileName = await getFileName(pickedFile!.path.split(".").last);
+      // Get the file name and extension
+      final String FileName =
+          await getFileName(pickedFile!.path.split(".").last);
 
-    // Get the file path for saving the image
-    final String GetFilePath = await SaveFileToApplicationDirectory(getApplicationDirectory, FileName, pickedFile);
+      // Get the file path for saving the image
+      final String GetFilePath = await SaveFileToApplicationDirectory(
+          getApplicationDirectory, FileName, pickedFile);
 
-    // Get SharedPreferences for storing profile image path
-    SharedPreferences profileImagePath = await SharedPreferences.getInstance();
+      // Get SharedPreferences for storing profile image path
+      SharedPreferences profileImagePath =
+          await SharedPreferences.getInstance();
 
-    setState(() {
-      // Check if profile image path is already stored and not empty
-      if (profileImagePath.containsKey("profileImage") &&
-          profileImagePath.getString("profileImage")!.isNotEmpty &&
-          File(profileImagePath.getString("profileImage") ?? "").existsSync()) {
-        // Print statement to indicate checking all conditions
-        print("%%%%%%%%%%%%%%% checking all condition %%%%%%%%%%%%%%%%%%%");
+      setState(() {
+        // Check if profile image path is already stored and not empty
+        if (profileImagePath.containsKey("profileImage") &&
+            profileImagePath.getString("profileImage")!.isNotEmpty &&
+            File(profileImagePath.getString("profileImage") ?? "")
+                .existsSync()) {
+          // Print statement to indicate checking all conditions
+          print("%%%%%%%%%%%%%%% checking all condition %%%%%%%%%%%%%%%%%%%");
 
-        // Check if both old and new files exist
-        if (File(profileImagePath.getString("profileImage") ?? "").existsSync() &&
-            File(GetFilePath).existsSync()) {
-          // Print statement to indicate deleting old file from the application directory
-          print("%%%%%%%%%%%%%%% deleting old File from application directory %%%%%%%%%%%%%%%%%%%%%%%% ");
+          // Check if both old and new files exist
+          if (File(profileImagePath.getString("profileImage") ?? "")
+                  .existsSync() &&
+              File(GetFilePath).existsSync()) {
+            // Print statement to indicate deleting old file from the application directory
+            print(
+                "%%%%%%%%%%%%%%% deleting old File from application directory %%%%%%%%%%%%%%%%%%%%%%%% ");
 
-          // Delete the old profile image
-          File(profileImagePath.getString("profileImage") ?? "").deleteSync(recursive: true);
+            // Delete the old profile image
+            File(profileImagePath.getString("profileImage") ?? "")
+                .deleteSync(recursive: true);
 
-          // Set the new file path of the profile image
-          profileImagePath.setString("profileImage", GetFilePath);
-          
+            // Set the new file path of the profile image
+            profileImagePath.setString("profileImage", GetFilePath);
+
+            // Set the FilePath variable to the new profile image path
+            FilePath = profileImagePath.getString("profileImage") ?? "";
+
+            // Trigger profileChange value notifier to update the profile image
+            profileChange.value = true;
+          }
+        } else {
           // Set the FilePath variable to the new profile image path
-          FilePath = profileImagePath.getString("profileImage") ?? "";
+          FilePath = GetFilePath;
+
+          // Set the profile image path in SharedPreferences
+          profileImagePath.setString("profileImage", GetFilePath);
 
           // Trigger profileChange value notifier to update the profile image
           profileChange.value = true;
         }
+      });
+    } else {
+      // If permission to access videos is not granted, show app settings dialog
+      AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
+      if (deviceInfo.version.sdkInt < 33) {
+        debugPrint(
+            "%%%%%%%%%%%%%%%%% the sdk Version ${deviceInfo.version.sdkInt} %%%%%%%%%%%%%%");
+        await Permission.storage.request().then((value) async {
+          // Pick an image using the image picker
+          final XFile? pickedFile = await pickImage();
+
+          // Get the application directory
+          final Directory getApplicationDirectory =
+              Directory(await getDirectory().getdirectory());
+
+          // Get the file name and extension
+          final String FileName =
+              await getFileName(pickedFile!.path.split(".").last);
+
+          // Get the file path for saving the image
+          final String GetFilePath = await SaveFileToApplicationDirectory(
+              getApplicationDirectory, FileName, pickedFile);
+
+          // Get SharedPreferences for storing profile image path
+          SharedPreferences profileImagePath =
+              await SharedPreferences.getInstance();
+
+          setState(() {
+            // Check if profile image path is already stored and not empty
+            if (profileImagePath.containsKey("profileImage") &&
+                profileImagePath.getString("profileImage")!.isNotEmpty &&
+                File(profileImagePath.getString("profileImage") ?? "")
+                    .existsSync()) {
+              // Print statement to indicate checking all conditions
+              print(
+                  "%%%%%%%%%%%%%%% checking all condition %%%%%%%%%%%%%%%%%%%");
+
+              // Check if both old and new files exist
+              if (File(profileImagePath.getString("profileImage") ?? "")
+                      .existsSync() &&
+                  File(GetFilePath).existsSync()) {
+                // Print statement to indicate deleting old file from the application directory
+                print(
+                    "%%%%%%%%%%%%%%% deleting old File from application directory %%%%%%%%%%%%%%%%%%%%%%%% ");
+
+                // Delete the old profile image
+                File(profileImagePath.getString("profileImage") ?? "")
+                    .deleteSync(recursive: true);
+
+                // Set the new file path of the profile image
+                profileImagePath.setString("profileImage", GetFilePath);
+
+                // Set the FilePath variable to the new profile image path
+                FilePath = profileImagePath.getString("profileImage") ?? "";
+
+                // Trigger profileChange value notifier to update the profile image
+                profileChange.value = true;
+              }
+            } else {
+              // Set the FilePath variable to the new profile image path
+              FilePath = GetFilePath;
+
+              // Set the profile image path in SharedPreferences
+              profileImagePath.setString("profileImage", GetFilePath);
+
+              // Trigger profileChange value notifier to update the profile image
+              profileChange.value = true;
+            }
+          });
+        });
       } else {
-        // Set the FilePath variable to the new profile image path
-        FilePath = GetFilePath;
-
-        // Set the profile image path in SharedPreferences
-        profileImagePath.setString("profileImage", GetFilePath);
-
-        // Trigger profileChange value notifier to update the profile image
-        profileChange.value = true;
+        Permission.videos.request().then((value) {
+          Permission.photos.request().then((value) {});
+        });
       }
-    });
-  } else {
-    // If permission to access videos is not granted, show app settings dialog
-    _ShowAppSettingDialog();
+      // _ShowAppSettingDialog();
+    }
   }
-}
-
 
 // Function to pick an image from the gallery
-Future<XFile?> pickImage() async {
-  try {
-    // Pick an image from the gallery using the imagePicker
-    final pickedfile = imagePicker.pickImage(source: ImageSource.gallery);
-    return pickedfile;
-  } catch (e) {
-    // Print error message if there's an error during picking the image
-    print("%%%%%%%%%%%%%%%%%%%%%% Error during picking Image : ${e.toString()} %%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+  Future<XFile?> pickImage() async {
+    try {
+      // Pick an image from the gallery using the imagePicker
+      final pickedfile = imagePicker.pickImage(source: ImageSource.gallery);
+      return pickedfile;
+    } catch (e) {
+      // Print error message if there's an error during picking the image
+      print(
+          "%%%%%%%%%%%%%%%%%%%%%% Error during picking Image : ${e.toString()} %%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+    }
+    return null;
   }
-  return null;
-}
-
-// Function to get the application directory
-Future<Directory> applicationDirectory() async {
-  // Get the application support directory
-  final appDirectory = await getApplicationSupportDirectory();
-  return appDirectory;
-}
 
 // Function to generate a file name with the provided file extension
-Future<String> getFileName(String File_extension) async {
-  // Generate a file name with the current timestamp and provided file extension
-  final FileName = "profile_pic_${DateTime.now().millisecondsSinceEpoch.toString()}.$File_extension";
-  return FileName;
-}
+  Future<String> getFileName(String File_extension) async {
+    // Generate a file name with the current timestamp and provided file extension
+    final FileName =
+        "profile_pic_${DateTime.now().millisecondsSinceEpoch.toString()}.$File_extension";
+    return FileName;
+  }
 
 // Function to save the file to the application directory
-Future<String> SaveFileToApplicationDirectory(Directory applicationDirectory, String fileName, XFile? xFile) async {
-  // Create a file object for the profile picture
-  File profilePic = File("${await applicationDirectory.path}/$fileName");
-  profilePic.createSync(recursive: true);
+  Future<String> SaveFileToApplicationDirectory(
+      Directory applicationDirectory, String fileName, XFile? xFile) async {
+    // Create a file object for the profile picture
+    File profilePic = File("${await applicationDirectory.path}/$fileName");
+    profilePic.createSync(recursive: true);
 
-  // Read the bytes of the picked image file
-  final bytes = await xFile!.readAsBytes();
+    // Read the bytes of the picked image file
+    final bytes = await xFile!.readAsBytes();
 
-  // Write the bytes to the profile picture file
-  profilePic.writeAsBytesSync(bytes, flush: true);
+    // Write the bytes to the profile picture file
+    profilePic.writeAsBytesSync(bytes, flush: true);
 
-  // Return the path of the saved profile picture file
-  return profilePic.path;
-}
+    // Return the path of the saved profile picture file
+    return profilePic.path;
+  }
 
 // Function to get the user image from SharedPreferences
-void _getUserImage() async {
-  SharedPreferences profileImagePath = await SharedPreferences.getInstance();
+  void _getUserImage() async {
+    SharedPreferences profileImagePath = await SharedPreferences.getInstance();
 
-  // Check if the profile image path is stored in SharedPreferences and if the file exists
-  if (profileImagePath.containsKey("profileImage") &&
-      profileImagePath.getString("profileImage")!.isNotEmpty &&
-      File(profileImagePath.getString("profileImage") ?? "").existsSync()) {
-    // Set the FilePath variable to the profile image path
-    FilePath = profileImagePath.getString("profileImage") ?? "";
-    
-    // Trigger profileChange value notifier to update the profile image
-    profileChange.value = true;
+    // Check if the profile image path is stored in SharedPreferences and if the file exists
+    if (profileImagePath.containsKey("profileImage") &&
+        profileImagePath.getString("profileImage")!.isNotEmpty &&
+        File(profileImagePath.getString("profileImage") ?? "").existsSync()) {
+      // Set the FilePath variable to the profile image path
+      FilePath = profileImagePath.getString("profileImage") ?? "";
+
+      // Trigger profileChange value notifier to update the profile image
+      profileChange.value = true;
+    }
   }
-}
 
 // Function to show the app settings dialog
-void _ShowAppSettingDialog() {
-  showDialog(
-    barrierDismissible: false,
-    context: context,
-    builder: (context) {
-      var CloseDialog = context;
-      return CustomAlertForPermission(
-        OpenApp: () {
-          // Close the dialog and open app settings
-          Navigator.pop(CloseDialog, false);
-          Future.delayed(
-            Duration(milliseconds: 10),
-            () {
-              AppSettings.openAppSettings(type: AppSettingsType.apn);
-            },
-          );
-        },
-      );
-    },
-  );
-}
-
+  void _ShowAppSettingDialog() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        var CloseDialog = context;
+        return CustomAlertForPermission(
+          OpenApp: () {
+            // Close the dialog and open app settings
+            Navigator.pop(CloseDialog, false);
+            Future.delayed(
+              Duration(milliseconds: 10),
+              () {
+                AppSettings.openAppSettings(type: AppSettingsType.apn);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
 
 // Function to open the Play Store
-Future<void> openplaystore() async {
-  // Check if the platform is Android
-  if (Platform.isAndroid) {
-    // Define the Play Store URL for the app
-    const url = "https://play.google.com/store/apps/details?id=com.digividya_2023";
-    
-    // Check if the URL can be launched
-    if (await canLaunchUrl(Uri.parse(url))) {
-      // Launch the URL
-      await launchUrl(Uri.parse(url));
-    } else {
-      // Throw an error if the URL cannot be launched
-      throw 'could not launch playstore link';
-    }
-  } else {
-    // Throw an error if the platform is not supported
-    throw 'Unsupported Platform';
-  }
-}
+  Future<void> openplaystore() async {
+    // Check if the platform is Android
+    if (Platform.isAndroid) {
+      // Define the Play Store URL for the app
+      const url =
+          "https://play.google.com/store/apps/details?id=com.digividya_2023";
 
+      // Check if the URL can be launched
+      if (await canLaunchUrl(Uri.parse(url))) {
+        // Launch the URL
+        await launchUrl(Uri.parse(url));
+      } else {
+        // Throw an error if the URL cannot be launched
+        throw 'could not launch playstore link';
+      }
+    } else {
+      // Throw an error if the platform is not supported
+      throw 'Unsupported Platform';
+    }
+  }
+
+  void _getDeviceId() async {
+    String dir = await getDirectory().getdirectory();
+
+    File appinfoFile = File("$dir/appInfo.json");
+
+    var url = "https://digividya.in/DigiVidyaAPI/api/singleUserDeviceID";
+    var values = jsonDecode(appinfoFile.readAsStringSync());
+
+    Map<String, dynamic> UserId = {'user_id': values['User_Id'].toString()};
+
+    var response = await http.post(Uri.parse(url), body: UserId);
+
+    Map<String, dynamic> jsonRespons =
+        jsonDecode(response.body.toString().replaceAll("\n", " "));
+
+    setState(() {
+      ServerDeviceId = jsonRespons['device_id'].toString();
+      DeviceId = values['userDevice_Id'].toString();
+    });
+  }
 }

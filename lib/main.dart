@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:digividya/Services/getDirectory.dart';
 import 'package:digividya/screens/Splash.dart';
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
@@ -42,22 +43,17 @@ void checkPermission() async {
   final AndroidDeviceInfo androidDeviceInfo =
       await DeviceInfoPlugin().androidInfo;
   // Check if the Android SDK version is less than 33
+  print("${androidDeviceInfo.version.sdkInt.toString()}");
   if (androidDeviceInfo.version.sdkInt < 33) {
     // Request contact permission
     Permission.contacts.request().then((_) {
       print("contact permission given");
-      // Request video permission after contact permission is granted
-      Permission.videos.request().then((_) {
-        // print("Video Permission");
-        // Request audio permission after video permission is granted
-        Permission.audio.request().then((_) {
-          // print("audio Permission given");
-          // Request exact alarm scheduling permission after audio permission is granted
-          Permission.scheduleExactAlarm.request().then((_) async {
-            // print("schedule Aleram permission given");
-            // Initialize notifications after all permissions are granted
-            await notificationService.initializedNotification();
-          });
+      // Request Storage permission after contact permission is granted
+      Permission.storage.request().then((_) {
+        print("permission given");
+        Permission.notification.request().then((_) async {
+          print("Notification Permission is given");
+          await notificationService.initializedNotification();
         });
       });
     });
@@ -91,7 +87,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // Define a map to store phone contact numbers with a string key-value pair
   Map<String, String> phoneContactNumber = {};
   // Define a list to store filtered contact numbers
@@ -104,6 +100,9 @@ class _MyAppState extends State<MyApp> {
   late SharedPreferences _sharedPreferences;
   @override
   void initState() {
+    // Add this widget as an observer to the WidgetsBinding instance
+    WidgetsBinding.instance.addObserver(this);
+    _unLockFolder();
     // Call method to set the preferred device orientation
     _deviceOrientation();
     // Call method to disable screen capture
@@ -156,6 +155,22 @@ class _MyAppState extends State<MyApp> {
           canDismissDialog: false),
       // home: Splash(),
     );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // TODO: implement didChangeAppLifecycleState
+    super.didChangeAppLifecycleState(state);
+
+    if (AppLifecycleState.paused == state) {
+      debugPrint("%%%%%%%%%%%%%%%%%%%% Application in bacground %%%%%%%%%%");
+      _lockFolder();
+    }
+
+    if (AppLifecycleState.resumed == state) {
+      debugPrint("%%%%%%%%%%%%%%%%%%%% Application in forground %%%%%%%%%%");
+      _unLockFolder();
+    }
   }
 
   // Define an asynchronous method to fetch contacts
@@ -300,7 +315,8 @@ class _MyAppState extends State<MyApp> {
     // Initialize an empty list to store friends' numbers
     List<String> friendsNumber = [];
     // Get the path to the application support directory
-    String dirPath = (await getApplicationSupportDirectory()).path;
+    //String dirPath = (await getApplicationSupportDirectory()).path;
+    String dirPath = await getDirectory().getdirectory();
     // Create a File object for the appInfo.json file
     File jsonFile = File("$dirPath/appInfo.json");
     // Get the current date and format it as dd-MM-yyyy
@@ -366,13 +382,15 @@ class _MyAppState extends State<MyApp> {
 
   // Getting User Appreciation List From Server
   void _getMyAppreciationList() async {
-     // Define the URL to fetch the appreciation list from the server
+    // Define the URL to fetch the appreciation list from the server
     // String LocalTestingLink = "http://192.168.1.19/prachi/DigiVidyaAPI/api/fetchMyAppreciation";
     String getappreciationList_Url =
         "https://digividya.in/DigiVidyaAPI/api/fetchMyAppreciation";
-    
+
     // Get the path to the application support directory
-    String dirPath = (await getApplicationSupportDirectory()).path;
+    // String dirPath = (await getApplicationSupportDirectory()).path;
+
+    String dirPath = await getDirectory().getdirectory();
     // Create a File object for the appInfo.json file
     File JsonFile = File("$dirPath/appInfo.json");
     // Check if the appInfo.json file exists
@@ -408,7 +426,7 @@ class _MyAppState extends State<MyApp> {
             _sharedPreferences = await SharedPreferences.getInstance();
             // Check if the "UserAppreciation" key exists in SharedPreferences
             if (!_sharedPreferences.containsKey("UserAppreciation")) {
-               // If not, store the AppreciatedBy list in SharedPreferences
+              // If not, store the AppreciatedBy list in SharedPreferences
               _sharedPreferences.setStringList(
                   "UserAppreciation", AppreciatedBy);
             } else {
@@ -433,7 +451,69 @@ class _MyAppState extends State<MyApp> {
       print("Friends Number who Appreciated You : ${AppreciatedBy}");
     }
   }
+
+  void _lockFolder() async {
+
+    DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
+    AndroidDeviceInfo _deviceInfo = await _deviceInfoPlugin.androidInfo;
+    debugPrint(
+            "%%%%%%%%%%%%%%%%%%%% device is less then sdk ${_deviceInfo.version.sdkInt} %%%%%%%%%%");
+    String folderPath =
+        Directory((await getDownloadsDirectory())!.path + "/DigiVidya").path;
+    debugPrint("%%%%%%%%%%%%%%% $folderPath %%%%%%%%%%%%%%%%%%%%");
+
+    if (await Permission.storage.isGranted) {
+      debugPrint(
+          "%%%%%%%%%%%%%%%%%%%% Storage Permission Granted Successfully %%%%%%%%%%");
+      if (_deviceInfo.version.sdkInt < 33) {
+        
+        debugPrint(
+            "%%%%%%%%%%%%%%%%%%%% device is less then sdk 33 %%%%%%%%%%");
+        if (Directory(folderPath).existsSync()) {
+          debugPrint("%%%%%%%%%%%%%%%%%%%% Directory Exists %%%%%%%%%%");
+          final hiddenFolderPath =
+              (await getDownloadsDirectory())!.path + "/.hidden";
+          await Directory(folderPath).rename(hiddenFolderPath);
+          debugPrint(
+              "%%%%%%%%%%%%%%%%%%%% Folder Lock Successfully %%%%%%%%%%");
+        }
+      }
+    } else {
+      debugPrint(
+          "%%%%%%%%%%%%%%%%%%%% Storage Permission not given %%%%%%%%%%");
+      // checkPermission();
+    }
+  }
+
+  void _unLockFolder() async {
+    DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
+    AndroidDeviceInfo _deviceInfo = await _deviceInfoPlugin.androidInfo;
+    String originalFolderPath =
+        (await getDownloadsDirectory())!.path + "/DigiVidya";
+    String hiddenFolderPath =
+        (await getDownloadsDirectory())!.path + "/.hidden";
+
+    if (await Permission.storage.isGranted) {
+      debugPrint(
+          "%%%%%%%%%%%%%%%%%%%% Storage Permission Granted Successfully %%%%%%%%%%");
+      if (_deviceInfo.version.sdkInt < 33) {
+        debugPrint(
+            "%%%%%%%%%%%%%%%%%%%% device is less then sdk 33 %%%%%%%%%%");
+        if (Directory(hiddenFolderPath).existsSync()) {
+          debugPrint("%%%%%%%%%%%%%%%%%%%% Directory Exists %%%%%%%%%%");
+          await Directory(hiddenFolderPath).rename(originalFolderPath);
+          debugPrint(
+              "%%%%%%%%%%%%%%%%%%%% Folder UnLock Successfully %%%%%%%%%%");
+        }
+      }
+    } else {
+      debugPrint(
+          "%%%%%%%%%%%%%%%%%%%% Storage Permission not given %%%%%%%%%%");
+      // checkPermission();
+    }
+  }
 }
+
 // Define an asynchronous function to disable screen capture
 Future<void> disableCapture() async {
   // Disable screenshots and screen recording for the current screen
