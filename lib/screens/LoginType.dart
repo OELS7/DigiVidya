@@ -23,7 +23,6 @@ class _loginTypeState extends State<loginType> {
     // Initialize the state
     super.initState();
     device_id = generateDevicId();
-    generateMobileNo();
     debugPrint(
         "%%%%%%%%%%%%%%%%%%%%%%%% This is device id $device_id %%%%%%%%%%%%%%%%%%%%%");
     // MobileNo = generateMobileNo(); // Generate random mobile number
@@ -45,110 +44,122 @@ class _loginTypeState extends State<loginType> {
   Widget build(BuildContext context) {
     // Return a Scaffold widget
     return Scaffold(
-      body: SafeArea(
-          child: Stack(
-        // Use a Stack to layer widgets
-        children: [
-          Container(
+      body: Stack(
+              // Use a Stack to layer widgets
+              children: [
+      Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage(
+                  'assets/images/Register_Page_Update_ 08_Aug.jpg'), // Set background image
+              fit: BoxFit.fill), // Fit the image to fill the container
+        ),
+      ),
+      Positioned(
+          top: MediaQuery.of(context).size.height *
+              0.65, // Position the container from the top
+          left: MediaQuery.of(context).size.width *
+              0.14, // Position the container from the left
+          right: MediaQuery.of(context).size.width *
+              0.14, // Position the container from the right
+          child: Center(
+            child: Container(
+              height: MediaQuery.of(context).size.height *
+                  0.25, // Set container height to 25% of screen height
+              width: MediaQuery.of(context).size.width *
+                  1, // Set container width to full screen width
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment
+                    .spaceAround, // Distribute space evenly around children
+                children: [
+                  GestureDetector(
+                    // Define action for Register button tap
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              Register(), // Navigate to Register screen
+                          settings: RouteSettings(
+                              arguments: {"DeviceId": device_id})));
+                    },
+                    child: Container(
+                      height: MediaQuery.of(context).size.height *
+                          0.09, // Set button height
+                      width: MediaQuery.of(context).size.width *
+                          0.49, // Set button width
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(
+                              30), // Round the corners
+                          image: DecorationImage(
+                              image: AssetImage(
+                                  "assets/images/ButtonBg.png"))), // Set button color
+                      child: Center(
+                          child: Text(
+                        "Register", // Set button text
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontFamily: "Fontmain"),
+                      )),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )),
+      Positioned(
+        top: MediaQuery.sizeOf(context).height * 0.93,
+        bottom: MediaQuery.sizeOf(context).height * 0.01,
+        left: MediaQuery.sizeOf(context).width * 0.059,
+        child: GestureDetector(
+          // Define action for Guest Mode button tap
+          onTap: () {
+            generateMobileNo();
+            Future.delayed(Duration(milliseconds: 100), () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      freetime(), // Navigate to freetime screen
+                  settings: RouteSettings(arguments: {
+                    "userName": "Guest", // Pass userName as "Guest"
+                    "mobileNo": MobileNo, // Pass generated mobile number
+                    "city": "Thane", // Pass city as "Thane"
+                    'DeviceId': device_id, // Pass generated device ID
+                    "language": 'Marathi' // Pass language as "Marathi"
+                  })));
+            });
+          },
+          child: Container(
+            height: MediaQuery.of(context).size.height *
+                0.09, // Set button height
+            width: MediaQuery.of(context).size.width *
+                0.49, // Set button width
             decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage(
-                      'assets/images/Registration & Pay Now UI_ 23 Jan Updated-04-04.png'), // Set background image
-                  fit: BoxFit.fill), // Fit the image to fill the container
+              borderRadius: BorderRadius.circular(30), // Round the corners
+            ), // Set button color
+            child: Row(
+              children: [
+                Container(
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color.fromARGB(255, 34, 16, 102)),
+                    child: Icon(
+                      Icons.g_mobiledata,
+                      size: 40,
+                      color: Colors.white,
+                    )),
+                Text(
+                  "uest",
+                  style: TextStyle(
+                      color: Color.fromARGB(255, 34, 16, 102),
+                      fontSize: 19,
+                      decoration: TextDecoration.underline),
+                ),
+              ],
             ),
           ),
-          Positioned(
-              top: MediaQuery.of(context).size.height *
-                  0.65, // Position the container from the top
-              left: MediaQuery.of(context).size.width *
-                  0.14, // Position the container from the left
-              right: MediaQuery.of(context).size.width *
-                  0.14, // Position the container from the right
-              child: Center(
-                child: Container(
-                  height: MediaQuery.of(context).size.height *
-                      0.25, // Set container height to 25% of screen height
-                  width: MediaQuery.of(context).size.width *
-                      1, // Set container width to full screen width
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment
-                        .spaceAround, // Distribute space evenly around children
-                    children: [
-                      GestureDetector(
-                        // Define action for Register button tap
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  Register(), // Navigate to Register screen
-                              settings: RouteSettings(
-                                  arguments: {"DeviceId": device_id})));
-                        },
-                        child: Container(
-                          height: MediaQuery.of(context).size.height *
-                              0.09, // Set button height
-                          width: MediaQuery.of(context).size.width *
-                              0.59, // Set button width
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(
-                                  30), // Round the corners
-                              color: Colors.white), // Set button color
-                          child: Center(
-                              child: Text(
-                            "Register", // Set button text
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontFamily: "Fontmain"),
-                          )),
-                        ),
-                      ),
-                      GestureDetector(
-                        // Define action for Guest Mode button tap
-                        onTap: () {
-                          Future.delayed(Duration(milliseconds: 100), () {
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        freetime(), // Navigate to freetime screen
-                                    settings: RouteSettings(arguments: {
-                                      "userName":
-                                          "Guest", // Pass userName as "Guest"
-                                      "mobileNo":
-                                          MobileNo, // Pass generated mobile number
-                                      "city": "Thane", // Pass city as "Thane"
-                                      'DeviceId':
-                                          device_id, // Pass generated device ID
-                                      "language":
-                                          'Marathi' // Pass language as "Marathi"
-                                    })));
-                          });
-                        },
-                        child: Container(
-                          height: MediaQuery.of(context).size.height *
-                              0.09, // Set button height
-                          width: MediaQuery.of(context).size.width *
-                              0.59, // Set button width
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(
-                                  30), // Round the corners
-                              color: Colors.white), // Set button color
-                          child: Center(
-                              child: Text(
-                            "Guest Mode", // Set button text
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontFamily: "Fontmain"),
-                          )),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )),
-          // Positioned(child: Container( decoration: BoxDecoration(image: DecorationImage(image: AssetImage("assets/app_log/DigiVidyaLogo.webp"))),)),
-        ],
-      )),
+        ),
+      )
+              ],
+            ),
     );
   }
 

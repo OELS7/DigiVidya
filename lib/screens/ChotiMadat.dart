@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+
 // Define a StatefulWidget class named ChotiMadat
 class ChotiMadat extends StatefulWidget {
   // Constructor for ChotiMadat
@@ -53,14 +54,19 @@ class _ChotiMadatState extends State<ChotiMadat> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
+
         child: Column(children: [
           // Expanded widget to hold chat messages
           Expanded(
             child: Container(
               height: MediaQuery.of(context).size.height * 0.8,
               width: MediaQuery.of(context).size.width * 1,
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                  image: DecorationImage(
+                      image: AssetImage("assets/images/Choti_Madat.jpg"),fit:BoxFit.fill)),
               child: RefreshIndicator(
                 onRefresh: () async {
                   _messages.clear();
@@ -72,7 +78,8 @@ class _ChotiMadatState extends State<ChotiMadat> {
                   shrinkWrap: true,
                   controller: _scrollController,
                   addAutomaticKeepAlives: true,
-                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   addRepaintBoundaries: true,
                   physics: AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.all(1),
@@ -114,6 +121,7 @@ class _ChotiMadatState extends State<ChotiMadat> {
                     Expanded(
                       child: SizedBox(
                         child: TextField(
+                          autofocus: true,
                           keyboardType: TextInputType.multiline,
                           controller: _editingController,
                           decoration: const InputDecoration(
@@ -153,10 +161,7 @@ class _ChotiMadatState extends State<ChotiMadat> {
 
   // Method to fetch user queries and responses
   Future<void> _featchData() async {
-    // Get the application support directory
-    // String dirPath = (await getApplicationSupportDirectory()).path;
-
-        String dir = await getDirectory().getdirectory();
+    String dir = await getDirectory().getdirectory();
 
     File jsonFile = File("$dir/appInfo.json");
     var jsonData = jsonDecode(jsonFile.readAsStringSync());
@@ -186,9 +191,8 @@ class _ChotiMadatState extends State<ChotiMadat> {
 
   // Method to send user queries
   void _sendQuery({required String query}) async {
-    //String dirPath = (await getApplicationSupportDirectory()).path;
+    String dir = await getDirectory().getdirectory();
 
-        String dir = await getDirectory().getdirectory();
     File jsonFile = File("$dir/appInfo.json");
     if (jsonFile.existsSync()) {
       int userId = 0;

@@ -138,7 +138,7 @@ class _languagePageState extends State<languagePage> {
                       child: GestureDetector(
                           // Navigate to download app intro video in Hindi
                           onTap: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => freetime(),
@@ -147,7 +147,7 @@ class _languagePageState extends State<languagePage> {
                                       "mobileNo": mobilenumber,
                                       "city": city,
                                       "DeviceId": deviceId,
-                                      "language": "marathi"
+                                      "language": "hindi"
                                     })));
                           },
                           child: Container(

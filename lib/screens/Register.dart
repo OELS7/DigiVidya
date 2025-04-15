@@ -195,7 +195,7 @@ Widget build(BuildContext context) {
                           "mobilecontroller.text.toString()");
                     });
                     if (_formKey.currentState!.validate()) {
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => languagePage(),

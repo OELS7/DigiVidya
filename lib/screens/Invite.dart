@@ -1,6 +1,7 @@
 // ignore: file_names
 import 'dart:convert';
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:digividya/Services/getDirectory.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -24,6 +25,11 @@ class _InviteState extends State<Invite> {
 
 // Variable to store button text
   String ButtonText = "";
+
+// Variable to store description
+  String Description = "";
+
+  String title = "";
 
 // Banner ad object
   late BannerAd _bannerAd;
@@ -75,6 +81,7 @@ class _InviteState extends State<Invite> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("The length of buttonText is : ${ButtonText.length}");
     // Return the main scaffold widget
     return Scaffold(
       // Set the background color to transparent
@@ -97,12 +104,34 @@ class _InviteState extends State<Invite> {
               height: MediaQuery.of(context).size.height * 1,
               width: MediaQuery.of(context).size.width * 1,
             ),
+            Positioned(
+                top: MediaQuery.sizeOf(context).height * 0.4,
+                left: MediaQuery.sizeOf(context).height * 0.05,
+                right: MediaQuery.sizeOf(context).height * 0.05,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(color: Colors.white,fontSize: 25 ,fontFamily: "Fontmain"),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 5,),
+                    
+                    Text(
+                      Description,
+                      style: TextStyle(color: Colors.white,fontSize: 18,fontFamily: "Fontmain"),
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                )),
             // Positioned widget for the button
             Positioned(
               // Position the button at the bottom with some padding
-              bottom: MediaQuery.of(context).size.height * 0.1,
-              left: MediaQuery.of(context).size.width * 0.1,
-              right: MediaQuery.of(context).size.width * 0.1,
+              bottom: MediaQuery.of(context).size.height * 0.11,
+              left: ButtonText.length > 24 ?MediaQuery.of(context).size.width * 0.1 :MediaQuery.of(context).size.width * 0.2,
+              right: ButtonText.length > 24 ?MediaQuery.of(context).size.width * 0.1 : MediaQuery.of(context).size.width * 0.2,
               child: GestureDetector(
                 // Handle tap event
                 onTap: () async {
@@ -110,7 +139,6 @@ class _InviteState extends State<Invite> {
                   String userPrefredLanguage = "";
                   String whatsAppInviteImage = "";
                   // Get the application support directory path
-                  //var dirPath = (await getApplicationSupportDirectory()).path;
 
                   String dir = await getDirectory().getdirectory();
 
@@ -125,14 +153,17 @@ class _InviteState extends State<Invite> {
                     case "marathi":
                       whatsAppInviteImage =
                           'assets/images/MarathiInvitation.webp';
+
                       break;
                     case "hindi":
                       whatsAppInviteImage =
                           'assets/images/HindiInvitation.webp';
+
                       break;
                     case "english":
                       whatsAppInviteImage =
                           'assets/images/Englishinvitation.webp';
+
                       break;
                     default:
                   }
@@ -148,10 +179,11 @@ class _InviteState extends State<Invite> {
                 // Container for the button
                 child: Container(
                   // Set the height and width of the button
-                  height: MediaQuery.of(context).size.height * 0.08,
-                  width: MediaQuery.of(context).size.width * 0.3,
+                  height: MediaQuery.sizeOf(context).height * 0.06,
+                  width: MediaQuery.sizeOf(context).width * 0.2,
                   // Set the decoration for the button
                   decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 236, 33, 243),
                     // Set the border with white color
                     border: Border.all(color: Colors.white),
                     // Set the border radius for rounded corners
@@ -164,9 +196,13 @@ class _InviteState extends State<Invite> {
                     // Set the gradient background for the button
                     gradient: LinearGradient(
                       colors: [
-                        const Color.fromARGB(255, 0, 37, 67),
-                        const Color.fromARGB(255, 2, 64, 115),
-                        const Color.fromARGB(255, 32, 104, 163),
+                        // const Color.fromARGB(255, 0, 37, 67),
+                        // const Color.fromARGB(255, 2, 64, 115),
+                        // const Color.fromARGB(255, 32, 104, 163),
+
+                        Color.fromARGB(255, 255, 255, 255),
+                        Color.fromARGB(255, 255, 255, 255),
+                        Color.fromARGB(255, 255, 255, 255),
                       ],
                       begin: Alignment.centerRight,
                       end: Alignment.centerLeft,
@@ -177,7 +213,7 @@ class _InviteState extends State<Invite> {
                     child: Text(
                       ButtonText, // Set the button text
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 15,
                       ),
                       textAlign: TextAlign.center,
@@ -243,9 +279,6 @@ class _InviteState extends State<Invite> {
   void _loadPreferedInviteImage() async {
     String userPrefredLanguage =
         ""; // Declare a variable to hold the user's preferred language
-    // var dirPath = (await getApplicationSupportDirectory())
-    //     .path; 
-    // Get the path to the application support directory
 
     String dir = await getDirectory().getdirectory();
 
@@ -261,25 +294,34 @@ class _InviteState extends State<Invite> {
       case "marathi": // If the preferred language is Marathi
         setState(() {
           inviteImage =
-              'assets/images/marathi.webp'; // Set the invite image to Marathi version
+              'assets/images/Invite_bg_image.jpg'; // Set the invite image to Marathi version
           ButtonText =
-              "आपल्या मित्रांना मदत करण्यासाठी येथे क्लिक करा"; // Set the button text to Marathi
+              "मित्रांना मदत करा"; // Set the button text to Marathi
+          Description =
+              "डिजीविद्येची लिंक तुमच्या प्रियजनांना पाठवा आणि त्यांना या डिजिटल जगात मदत करा.";
+          title = "डिजिटल क्रांतीचा एक भाग व्हा..!!";
         });
         break;
       case "hindi": // If the preferred language is Hindi
         setState(() {
           inviteImage =
-              "assets/images/hindi.webp"; // Set the invite image to Hindi version
+              "assets/images/Invite_bg_image.jpg"; // Set the invite image to Hindi version
           ButtonText =
               "अपने प्रियजन की मदद करें"; // Set the button text to Hindi
+          Description =
+              "अपने प्रियजनों को डिजिविद्या का लिंक भेजें और इस डिजिटल दुनिया में उनकी मदद करें।";
+          title = "डिजिटल क्रांति का हिस्सा बनें..!!";
         });
         break;
       case "english": // If the preferred language is English
         setState(() {
           inviteImage =
-              "assets/images/english.webp"; // Set the invite image to English version
+              "assets/images/Invite_bg_image.jpg"; // Set the invite image to English version
           ButtonText =
-              "Click here to help your friend."; // Set the button text to English
+              "Help your friend"; // Set the button text to English
+          Description =
+              "Send Digividya's link to your dear ones and help them in this Digital world.";
+          title = "Become a part of Digital revolutions..!!";
         });
         break;
       default: // Default case if the language does not match any case
